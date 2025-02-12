@@ -7,6 +7,7 @@ import { Readex_Pro } from "next/font/google";
 import FoodCard from "../components/FoodCard";
 import FloatingButtons from "../components/FloatingButtons";
 import { categories, recommendedForYou, todaysSpecials, chefsSpecials } from "../data/data";
+import Link from "next/link";
 
 const readexPro = Readex_Pro({ subsets: ["latin"], weight: ["400", "700"] });
 
@@ -64,7 +65,7 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">
           Recommended for you
         </h2>
-        <div className="flex gap-6 overflow-x-auto scrollbar-hide p-6 bg-gray-100 scrollbar-hide">
+        <div className="flex gap-6 overflow-x-auto p-6 bg-gray-100 scrollbar-hide">
           {recommendedForYou.map((cuisine) => (
             <div
               key={cuisine.id}
@@ -81,48 +82,18 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
             </div>
           ))}
         </div>
-        <a
-          href={`/cuisines-expanded-page/`}
-          className="absolute bottom-4 right-4 text-gray-500 font-semibold hover:underline"
-        >
+        <Link href={`/cuisines-expanded-page/recommended`}  className="absolute bottom-4 right-4 text-gray-500 font-semibold hover:underline">
           View More &gt;&gt;&gt;
-        </a>
+        </Link>
+       
       </section>
 
-      <section className="py-4 mx-4 md:mx-14 relative">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-          Recommended for you
-        </h2>
-        <div className="flex gap-6 overflow-x-auto scrollbar-hide p-6 bg-gray-100 scrollbar-hide">
-          {recommendedForYou.map((cuisine) => (
-            <div
-              key={cuisine.id}
-              className="min-w-[calc(25%-1rem)] flex-none scroll-snap-align-start"
-            >
-              <FoodCard
-                image={cuisine.image}
-                rating={cuisine.rating}
-                name={cuisine.name}
-                description={cuisine.description}
-                price={cuisine.price}
-                onAddToPreOrder={addItemToPreOrder}
-              />
-            </div>
-          ))}
-        </div>
-        <a
-          href="#more"
-          className="absolute bottom-4 right-4 text-gray-500 font-semibold hover:underline"
-        >
-          View More &gt;&gt;&gt;
-        </a>
-      </section>
 
       <section className="py-4 mx-4 md:mx-14 relative">
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">
           Chef's Specials for you
         </h2>
-        <div className="flex gap-6 overflow-x-auto scrollbar-hide p-6 bg-gray-100 scrollbar-hide">
+        <div className="flex gap-6 overflow-x-auto scrollbar-hide p-6 bg-gray-100 ">
           {chefsSpecials.map((cuisine) => (
             <div
               key={cuisine.id}
@@ -139,19 +110,17 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
             </div>
           ))}
         </div>
-        <a
-          href="#more"
-          className="absolute bottom-4 right-4 text-gray-500 font-semibold hover:underline"
-        >
+        <Link href={`/cuisines-expanded-page/chefs-specials`}  className="absolute bottom-4 right-4 text-gray-500 font-semibold hover:underline">
           View More &gt;&gt;&gt;
-        </a>
+        </Link>
       </section>
+
 
       <section className="py-4 mx-4 md:mx-14 relative">
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">
           Today's specials for you
         </h2>
-        <div className="flex gap-6 overflow-x-auto scrollbar-hide p-6 bg-gray-100 scrollbar-hide">
+        <div className="flex gap-6 overflow-x-auto p-6 bg-gray-100 scrollbar-hide">
           {todaysSpecials.map((cuisine) => (
             <div
               key={cuisine.id}
@@ -168,12 +137,9 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
             </div>
           ))}
         </div>
-        <a
-          href="#more"
-          className="absolute bottom-4 right-4 text-gray-500 font-semibold hover:underline"
-        >
+        <Link href={`/cuisines-expanded-page/todays-specials`}  className="absolute bottom-4 right-4 text-gray-500 font-semibold hover:underline">
           View More &gt;&gt;&gt;
-        </a>
+        </Link>
       </section>
 
       <section className="py-4 mx-4 md:mx-14">

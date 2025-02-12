@@ -90,7 +90,6 @@ const MealDetailsPage: React.FC = () => {
             </div>
           ))}
         </div>
-        <a href="#more" className="absolute bottom-4 right-4 text-gray-500 font-semibold hover:underline">View More &gt;&gt;&gt;</a>
       </section>
     </div>
   );

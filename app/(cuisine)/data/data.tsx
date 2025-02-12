@@ -1,11 +1,11 @@
-interface Special {
+export interface Special {
   id: number;
   image: string;
   rating: string;
   name: string;
   description: string;
   price: number;
-  type: "Recommended" | "Chef's Special" | "Today's Special"; // To differentiate the type
+  type: "Recommended" | "Chef's Special" | "Today's Special"; 
 }
 
 interface Category {
@@ -25,6 +25,8 @@ export const categories: Category[] = [
   { imageSrc: "/placeholder.jpeg", foodType: "Pizza" },
   { imageSrc: "/placeholder.jpeg", foodType: "Pizza" },
 ];
+
+export const chinese: Special[] = [] = []
 
 export const recommendedForYou: Special[] = [
   {
@@ -142,3 +144,4 @@ export const todaysSpecials: Special[] = [
     type: "Today's Special",
   },
 ];
+
