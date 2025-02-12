@@ -69,4 +69,50 @@ export default function RestaurantBooking() {
         </div>
       </div>
 
-     
+      {/* Restaurant Listing */}
+      <div className="p-6">
+        <h2 className="text-2xl font-semibold">Book for lunch today in Sri Lanka</h2>
+        <div className="mt-4 flex flex-wrap gap-6">
+          <div
+            className="bg-white text-black rounded-lg overflow-hidden shadow-lg w-64 cursor-pointer hover:shadow-xl transition"
+            onClick={() => router.push("/restaurants-profile")} // Navigate when clicked
+          >
+            <img
+              src="https://hiltoncolombo1.com/uploads/poster/6881610003007Cover1.jpg"
+              alt="Restaurant"
+              className="w-full h-40 object-cover"
+            />
+            <div className="p-4">
+              <h3 className="text-lg font-semibold">Hilton Colombo</h3>
+
+              {/* Star Ratings */}
+              <div className="flex items-center text-yellow-500">
+                <FaStar />
+                <FaStar />
+                <FaStar />
+                <FaStar />
+                <FaStar className="text-gray-300" />
+                <span className="text-sm text-gray-500 ml-2">4.0 (100 reviews)</span>
+              </div>
+
+              <p className="text-sm text-gray-500 mt-1">Global, International - $$$</p>
+
+              {/* Booking Times */}
+              <div className="flex gap-2 mt-2">
+                <span className="bg-red-500 text-white px-2 py-1 rounded text-sm">
+                  12:00 PM
+                </span>
+                <span className="bg-red-500 text-white px-2 py-1 rounded text-sm">
+                  12:15 PM
+                </span>
+                <span className="bg-red-500 text-white px-2 py-1 rounded text-sm">
+                  12:30 PM
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
