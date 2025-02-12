@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation"; // Import useRouter
+import { useRouter } from "next/navigation";
 import { FaCalendarAlt, FaClock, FaUsers, FaSearch, FaStar } from "react-icons/fa";
+import { restaurants } from "@/data/restaurrants";
 
 export default function RestaurantBooking() {
   const [date, setDate] = useState("2025-02-02");
@@ -10,7 +11,12 @@ export default function RestaurantBooking() {
   const [people, setPeople] = useState(2);
   const [search, setSearch] = useState("");
 
-  const router = useRouter(); // Initialize router
+  const router = useRouter();
+
+  const filteredRestaurants = restaurants.filter((restaurant) =>
+    restaurant.name.toLowerCase().includes(search.toLowerCase()) ||
+    restaurant.category.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="bg-gray-900 text-white">
@@ -50,7 +56,8 @@ export default function RestaurantBooking() {
                 value={people}
                 min="1"
                 onChange={(e) => setPeople(Number(e.target.value))}
-                className="bg-transparent outline-none w-12"/>
+                className="bg-transparent outline-none w-12"
+              />
             </div>
             <div className="flex items-center bg-white text-black p-2 rounded-lg w-64">
               <FaSearch className="mr-2" />
@@ -62,9 +69,7 @@ export default function RestaurantBooking() {
                 className="bg-transparent outline-none w-full"
               />
             </div>
-            <button className="bg-red-500 text-white px-4 py-2 rounded-lg">
-              Let's go
-            </button>
+            <button className="bg-red-500 text-white px-4 py-2 rounded-lg">Let's go</button>
           </div>
         </div>
       </div>
@@ -73,44 +78,43 @@ export default function RestaurantBooking() {
       <div className="p-6">
         <h2 className="text-2xl font-semibold">Book for lunch today in Sri Lanka</h2>
         <div className="mt-4 flex flex-wrap gap-6">
-          <div
-            className="bg-white text-black rounded-lg overflow-hidden shadow-lg w-64 cursor-pointer hover:shadow-xl transition"
-            onClick={() => router.push("/restaurants-profile")} // Navigate when clicked
-          >
-            <img
-              src="https://hiltoncolombo1.com/uploads/poster/6881610003007Cover1.jpg"
-              alt="Restaurant"
-              className="w-full h-40 object-cover"
-            />
-            <div className="p-4">
-              <h3 className="text-lg font-semibold">Hilton Colombo</h3>
-
-              {/* Star Ratings */}
-              <div className="flex items-center text-yellow-500">
-                <FaStar />
-                <FaStar />
-                <FaStar />
-                <FaStar />
-                <FaStar className="text-gray-300" />
-                <span className="text-sm text-gray-500 ml-2">4.0 (100 reviews)</span>
-              </div>
-
-              <p className="text-sm text-gray-500 mt-1">Global, International - $$$</p>
-
-              {/* Booking Times */}
-              <div className="flex gap-2 mt-2">
-                <span className="bg-red-500 text-white px-2 py-1 rounded text-sm">
-                  12:00 PM
-                </span>
-                <span className="bg-red-500 text-white px-2 py-1 rounded text-sm">
-                  12:15 PM
-                </span>
-                <span className="bg-red-500 text-white px-2 py-1 rounded text-sm">
-                  12:30 PM
-                </span>
+          {filteredRestaurants.map((restaurant) => (
+            <div
+              key={restaurant.id}
+              className="bg-white text-black rounded-lg overflow-hidden shadow-lg w-64 cursor-pointer hover:shadow-xl transition"
+              onClick={() => router.push("/restaurants-profile")}
+            >
+              <img
+                src={restaurant.image}
+                alt={restaurant.name}
+                className="w-full h-40 object-cover"
+              />
+              <div className="p-4">
+                <h3 className="text-lg font-semibold">{restaurant.name}</h3>
+                {/* Star Ratings */}
+                <div className="flex items-center text-yellow-500">
+                  {[...Array(restaurant.rating)].map((_, index) => (
+                    <FaStar key={index} />
+                  ))}
+                  <span className="text-sm text-gray-500 ml-2">
+                    {restaurant.rating}.0 ({restaurant.reviews} reviews)
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 mt-1">{restaurant.category}</p>
+                {/* Booking Times */}
+                <div className="flex gap-2 mt-2">
+                  {restaurant.times.map((time, index) => (
+                    <span
+                      key={index}
+                      className="bg-red-500 text-white px-2 py-1 rounded text-sm"
+                    >
+                      {time}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>
