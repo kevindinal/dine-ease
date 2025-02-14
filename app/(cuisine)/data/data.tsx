@@ -5,7 +5,9 @@ export interface Special {
   name: string;
   description: string;
   price: number;
-  type: "Recommended" | "Chef's Special" | "Today's Special"; 
+  type: "Recommended" | "Chef's Special" | "Today's Special";
+  default: "All";
+  category: string;
 }
 
 interface Category {
@@ -14,134 +16,96 @@ interface Category {
 }
 
 export const categories: Category[] = [
-  { imageSrc: "/placeholder.jpeg", foodType: "Pizza" },
-  { imageSrc: "/placeholder.jpeg", foodType: "Pizza" },
-  { imageSrc: "/placeholder.jpeg", foodType: "Pizza" },
-  { imageSrc: "/placeholder.jpeg", foodType: "Pizza" },
-  { imageSrc: "/placeholder.jpeg", foodType: "Pizza" },
-  { imageSrc: "/placeholder.jpeg", foodType: "Pizza" },
-  { imageSrc: "/placeholder.jpeg", foodType: "Pizza" },
-  { imageSrc: "/placeholder.jpeg", foodType: "Pizza" },
-  { imageSrc: "/placeholder.jpeg", foodType: "Pizza" },
-  { imageSrc: "/placeholder.jpeg", foodType: "Pizza" },
+  { imageSrc: "/placeholder.jpeg", foodType: "Indian" },
+  { imageSrc: "/placeholder.jpeg", foodType: "Mongolian" },
+  { imageSrc: "/placeholder.jpeg", foodType: "Chinese" },
+  { imageSrc: "/placeholder.jpeg", foodType: "Sri Lankan" },
 ];
 
-export const chinese: Special[] = [] = []
 
 export const recommendedForYou: Special[] = [
   {
     id: 1,
     image: "/placeholder.jpeg",
     rating: "4.8",
-    name: "Spaghetti Carbonara",
-    description: "A creamy and savory pasta with pancetta and parmesan.",
+    name: "Butter Chicken",
+    description: "Rich and creamy tomato-based curry with grilled chicken.",
     price: 15.99,
+    default: "All",
     type: "Recommended",
+    category: "Indian",
   },
   {
     id: 2,
     image: "/placeholder.jpeg",
     rating: "4.6",
-    name: "California Roll",
-    description: "Fresh crab and avocado wrapped in seaweed and rice.",
+    name: "Kung Pao Chicken",
+    description: "Spicy stir-fried Chinese chicken dish with peanuts.",
     price: 13.99,
+    default: "All",
     type: "Recommended",
+    category: "Chinese",
   },
   {
     id: 3,
     image: "/placeholder.jpeg",
     rating: "4.7",
-    name: "Grilled Salmon",
-    description: "Fresh salmon grilled to perfection with a citrus glaze.",
-    price: 22.99,
+    name: "Mongolian Beef",
+    description: "Tender beef stir-fried with scallions and soy sauce.",
+    price: 18.99,
+    default: "All",
     type: "Recommended",
-  },
-  {
-    id: 4,
-    image: "/placeholder.jpeg",
-    rating: "4.9",
-    name: "Lobster Bisque",
-    description: "A rich and creamy bisque with sweet lobster meat.",
-    price: 24.99,
-    type: "Recommended",
+    category: "Mongolian",
   },
 ];
 
 export const chefsSpecials: Special[] = [
   {
-    id: 1,
-    image: "/placeholder.jpeg",
-    rating: "4.8",
-    name: "Spaghetti Carbonara",
-    description: "A creamy and savory pasta with pancetta and parmesan.",
-    price: 15.99,
-    type: "Chef's Special",
-  },
-  {
-    id: 2,
-    image: "/placeholder.jpeg",
-    rating: "4.6",
-    name: "California Roll",
-    description: "Fresh crab and avocado wrapped in seaweed and rice.",
-    price: 13.99,
-    type: "Chef's Special",
-  },
-  {
-    id: 3,
-    image: "/placeholder.jpeg",
-    rating: "4.7",
-    name: "Grilled Salmon",
-    description: "Fresh salmon grilled to perfection with a citrus glaze.",
-    price: 22.99,
-    type: "Chef's Special",
-  },
-  {
     id: 4,
     image: "/placeholder.jpeg",
     rating: "4.9",
-    name: "Lobster Bisque",
-    description: "A rich and creamy bisque with sweet lobster meat.",
-    price: 24.99,
+    name: "Tandoori Chicken",
+    description: "Grilled Indian chicken marinated in yogurt and spices.",
+    price: 16.99,
+    default: "All",
     type: "Chef's Special",
+    category: "Indian",
+  },
+  {
+    id: 5,
+    image: "/placeholder.jpeg",
+    rating: "4.5",
+    name: "Dim Sum",
+    description: "Traditional Chinese dumplings served with soy sauce.",
+    price: 12.99,
+    default: "All",
+    type: "Chef's Special",
+    category: "Chinese",
   },
 ];
 
 export const todaysSpecials: Special[] = [
   {
-    id: 1,
+    id: 6,
     image: "/placeholder.jpeg",
     rating: "4.8",
-    name: "Spaghetti Carbonara",
-    description: "A creamy and savory pasta with pancetta and parmesan.",
-    price: 15.99,
+    name: "Rogan Josh",
+    description: "Spicy Kashmiri Indian curry with tender lamb.",
+    price: 19.99,
+    default: "All",
     type: "Today's Special",
+    category: "Indian",
   },
   {
-    id: 2,
+    id: 7,
     image: "/placeholder.jpeg",
     rating: "4.6",
-    name: "California Roll",
-    description: "Fresh crab and avocado wrapped in seaweed and rice.",
-    price: 13.99,
+    name: "Peking Duck",
+    description: "Famous Chinese roasted duck with crispy skin.",
+    price: 25.99,
+    default: "All",
     type: "Today's Special",
-  },
-  {
-    id: 3,
-    image: "/placeholder.jpeg",
-    rating: "4.7",
-    name: "Grilled Salmon",
-    description: "Fresh salmon grilled to perfection with a citrus glaze.",
-    price: 22.99,
-    type: "Today's Special",
-  },
-  {
-    id: 4,
-    image: "/placeholder.jpeg",
-    rating: "4.9",
-    name: "Lobster Bisque",
-    description: "A rich and creamy bisque with sweet lobster meat.",
-    price: 24.99,
-    type: "Today's Special",
+    category: "Chinese",
   },
 ];
 
