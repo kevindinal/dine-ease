@@ -7,24 +7,20 @@ import FoodCard from "../../components/FoodCard";
 import usePreOrder from "../../hooks/usePreOrder";
 import FloatingButtons from "../../components/FloatingButtons";
 
-export default function CuisineViewMore() {
-  const { type } = useParams();
-  const decodedType = decodeURIComponent(type as string);
+export default function CategoryViewMore() {
+  const { category } = useParams();
+  const decodedCategory = decodeURIComponent(category as string);
 
-  const cuisineData: Record<string, Special[]> = {
-    "recommended": recommendedForYou,
-    "chefs-specials": chefsSpecials,
-    "todays-specials": todaysSpecials,
-  };
+  const allSpecials: Special[] = [...recommendedForYou, ...chefsSpecials, ...todaysSpecials];
 
-  // Get the corresponding cuisine data
-  const allCuisines = cuisineData[decodedType] || [];
+  // Filter specials by category from the URL
+  const categorySpecials = allSpecials.filter((special) => special.category === decodedCategory);
 
   // Sorting state
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  // Sort cuisines by price
-  const sortedCuisines = [...allCuisines].sort((a, b) =>
+  // Sort category specials by price
+  const sortedSpecials = [...categorySpecials].sort((a, b) =>
     sortOrder === "asc" ? a.price - b.price : b.price - a.price
   );
 
@@ -51,26 +47,26 @@ export default function CuisineViewMore() {
         </select>
       </section>
 
-      {/* Display Sorted Cuisines */}
+      {/* Display Sorted Category Specials */}
       <section className="py-4 mx-4 md:mx-14 relative">
-        <h1 className="text-3xl font-bold mb-6 text-center capitalize">{decodedType}</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center capitalize">{decodedCategory} Foods</h1>
         <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {sortedCuisines.length > 0 ? (
-            sortedCuisines.map((cuisine) => (
-              <div key={cuisine.id}>
+          {sortedSpecials.length > 0 ? (
+            sortedSpecials.map((food) => (
+              <div key={food.id}>
                 <FoodCard
-                  image={cuisine.image}
-                  rating={cuisine.rating}
-                  name={cuisine.name}
-                  description={cuisine.description}
-                  price={cuisine.price}
+                  image={food.image}
+                  rating={food.rating}
+                  name={food.name}
+                  description={food.description}
+                  price={food.price}
                   onAddToPreOrder={addItemToPreOrder}
                 />
               </div>
             ))
           ) : (
             <div className="text-center text-2xl font-bold text-gray-800">
-              No {decodedType} available.
+              No items available for {decodedCategory}
             </div>
           )}
         </div>

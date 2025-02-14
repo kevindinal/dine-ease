@@ -52,11 +52,11 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
           style={{ backgroundColor: "#FEC6C2" }}
         >
           {categories.map((category, index) => (
-            <FoodCategory
-              key={index}
-              imageSrc={category.imageSrc}
-              foodType={category.foodType}
-            />
+            <Link key={index} href={`/categories-expanded-page/${encodeURIComponent(category.foodType)}`}passHref>
+              <div className="cursor-pointer flex flex-col items-center transition-all hover:scale-110">
+                <FoodCategory imageSrc={category.imageSrc} foodType={category.foodType} />
+              </div>
+            </Link>
           ))}
         </div>
       </section>
