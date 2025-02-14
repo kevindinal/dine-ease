@@ -14,13 +14,10 @@ const MealDetailsPage: React.FC = () => {
     addItemToPreOrder();
   };
 
-  // Get only the first 6 recommended cuisines
   const limitedCuisines = recommendedForYou.slice(0, 6);
 
   return (
     <div>
-      <h1>Meal Details Page</h1>
-
       <section className="relative py-32 px-4 md:px-14 text-black">
         Navbar
       </section>
