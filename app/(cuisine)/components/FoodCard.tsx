@@ -22,8 +22,9 @@ const FoodCard: FC<FoodCardProps> = ({ image, name, rating, description, price, 
   };
 
   const handleCardClick = () => {
-    router.push(`/cuisine-details-page`);
+    router.push(`/cuisine-details-page?name=${encodeURIComponent(name)}&image=${encodeURIComponent(image)}&rating=${rating}&description=${encodeURIComponent(description)}&price=${price}`);
   };
+  
 
   return (
     <div className="flex items-center justify-center px-2">
