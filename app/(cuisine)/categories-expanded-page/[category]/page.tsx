@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState } from "react";
 import { useParams } from "next/navigation";
@@ -6,6 +6,29 @@ import { recommendedForYou, chefsSpecials, todaysSpecials, Special } from "../..
 import FoodCard from "../../components/FoodCard";
 import usePreOrder from "../../hooks/usePreOrder";
 import FloatingButtons from "../../components/FloatingButtons";
+
+interface PreOrderItem {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+  quantity: number;
+  ingredients: string[];
+  plating: string;
+  cookingMethod: string;
+  seasonalSelection: boolean;
+  drinkPairing: string;
+}
+
+
+interface Customizations {
+  quantity: number;
+  ingredients: string[];
+  plating: string;
+  cookingMethod: string;
+  seasonalSelection: boolean;
+  drinkPairing: string;
+}
 
 export default function CategoryViewMore() {
   const { category } = useParams();
@@ -23,6 +46,22 @@ export default function CategoryViewMore() {
   const sortedSpecials = [...categorySpecials].sort((a, b) =>
     sortOrder === "asc" ? a.price - b.price : b.price - a.price
   );
+
+  const handleAddToPreOrder = (customizations: Customizations, cuisine: any) => {
+    const preOrderItem: PreOrderItem = {
+      id: cuisine.id,
+      name: cuisine.name,
+      price: cuisine.price,
+      image: cuisine.image,
+      quantity: customizations.quantity,
+      ingredients: customizations.ingredients,
+      plating: customizations.plating,
+      cookingMethod: customizations.cookingMethod,
+      seasonalSelection: customizations.seasonalSelection,
+      drinkPairing: customizations.drinkPairing,
+    };
+    addItemToPreOrder(preOrderItem);
+  };
 
   const { preOrderCount, addItemToPreOrder, clearPreOrder } = usePreOrder();
 
@@ -60,7 +99,22 @@ export default function CategoryViewMore() {
                   name={food.name}
                   description={food.description}
                   price={food.price}
-                  onAddToPreOrder={addItemToPreOrder}
+                  carouselImages={food.carouselImages}
+                  onAddToPreOrder={(customizations) => {
+                    const preOrderItem: PreOrderItem = {
+                      id: food.id,
+                      name: food.name,
+                      price: food.price,
+                      image: food.image,
+                      quantity: customizations.quantity,
+                      ingredients: customizations.ingredients.split(','), // Convert the string into an array of strings
+                      plating: customizations.plating,
+                      cookingMethod: customizations.cookingMethod,
+                      seasonalSelection: customizations.seasonalSelection,
+                      drinkPairing: customizations.drinkPairing,
+                    };
+                    addItemToPreOrder(preOrderItem);
+                  }}
                 />
               </div>
             ))

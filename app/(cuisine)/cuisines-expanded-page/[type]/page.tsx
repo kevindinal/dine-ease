@@ -7,9 +7,48 @@ import FoodCard from "../../components/FoodCard";
 import usePreOrder from "../../hooks/usePreOrder";
 import FloatingButtons from "../../components/FloatingButtons";
 
+interface PreOrderItem {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+  quantity: number;
+  ingredients: string[];
+  plating: string;
+  cookingMethod: string;
+  seasonalSelection: boolean;
+  drinkPairing: string;
+}
+
+
+interface Customizations {
+  quantity: number;
+  ingredients: string[];
+  plating: string;
+  cookingMethod: string;
+  seasonalSelection: boolean;
+  drinkPairing: string;
+}
+
 export default function CuisineViewMore() {
   const { type } = useParams();
   const decodedType = decodeURIComponent(type as string);
+
+  const handleAddToPreOrder = (customizations: Customizations, cuisine: any) => {
+    const preOrderItem: PreOrderItem = {
+      id: cuisine.id,
+      name: cuisine.name,
+      price: cuisine.price,
+      image: cuisine.image,
+      quantity: customizations.quantity,
+      ingredients: customizations.ingredients,
+      plating: customizations.plating,
+      cookingMethod: customizations.cookingMethod,
+      seasonalSelection: customizations.seasonalSelection,
+      drinkPairing: customizations.drinkPairing,
+    };
+    addItemToPreOrder(preOrderItem);
+  };
 
   const cuisineData: Record<string, Special[]> = {
     "recommended": recommendedForYou,
@@ -17,13 +56,9 @@ export default function CuisineViewMore() {
     "todays-specials": todaysSpecials,
   };
 
-  // Get the corresponding cuisine data
   const allCuisines = cuisineData[decodedType] || [];
-
-  // Sorting state
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  // Sort cuisines by price
   const sortedCuisines = [...allCuisines].sort((a, b) =>
     sortOrder === "asc" ? a.price - b.price : b.price - a.price
   );
@@ -31,48 +66,73 @@ export default function CuisineViewMore() {
   const { preOrderCount, addItemToPreOrder, clearPreOrder } = usePreOrder();
 
   return (
-    <div className="bg-[url('/background.png')] bg-cover bg-center bg-fixed min-h-screen">
-      <nav>Navigation Bar</nav>
+    <div className="bg-[#F5F5F5] min-h-screen">
+      <nav className="bg-[#121212] text-[#BFA980] py-6 px-8 shadow-lg">
+        Navigation Bar
+      </nav>
 
-      {/* Floating Buttons */}
-      <section className="py-4 mx-4 md:mx-14 z-10 fixed bottom-32 left-0 right-0 flex justify-center">
-        <FloatingButtons preOrderCount={preOrderCount} setPreOrderCount={clearPreOrder} />
-      </section>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <header className="pt-16 pb-12 text-left">
+          <h1 className="text-4xl font-serif text-[#121212] capitalize mb-2">
+            {decodedType.split('-').join(' ')} for you
+          </h1>
+        </header>
 
-      {/* Sorting Dropdown */}
-      <section className="py-4 mx-4 md:mx-14 flex justify-end">
-        <select
-          value={sortOrder}
-          onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
-          className="px-4 py-2 border rounded-md text-gray-700 font-semibold cursor-pointer"
-        >
-          <option value="asc">Sort by Price: Low to High</option>
-          <option value="desc">Sort by Price: High to Low</option>
-        </select>
-      </section>
+        <section className="mb-8 flex justify-end">
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+            className="bg-[#FB6658] text-black px-6 py-3 rounded border-2 border-black font-light cursor-pointer hover:bg-[#FA4032] hover:text-[#F5F5F5] transition-colors duration-300"
+          >
+            <option value="asc">Price: Low to High</option>
+            <option value="desc">Price: High to Low</option>
+          </select>
+        </section>
 
-      {/* Display Sorted Cuisines */}
-      <section className="py-4 mx-4 md:mx-14 relative">
-        <h1 className="text-3xl font-bold mb-6 text-center capitalize">{decodedType}</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {sortedCuisines.length > 0 ? (
-            sortedCuisines.map((cuisine) => (
-              <div key={cuisine.id}>
-                <FoodCard
-                  image={cuisine.image}
-                  rating={cuisine.rating}
-                  name={cuisine.name}
-                  description={cuisine.description}
-                  price={cuisine.price}
-                  onAddToPreOrder={addItemToPreOrder}
-                />
+        <section className="pb-32">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {sortedCuisines.length > 0 ? (
+              sortedCuisines.map((cuisine) => (
+                <div key={cuisine.id} className="transform hover:scale-100 transition-transform duration-100">
+                  <FoodCard
+                    image={cuisine.image}
+                    rating={cuisine.rating}
+                    name={cuisine.name}
+                    description={cuisine.description}
+                    price={cuisine.price}
+                    carouselImages={cuisine.carouselImages}
+                    onAddToPreOrder={(customizations) => {
+                      const preOrderItem: PreOrderItem = {
+                        id: cuisine.id,
+                        name: cuisine.name,
+                        price: cuisine.price,
+                        image: cuisine.image,
+                        quantity: customizations.quantity,
+                        ingredients: customizations.ingredients.split(','), // Convert the string into an array of strings
+                        plating: customizations.plating,
+                        cookingMethod: customizations.cookingMethod,
+                        seasonalSelection: customizations.seasonalSelection,
+                        drinkPairing: customizations.drinkPairing,
+                      };
+                      addItemToPreOrder(preOrderItem);
+                    }}
+                  />
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-16">
+                <p className="text-2xl text-[#121212] font-serif">
+                  No {decodedType.split('-').join(' ')} available at the moment.
+                </p>
               </div>
-            ))
-          ) : (
-            <div className="text-center text-2xl font-bold text-gray-800">
-              No {decodedType} available.
-            </div>
-          )}
+            )}
+          </div>
+        </section>
+      </div>
+
+      <section className="fixed bottom-32 left-0 right-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FloatingButtons preOrderCount={preOrderCount} setPreOrderCount={clearPreOrder} />
         </div>
       </section>
     </div>

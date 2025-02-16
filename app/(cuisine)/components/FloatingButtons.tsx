@@ -1,26 +1,15 @@
-'use client';
-
 import React, { FC } from "react";
 
 interface FloatingButtonsProps {
   preOrderCount: number;
-  setPreOrderCount: (count: number) => void;
+  setPreOrderCount: () => void;
 }
 
 const FloatingButtons: FC<FloatingButtonsProps> = ({ preOrderCount, setPreOrderCount }) => {
-
   const handleCancelPreOrder = () => {
     if (window.confirm("Are you sure you want to cancel the pre-order?")) {
-      setPreOrderCount(0);
+      setPreOrderCount(); // Correctly clears pre-order count
       alert("Pre-order canceled.");
-    }
-  };
-
-  const handleCheckout = () => {
-    if (preOrderCount > 0) {
-      alert(`Proceeding to checkout with ${preOrderCount} items.`);
-    } else {
-      alert("No items in pre-order.");
     }
   };
 
@@ -34,7 +23,7 @@ const FloatingButtons: FC<FloatingButtonsProps> = ({ preOrderCount, setPreOrderC
       </button>
 
       <button
-        onClick={handleCheckout}
+        onClick={() => alert(`Proceeding to checkout with ${preOrderCount} items.`)}
         className="relative px-4 py-2 bg-green-500 text-white rounded-lg shadow-lg hover:bg-green-600"
       >
         Proceed to Checkout

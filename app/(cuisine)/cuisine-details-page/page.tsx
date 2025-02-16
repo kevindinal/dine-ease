@@ -1,17 +1,21 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import CuisineDetailContainer from "../components/CuisineDetailContainer";
 import FoodCard from "../components/FoodCard";
 import FloatingButtons from "../components/FloatingButtons";
-import usePreOrder from "../hooks/usePreOrder";
 import { recommendedForYou } from "../data/data";
 
 const MealDetailsPage: React.FC = () => {
-  const { preOrderCount, addItemToPreOrder, clearPreOrder } = usePreOrder();
+  const [preOrderCount, setPreOrderCount] = useState(0); // Manage pre-order count
 
-  const handleAddToPreOrder = () => {
-    addItemToPreOrder();
+  // Function to add items to pre-order and update count
+  const handleAddToPreOrder = (customizations: any) => {
+    setPreOrderCount((prevCount) => prevCount + customizations.quantity);
+  };
+
+  const handleClearPreOrder = () => {
+    setPreOrderCount(0);
   };
 
   const limitedCuisines = recommendedForYou.slice(0, 6);
@@ -22,11 +26,13 @@ const MealDetailsPage: React.FC = () => {
         Navbar
       </section>
 
+      {/* Floating Buttons - Updated with state */}
       <section className="py-4 mx-4 md:mx-14 z-10 fixed bottom-32 left-0 right-0 flex justify-center">
-        <FloatingButtons preOrderCount={preOrderCount} setPreOrderCount={clearPreOrder} />
+        <FloatingButtons preOrderCount={preOrderCount} setPreOrderCount={handleClearPreOrder} />
       </section>
 
       <section className="relative py-32 px-4 md:px-14 text-white">
+        {/* Pass setPreOrderCount to update the count */}
         <CuisineDetailContainer handleAddToPreOrder={handleAddToPreOrder} />
       </section>
 
@@ -41,7 +47,8 @@ const MealDetailsPage: React.FC = () => {
                 name={cuisine.name}
                 description={cuisine.description}
                 price={cuisine.price}
-                onAddToPreOrder={addItemToPreOrder}
+                carouselImages={cuisine.carouselImages}
+                onAddToPreOrder={handleAddToPreOrder} 
               />
             </div>
           ))}
