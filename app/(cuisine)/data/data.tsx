@@ -7,6 +7,7 @@ export interface Special {
   price: number;
   type: "Recommended" | "Chef's Special" | "Today's Special";
   default: "All";
+  carouselImages: string[];
   category: string;
 }
 
@@ -27,6 +28,12 @@ export const recommendedForYou: Special[] = [
   {
     id: 1,
     image: "/placeholder.jpeg",
+    carouselImages: [
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/hilton.png",
+    ],
     rating: "4.8",
     name: "Butter Chicken",
     description: "Rich and creamy tomato-based curry with grilled chicken.",
@@ -38,6 +45,12 @@ export const recommendedForYou: Special[] = [
   {
     id: 2,
     image: "/placeholder.jpeg",
+    carouselImages: [
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/hilton.png",
+    ],
     rating: "4.6",
     name: "Kung Pao Chicken",
     description: "Spicy stir-fried Chinese chicken dish with peanuts.",
@@ -49,6 +62,12 @@ export const recommendedForYou: Special[] = [
   {
     id: 3,
     image: "/placeholder.jpeg",
+    carouselImages: [
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/hilton.png",
+    ],
     rating: "4.7",
     name: "Mongolian Beef",
     description: "Tender beef stir-fried with scallions and soy sauce.",
@@ -63,6 +82,12 @@ export const chefsSpecials: Special[] = [
   {
     id: 4,
     image: "/placeholder.jpeg",
+    carouselImages: [
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/hilton.png",
+    ],
     rating: "4.9",
     name: "Tandoori Chicken",
     description: "Grilled Indian chicken marinated in yogurt and spices.",
@@ -74,6 +99,80 @@ export const chefsSpecials: Special[] = [
   {
     id: 5,
     image: "/placeholder.jpeg",
+    carouselImages: [
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/hilton.png",
+    ],
+    rating: "4.5",
+    name: "Dim Sum",
+    description: "Traditional Chinese dumplings served with soy sauce.",
+    price: 12.99,
+    default: "All",
+    type: "Chef's Special",
+    category: "Chinese",
+  },
+  {
+    id: 13,
+    image: "/placeholder.jpeg",
+    carouselImages: [
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/hilton.png",
+    ],
+    rating: "4.5",
+    name: "Dim Sum",
+    description: "Traditional Chinese dumplings served with soy sauce.",
+    price: 12.99,
+    default: "All",
+    type: "Chef's Special",
+    category: "Chinese",
+  },
+  {
+    id: 14,
+    image: "/placeholder.jpeg",
+    carouselImages: [
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/hilton.png",
+    ],
+    rating: "4.5",
+    name: "Dim Sum",
+    description: "Traditional Chinese dumplings served with soy sauce.",
+    price: 12.99,
+    default: "All",
+    type: "Chef's Special",
+    category: "Chinese",
+  },
+  {
+    id: 15,
+    image: "/placeholder.jpeg",
+    carouselImages: [
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/hilton.png",
+    ],
+    rating: "4.5",
+    name: "Dim Sum",
+    description: "Traditional Chinese dumplings served with soy sauce.",
+    price: 12.99,
+    default: "All",
+    type: "Chef's Special",
+    category: "Chinese",
+  },
+  {
+    id: 25,
+    image: "/placeholder.jpeg",
+    carouselImages: [
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/hilton.png",
+    ],
     rating: "4.5",
     name: "Dim Sum",
     description: "Traditional Chinese dumplings served with soy sauce.",
@@ -88,6 +187,12 @@ export const todaysSpecials: Special[] = [
   {
     id: 6,
     image: "/placeholder.jpeg",
+    carouselImages: [
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/hilton.png",
+    ],
     rating: "4.8",
     name: "Rogan Josh",
     description: "Spicy Kashmiri Indian curry with tender lamb.",
@@ -99,6 +204,12 @@ export const todaysSpecials: Special[] = [
   {
     id: 7,
     image: "/placeholder.jpeg",
+    carouselImages: [
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/placeholder.jpeg",
+      "/hilton.png",
+    ],
     rating: "4.6",
     name: "Peking Duck",
     description: "Famous Chinese roasted duck with crispy skin.",
