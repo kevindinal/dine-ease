@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import usePreOrder from "../hooks/usePreOrder";
 import FoodCategory from "../components/FoodCategory";
 import { Readex_Pro } from "next/font/google";
@@ -28,188 +28,124 @@ interface PreOrderItem {
   drinkPairing: string;
 }
 
-
-interface Customizations {
-  quantity: number;
-  ingredients: string[];
-  plating: string;
-  cookingMethod: string;
-  seasonalSelection: boolean;
-  drinkPairing: string;
-}
-
 export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) {
   const { preOrderCount, addItemToPreOrder, clearPreOrder } = usePreOrder();
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const categoriesRef = useRef<HTMLDivElement>(null);
 
-  const handleAddToPreOrder = (customizations: Customizations, cuisine: any) => {
-    const preOrderItem: PreOrderItem = {
-      id: cuisine.id,
-      name: cuisine.name,
-      price: cuisine.price,
-      image: cuisine.image,
-      quantity: customizations.quantity,
-      ingredients: customizations.ingredients,
-      plating: customizations.plating,
-      cookingMethod: customizations.cookingMethod,
-      seasonalSelection: customizations.seasonalSelection,
-      drinkPairing: customizations.drinkPairing,
-    };
-    addItemToPreOrder(preOrderItem);
+  const allDisplayedCuisines = [...recommendedForYou, ...todaysSpecials, ...chefsSpecials];
+
+  const handleCategoryClick = (category: string | null) => {
+    setSelectedCategory(category);
   };
+
+  const filteredCuisines = selectedCategory
+    ? allDisplayedCuisines.filter((cuisine) => cuisine.category === selectedCategory)
+    : null;
+
+  const renderFoodCard = (cuisine: any) => (
+    <div key={cuisine.id}>
+      <div className="h-full mb-8">
+        <FoodCard {...cuisine} onAddToPreOrder={addItemToPreOrder} />
+      </div>
+    </div>
+  );
 
   return (
     <div className={`${readexPro.className} bg-fixed min-h-screen bg-[#F5F5F5]`}>
       <nav>Navigation Bar</nav>
 
-      <section className="py-4 mx-4 md:mx-14 z-10 fixed bottom-32 left-0 right-0 flex justify-center">
+      <section className="py-4 mx-4 md:mx-14 z-10 fixed slide-in-from-bottom-28 left-0 right-0 flex justify-center bottom-24">
         <FloatingButtons preOrderCount={preOrderCount} setPreOrderCount={clearPreOrder} />
       </section>
 
-      <section className="relative bg-[url('/hilton.png')] bg-cover bg-center bg-no-repeat py-32 px-4 md:px-14 text-white">
-        <div className="bg-[#121212] bg-opacity-70 backdrop-blur-sm p-16">
-          <h2 className="text-5xl font-semibold mb-6 tracking-wide">Hilton Colombo</h2>
-          <p className="text-lg leading-relaxed font-light">
-            Experience the finest dining at Hilton Colombo, offering a blend of local and international cuisines crafted by top chefs. From authentic Sri Lankan flavors to global delicacies, indulge in a culinary journey like no other.
+      <section className="relative bg-[url('/hilton.png')] bg-cover bg-center bg-no-repeat py-16 sm:py-32 px-4 md:px-14 text-white">
+        <div className="bg-[#121212] bg-opacity-70 backdrop-blur-sm p-6 sm:p-16">
+          <h2 className="text-3xl sm:text-5xl font-semibold mb-4 sm:mb-6 tracking-wide">Hilton Colombo</h2>
+          <p className="text-base sm:text-lg leading-relaxed font-light">
+            Experience the finest dining at Hilton Colombo, offering a blend of local and international cuisines crafted by top chefs.
           </p>
         </div>
       </section>
 
-      <section className="py-8 mx-4 md:mx-14">
-        <h2 className="text-3xl font-semibold text-[#121212] mb-6 tracking-wide">Cuisine Categories</h2>
-        <div className="flex flex-nowrap gap-6 overflow-x-auto scrollbar-hide p-8 rounded-2xl bg-white shadow-lg border border-[#BFA980]">
-          {categories.map((category, index) => (
-            <Link key={index} href={`/categories-expanded-page/${encodeURIComponent(category.foodType)}`} passHref>
-              <div className="cursor-pointer flex flex-col items-center transition-all hover:scale-110">
-                <FoodCategory imageSrc={category.imageSrc} foodType={category.foodType} />
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+      <section className="py-6 sm:py-8 mx-4 md:mx-14 border-b border-black">
+  <h2 className="text-2xl sm:text-3xl font-semibold text-[#121212] mb-4 sm:mb-6 tracking-wide">Cuisine Categories</h2>
+  <div 
+    ref={categoriesRef}
+    className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory p-4 sm:p-8 rounded-2xl gap-4 sm:gap-6 justify-center md:justify-center items-center"
+  >
+    <div
+      className="cursor-pointer flex-none snap-start flex flex-col items-center transition-all hover:scale-110"
+      onClick={() => handleCategoryClick(null)}
+    >
+      <FoodCategory imageSrc="/all-categories.png" foodType="All Categories" />
+    </div>
+    {categories.map((category, index) => (
+      <div
+        key={index}
+        className="cursor-pointer flex-none snap-start flex flex-col items-center transition-all hover:scale-110"
+        onClick={() => handleCategoryClick(category.foodType)}
+      >
+        <FoodCategory imageSrc={category.imageSrc} foodType={category.foodType} />
+      </div>
+    ))}
+  </div>
+</section>
 
-      <section className="py-8 mx-4 md:mx-14 relative mt-12">
-        <div className="bg-white rounded-2xl shadow-lg border border-[#BFA980]">
-          <h2 className="text-3xl font-semibold text-[#121212] mb-6 ml-8 pt-6 tracking-wide">Recommended for you</h2>
-          <div className="flex gap-6 overflow-x-auto p-8 scrollbar-hide">
-            {recommendedForYou.map((cuisine) => (
-              <div key={cuisine.id} className="min-w-[calc(25%-1rem)] flex-none scroll-snap-align-start">
-                <FoodCard
-  image={cuisine.image}
-  rating={cuisine.rating}
-  name={cuisine.name}
-  description={cuisine.description}
-  price={cuisine.price}
-  carouselImages={cuisine.carouselImages}
-  onAddToPreOrder={(customizations) => {
-    const preOrderItem: PreOrderItem = {
-      id: cuisine.id,
-      name: cuisine.name,
-      price: cuisine.price,
-      image: cuisine.image,
-      quantity: customizations.quantity,
-      ingredients: customizations.ingredients.split(','), // Convert the string into an array of strings
-      plating: customizations.plating,
-      cookingMethod: customizations.cookingMethod,
-      seasonalSelection: customizations.seasonalSelection,
-      drinkPairing: customizations.drinkPairing,
-    };
-    addItemToPreOrder(preOrderItem);
-  }}
-/>
 
-              </div>
-            ))}
+      {selectedCategory ? (
+        <section className="py-6 sm:py-8 mx-4 md:mx-14">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-[#121212] mb-4 sm:mb-6 tracking-wide">
+            {selectedCategory}
+          </h2>
+          <div className="flex flex-wrap -mx-2 sm:-mx-4">
+            {filteredCuisines?.map(renderFoodCard)}
           </div>
-          <Link href={`/cuisines-expanded-page/recommended`} className="absolute bottom-2 right-8 text-[#8C734B] font-medium hover:text-[#BFA980] transition-colors ">
-            View More &gt;
-          </Link>
-        </div>
-      </section>
-
-      <section className="py-8 mx-4 md:mx-14 relative mt-12">
-        <div className="bg-gradient-to-r from-[#F5F5F5] to-white rounded-2xl shadow-lg border border-[#BFA980]">
-          <h2 className="text-3xl font-semibold text-[#121212] mb-6 ml-8 pt-6 tracking-wide">Chef's Specials for you</h2>
-          <div className="flex gap-6 overflow-x-auto p-8 scrollbar-hide">
-            {chefsSpecials.map((cuisine) => (
-              <div key={cuisine.id} className="min-w-[calc(25%-1rem)] flex-none scroll-snap-align-start">
-                <FoodCard
-  image={cuisine.image}
-  rating={cuisine.rating}
-  name={cuisine.name}
-  description={cuisine.description}
-  price={cuisine.price}
-  carouselImages={cuisine.carouselImages}
-  onAddToPreOrder={(customizations) => {
-    const preOrderItem: PreOrderItem = {
-      id: cuisine.id,
-      name: cuisine.name,
-      price: cuisine.price,
-      image: cuisine.image,
-      quantity: customizations.quantity,
-      ingredients: customizations.ingredients.split(','), // Convert the string into an array of strings
-      plating: customizations.plating,
-      cookingMethod: customizations.cookingMethod,
-      seasonalSelection: customizations.seasonalSelection,
-      drinkPairing: customizations.drinkPairing,
-    };
-    addItemToPreOrder(preOrderItem);
-  }}
-/>
-
+        </section>
+      ) : (
+        <>
+          <section className="py-6 sm:py-8 mx-4 md:mx-14 relative mt-8 sm:mt-12">
+            <div className="rounded-2xl shadow-sm">
+              <h2 className="text-2xl sm:text-3xl font-semibold text-[#121212] mb-4 sm:mb-6 ml-4 sm:ml-8 pt-4 sm:pt-6 tracking-wide">
+                Recommended for you
+              </h2>
+              <div className="flex gap-4 sm:gap-6 overflow-x-auto p-4 sm:p-8 scrollbar-hide snap-x snap-mandatory">
+                {recommendedForYou.map((cuisine) => (
+                  <div key={cuisine.id} className="min-w-[250px] sm:min-w-[320px] lg:min-w-[calc(25%-1rem)] flex-none snap-start">
+                    {renderFoodCard(cuisine)}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <Link href={`/cuisines-expanded-page/chefs-specials`} className="absolute bottom-2 right-8 text-gray-500 font-medium hover:text-[#BFA980] transition-colors">
-            View More &gt;
-          </Link>
-        </div>
-      </section>
+            </div>
+          </section>
 
-      <section className="py-8 mx-4 md:mx-14 relative mt-12">
-        <div className="bg-white rounded-2xl shadow-lg border border-[#BFA980]">
-          <h2 className="text-3xl font-semibold text-[#121212] mb-6 ml-8 pt-6 tracking-wide">Today's specials for you</h2>
-          <div className="flex gap-6 overflow-x-auto p-8 scrollbar-hide">
-            {todaysSpecials.map((cuisine) => (
-              <div key={cuisine.id} className="min-w-[calc(25%-1rem)] flex-none scroll-snap-align-start">
-                <FoodCard
-  image={cuisine.image}
-  rating={cuisine.rating}
-  name={cuisine.name}
-  description={cuisine.description}
-  price={cuisine.price}
-  carouselImages={cuisine.carouselImages}
-  onAddToPreOrder={(customizations) => {
-    const preOrderItem: PreOrderItem = {
-      id: cuisine.id,
-      name: cuisine.name,
-      price: cuisine.price,
-      image: cuisine.image,
-      quantity: customizations.quantity,
-      ingredients: customizations.ingredients.split(','), // Convert the string into an array of strings
-      plating: customizations.plating,
-      cookingMethod: customizations.cookingMethod,
-      seasonalSelection: customizations.seasonalSelection,
-      drinkPairing: customizations.drinkPairing,
-    };
-    addItemToPreOrder(preOrderItem);
-  }}
-/>
-
+          <section className="py-6 sm:py-8 mx-4 md:mx-14 relative mt-8 sm:mt-12">
+            <div className="rounded-2xl shadow-sm">
+              <h2 className="text-2xl sm:text-3xl font-semibold text-[#121212] mb-4 sm:mb-6 ml-4 sm:ml-8 pt-4 sm:pt-6 tracking-wide">
+                Chef's Specials for you
+              </h2>
+              <div className="flex gap-4 sm:gap-6 overflow-x-auto p-4 sm:p-8 scrollbar-hide snap-x snap-mandatory">
+                {chefsSpecials.map((cuisine) => (
+                  <div key={cuisine.id} className="min-w-[250px] sm:min-w-[320px] lg:min-w-[calc(25%-1rem)] flex-none snap-start">
+                    {renderFoodCard(cuisine)}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <Link href={`/cuisines-expanded-page/todays-specials`} className="absolute bottom-2 right-8 text-[#8C734B] font-medium hover:text-[#BFA980] transition-colors ">
-            View More &gt;
-          </Link>
-        </div>
-      </section>
+            </div>
+          </section>
 
-      <section className="py-8 mx-4 md:mx-14 mt-12">
-        <h3 className="text-2xl font-semibold text-[#121212] mb-4 tracking-wide">A Word From Our Chef</h3>
-        <blockquote className="italic text-[#8C734B] border-l-4 border-[#BFA980] pl-8 py-4 text-lg leading-relaxed">
-          "At Hilton Colombo, we pride ourselves on creating memorable dining experiences with fresh, locally sourced ingredients and innovative recipes. We look forward to serving you!"
-        </blockquote>
-      </section>
+          <section className="py-6 sm:py-8 mx-4 md:mx-14 relative mt-8 sm:mt-12">
+            <div className="rounded-2xl shadow-sm">
+              <h2 className="text-2xl sm:text-3xl font-semibold text-[#121212] mb-4 sm:mb-6 ml-4 sm:ml-8 pt-4 sm:pt-6 tracking-wide">
+                Today's specials for you
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 sm:p-8">
+                {todaysSpecials.map((cuisine) => renderFoodCard(cuisine))}
+              </div>
+            </div>
+          </section>
+        </>
+      )}
     </div>
   );
 }

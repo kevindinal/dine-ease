@@ -1,6 +1,7 @@
 import { useSearchParams } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { Star } from "lucide-react";
 import { Special, recommendedForYou, chefsSpecials, todaysSpecials } from "../data/data";
 
 interface CuisineDetailContainerProps {
@@ -11,14 +12,9 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
   const searchParams = useSearchParams();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [cuisineDetails, setCuisineDetails] = useState<Special | null>(null);
-
-  // Customization state
-  const [quantity, setQuantity] = useState(1);
-  const [ingredients, setIngredients] = useState<string>("");
-  const [plating, setPlating] = useState<string>("Standard");
-  const [cookingMethod, setCookingMethod] = useState<string>("Traditional");
-  const [seasonalSelection, setSeasonalSelection] = useState<boolean>(false);
-  const [drinkPairing, setDrinkPairing] = useState<string>("No pairing");
+  const [selectedSize, setSelectedSize] = useState("Regular");
+  const [spiceLevel, setSpiceLevel] = useState("Mild");
+  const [addOns, setAddOns] = useState<string[]>([]);
 
   useEffect(() => {
     const name = searchParams.get("name");
@@ -37,171 +33,155 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
     return <div>Loading...</div>;
   }
 
-  // Default to main image if no carousel images are available
   const carouselImages = cuisineDetails.carouselImages?.length
     ? cuisineDetails.carouselImages
     : [cuisineDetails.image];
-  const currentImage = carouselImages[currentImageIndex];
 
-  const addItemToPreOrder = (item: any) => {
-    const preOrders = JSON.parse(localStorage.getItem("preOrders") || "[]");
-    preOrders.push(item);
-    localStorage.setItem("preOrders", JSON.stringify(preOrders));
-  };
-
-  const handleAddToPreOrderFromCard = (customizations: any) => {
-    addItemToPreOrder({
-      id: cuisineDetails.id,
-      name: cuisineDetails.name,
-      quantity: customizations.quantity,
-      ingredients: customizations.ingredients,
-      plating: customizations.plating,
-      cookingMethod: customizations.cookingMethod,
-      seasonalSelection: customizations.seasonalSelection,
-      drinkPairing: customizations.drinkPairing,
-      price: cuisineDetails.price,
-      image: currentImage,
-    });
+  const handleAddToPreOrderFromCard = () => {
+    const customizations = {
+      size: selectedSize,
+      spiceLevel,
+      addOns,
+    };
     handleAddToPreOrder(customizations);
   };
 
   return (
-    <div className="container mx-auto p-4 bg-gray-100 rounded-lg shadow-lg">
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Carousel Section */}
-        <div className="flex-1">
-          {/* Main Image */}
-          <div className="relative w-full h-[500px]">
+    <div className="max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Left Column - Images */}
+        <div className="space-y-4">
+          <div className="relative aspect-[4/3] rounded-lg overflow-hidden">
             <Image
-              src={currentImage}
+              src={carouselImages[currentImageIndex]}
               alt={cuisineDetails.name}
               layout="fill"
               objectFit="cover"
               className="rounded-lg"
             />
           </div>
-
-          {/* Thumbnails */}
-          <div className="flex mt-4 gap-2 justify-center">
+          <div className="grid grid-cols-4 gap-2">
             {carouselImages.map((img, index) => (
               <div
                 key={index}
-                className={`w-16 h-16 border-2 rounded-md overflow-hidden cursor-pointer ${
-                  index === currentImageIndex ? "border-blue-500" : "border-gray-300"
+                className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer ${
+                  index === currentImageIndex ? "ring-2 ring-red-500" : ""
                 }`}
                 onClick={() => setCurrentImageIndex(index)}
               >
-                <Image src={img} alt={`Thumbnail ${index + 1}`} width={64} height={64} objectFit="cover" />
+                <Image
+                  src={img}
+                  alt={`Thumbnail ${index + 1}`}
+                  layout="fill"
+                  objectFit="cover"
+                />
               </div>
             ))}
           </div>
         </div>
 
-        {/* Details Section */}
-        <div className="lg:w-1/2">
-          <h1 className="text-2xl font-bold text-black">{cuisineDetails.name}</h1>
-          <p className="text-gray-600">Rs. {cuisineDetails.price}</p>
-          <p className="text-sm text-gray-500 flex items-center">
-            <span className="text-yellow-400">★</span> {cuisineDetails.rating}
-          </p>
-
-          <div className="mt-8 p-4 bg-gray-50 rounded-lg shadow-sm">
-            <h2 className="text-black text-xl font-semibold mb-4">Description</h2>
-            <p className="text-black">{cuisineDetails.description}</p>
+        {/* Right Column - Details */}
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{cuisineDetails.name}</h1>
+            <div className="flex items-center gap-2 mt-2">
+              <div className="flex items-center">
+                {[...Array(Math.floor(cuisineDetails.rating))].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                ))}
+                {cuisineDetails.rating % 1 > 0 && (
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" strokeWidth={1} />
+                )}
+              </div>
+              <span className="text-gray-600">{cuisineDetails.rating} (245 reviews)</span>
+            </div>
+            <div className="text-2xl font-bold text-red-500 mt-2">Rs. {cuisineDetails.price}</div>
           </div>
 
-          {/* Customization Section */}
-          <div className="mt-8 p-4 bg-gray-50 rounded-lg shadow-sm text-black">
-            <h2 className="text-xl font-semibold mb-4">Customize Your Meal</h2>
+          <div className="space-y-4">
+            <h2 className="font-semibold text-gray-900">Description</h2>
+            <p className="text-gray-600">{cuisineDetails.description}</p>
 
-            {/* Quantity Control */}
-            <div className="flex items-center mb-4">
-              <button
-                onClick={() => setQuantity(quantity > 1 ? quantity - 1 : 1)}
-                className="px-4 py-2 bg-gray-300 rounded-full text-lg"
-              >
-                -
-              </button>
-              <span className="mx-4 text-xl font-semibold">{quantity}</span>
-              <button
-                onClick={() => setQuantity(quantity + 1)}
-                className="px-4 py-2 bg-gray-300 rounded-full text-lg"
-              >
-                +
-              </button>
-            </div>
-
-            {/* Custom Ingredients */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Custom Ingredients</label>
-              <input
-                type="text"
-                value={ingredients}
-                onChange={(e) => setIngredients(e.target.value)}
-                placeholder="Ex: Premium cheese, exotic spices"
-                className="w-full p-2 mt-2 border border-gray-300 rounded-lg"
-              />
-            </div>
-
-            {/* Plating, Cooking Method, Drink Pairing */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="mb-4">
-                <label className="block text-gray-700">Plating Design</label>
-                <select
-                  value={plating}
-                  onChange={(e) => setPlating(e.target.value)}
-                  className="w-full p-2 mt-2 border border-gray-300 rounded-lg"
-                >
-                  <option value="Standard">Standard</option>
-                  <option value="Artistic">Artistic</option>
-                  <option value="Minimalist">Minimalist</option>
-                </select>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-gray-700">Cooking Method</label>
-                <select
-                  value={cookingMethod}
-                  onChange={(e) => setCookingMethod(e.target.value)}
-                  className="w-full p-2 mt-2 border border-gray-300 rounded-lg"
-                >
-                  <option value="Traditional">Traditional</option>
-                  <option value="Sous-vide">Sous-vide</option>
-                  <option value="Flame-grilled">Flame-grilled</option>
-                </select>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-gray-700">Tailored Drink Pairing</label>
-                <select
-                  value={drinkPairing}
-                  onChange={(e) => setDrinkPairing(e.target.value)}
-                  className="w-full p-2 mt-2 border border-gray-300 rounded-lg"
-                >
-                  <option value="No pairing">No pairing</option>
-                  <option value="Wine">Wine</option>
-                  <option value="Signature Cocktail">Signature Cocktail</option>
-                </select>
-              </div>
+            <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+              <div>🍽️ Serves 1</div>
             </div>
           </div>
 
-          {/* Add to PreOrder */}
-          <div className="mt-8 flex justify-center">
+          <div className="space-y-4">
+            <h2 className="font-semibold text-gray-900">Customize Your Order</h2>
+            
+            <div>
+              <h3 className="text-sm text-gray-700 mb-2">Select Portion Size</h3>
+              <div className="grid grid-cols-3 gap-2">
+                {["Regular", "Large (+$4)", "Extra Large (+$7)"].map((size) => (
+                  <button
+                    key={size}
+                    className={`p-2 border rounded ${
+                      selectedSize === size.split(" ")[0] ? "bg-red-500 text-white" : "text-gray-700"
+                    }`}
+                    onClick={() => setSelectedSize(size.split(" ")[0])}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm text-gray-700 mb-2">Spice Level</h3>
+              <div className="grid grid-cols-3 gap-2">
+                {["Mild", "Medium", "Hot"].map((level) => (
+                  <button
+                    key={level}
+                    className={`p-2 border rounded ${
+                      spiceLevel === level ? "bg-red-500 text-white" : "text-gray-700"
+                    }`}
+                    onClick={() => setSpiceLevel(level)}
+                  >
+                    {level}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm text-gray-700 mb-2">Add-ons</h3>
+              <div className="grid grid-cols-2 gap-2 text-black">
+                {[
+                  ["Extra Avocado", "$2"],
+                  ["Extra Salmon", "$6"],
+                  ["Extra Sauce", "$1"],
+                  ["Brown Rice", "$1"]
+                ].map(([item, price]) => (
+                  <label key={item} className="flex items-center p-2 border rounded">
+                    <input
+                      type="checkbox"
+                      className="mr-2"
+                      checked={addOns.includes(item)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setAddOns([...addOns, item]);
+                        } else {
+                          setAddOns(addOns.filter(addon => addon !== item));
+                        }
+                      }}
+                    />
+                    {item} (+{price})
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-4">
             <button
-              onClick={() =>
-                handleAddToPreOrderFromCard({
-                  quantity,
-                  ingredients,
-                  plating,
-                  cookingMethod,
-                  seasonalSelection,
-                  drinkPairing,
-                })
-              }
-              className="px-8 py-3 text-white bg-blue-500 rounded-full shadow-lg"
+              onClick={handleAddToPreOrderFromCard}
+              className="flex-1 bg-red-500 text-white py-3 rounded-lg font-semibold hover:bg-red-600 transition-colors"
             >
               Add to Pre-Order
+            </button>
+            <button className="flex-1 border border-gray-300 py-3 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+              Go Back
             </button>
           </div>
         </div>

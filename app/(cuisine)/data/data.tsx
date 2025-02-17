@@ -1,7 +1,7 @@
 export interface Special {
   id: number;
   image: string;
-  rating: string;
+  rating: number; // Changed from string to number
   name: string;
   description: string;
   price: number;
@@ -23,7 +23,6 @@ export const categories: Category[] = [
   { imageSrc: "/placeholder.jpeg", foodType: "Sri Lankan" },
 ];
 
-
 export const recommendedForYou: Special[] = [
   {
     id: 1,
@@ -34,7 +33,7 @@ export const recommendedForYou: Special[] = [
       "/placeholder.jpeg",
       "/hilton.png",
     ],
-    rating: "4.8",
+    rating: 4.8, // Changed to a number
     name: "Butter Chicken",
     description: "Rich and creamy tomato-based curry with grilled chicken.",
     price: 15.99,
@@ -51,7 +50,7 @@ export const recommendedForYou: Special[] = [
       "/placeholder.jpeg",
       "/hilton.png",
     ],
-    rating: "4.6",
+    rating: 4.6, // Changed to a number
     name: "Kung Pao Chicken",
     description: "Spicy stir-fried Chinese chicken dish with peanuts.",
     price: 13.99,
@@ -68,7 +67,7 @@ export const recommendedForYou: Special[] = [
       "/placeholder.jpeg",
       "/hilton.png",
     ],
-    rating: "4.7",
+    rating: 4.7, // Changed to a number
     name: "Mongolian Beef",
     description: "Tender beef stir-fried with scallions and soy sauce.",
     price: 18.99,
@@ -88,7 +87,7 @@ export const chefsSpecials: Special[] = [
       "/placeholder.jpeg",
       "/hilton.png",
     ],
-    rating: "4.9",
+    rating: 4.9, // Changed to a number
     name: "Tandoori Chicken",
     description: "Grilled Indian chicken marinated in yogurt and spices.",
     price: 16.99,
@@ -105,7 +104,7 @@ export const chefsSpecials: Special[] = [
       "/placeholder.jpeg",
       "/hilton.png",
     ],
-    rating: "4.5",
+    rating: 4.5, // Changed to a number
     name: "Dim Sum",
     description: "Traditional Chinese dumplings served with soy sauce.",
     price: 12.99,
@@ -122,7 +121,7 @@ export const chefsSpecials: Special[] = [
       "/placeholder.jpeg",
       "/hilton.png",
     ],
-    rating: "4.5",
+    rating: 4.5, // Changed to a number
     name: "Dim Sum",
     description: "Traditional Chinese dumplings served with soy sauce.",
     price: 12.99,
@@ -139,41 +138,7 @@ export const chefsSpecials: Special[] = [
       "/placeholder.jpeg",
       "/hilton.png",
     ],
-    rating: "4.5",
-    name: "Dim Sum",
-    description: "Traditional Chinese dumplings served with soy sauce.",
-    price: 12.99,
-    default: "All",
-    type: "Chef's Special",
-    category: "Chinese",
-  },
-  {
-    id: 15,
-    image: "/placeholder.jpeg",
-    carouselImages: [
-      "/placeholder.jpeg",
-      "/placeholder.jpeg",
-      "/placeholder.jpeg",
-      "/hilton.png",
-    ],
-    rating: "4.5",
-    name: "Dim Sum",
-    description: "Traditional Chinese dumplings served with soy sauce.",
-    price: 12.99,
-    default: "All",
-    type: "Chef's Special",
-    category: "Chinese",
-  },
-  {
-    id: 25,
-    image: "/placeholder.jpeg",
-    carouselImages: [
-      "/placeholder.jpeg",
-      "/placeholder.jpeg",
-      "/placeholder.jpeg",
-      "/hilton.png",
-    ],
-    rating: "4.5",
+    rating: 4.5, // Changed to a number
     name: "Dim Sum",
     description: "Traditional Chinese dumplings served with soy sauce.",
     price: 12.99,
@@ -193,7 +158,7 @@ export const todaysSpecials: Special[] = [
       "/placeholder.jpeg",
       "/hilton.png",
     ],
-    rating: "4.8",
+    rating: 4.8, // Changed to a number
     name: "Rogan Josh",
     description: "Spicy Kashmiri Indian curry with tender lamb.",
     price: 19.99,
@@ -210,7 +175,7 @@ export const todaysSpecials: Special[] = [
       "/placeholder.jpeg",
       "/hilton.png",
     ],
-    rating: "4.6",
+    rating: 4.6, // Changed to a number
     name: "Peking Duck",
     description: "Famous Chinese roasted duck with crispy skin.",
     price: 25.99,
@@ -219,4 +184,3 @@ export const todaysSpecials: Special[] = [
     category: "Chinese",
   },
 ];
-
