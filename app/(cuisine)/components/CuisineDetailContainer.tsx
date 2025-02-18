@@ -15,6 +15,7 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
   const [selectedSize, setSelectedSize] = useState("Regular");
   const [spiceLevel, setSpiceLevel] = useState("Mild");
   const [addOns, setAddOns] = useState<string[]>([]);
+  const [selectedDrink, setSelectedDrink] = useState<string>("Water"); 
 
   useEffect(() => {
     const name = searchParams.get("name");
@@ -37,19 +38,25 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
     ? cuisineDetails.carouselImages
     : [cuisineDetails.image];
 
-  const handleAddToPreOrderFromCard = () => {
-    const customizations = {
-      size: selectedSize,
-      spiceLevel,
-      addOns,
-    };
-    handleAddToPreOrder(customizations);
-  };
+    const handleAddToPreOrderFromCard = () => {
+      const customizations = {
+        name: cuisineDetails.name,
+        price: cuisineDetails.price,
+        image: cuisineDetails.image,
+        size: selectedSize,
+        spiceLevel,
+        addOns,
+        drink: selectedDrink,
+      };
+      console.log('Adding to pre-order:', customizations);  // Debugging line
+      handleAddToPreOrder(customizations);  // Pass to pre-order handler
+   };
+   
+  
 
   return (
     <div className="max-w-7xl mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Left Column - Images */}
         <div className="space-y-4">
           <div className="relative aspect-[4/3] rounded-lg overflow-hidden">
             <Image
@@ -80,7 +87,6 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
           </div>
         </div>
 
-        {/* Right Column - Details */}
         <div className="space-y-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{cuisineDetails.name}</h1>
@@ -168,6 +174,23 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
                     />
                     {item} (+{price})
                   </label>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm text-gray-700 mb-2">Select a Drink Pairing</h3>
+              <div className="grid grid-cols-3 gap-2">
+                {["Water", "Lemonade", "Iced Tea", "Soda"].map((drink) => (
+                  <button
+                    key={drink}
+                    className={`p-2 border rounded ${
+                      selectedDrink === drink ? "bg-red-500 text-white" : "text-gray-700"
+                    }`}
+                    onClick={() => setSelectedDrink(drink)}
+                  >
+                    {drink}
+                  </button>
                 ))}
               </div>
             </div>

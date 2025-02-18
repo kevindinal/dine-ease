@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 
 interface PreOrderItem {
-  id: number;
+  id: string;
   name: string;
   quantity: number;
-  ingredients: string[];
-  plating: string;
-  cookingMethod: string;
-  seasonalSelection: boolean;
+  ingredients: string;
+  portionSize: string;
+  spiceLevel: string;
   drinkPairing: string;
+  addOns: string[];
   price: number;
   image: string;
 }
@@ -16,52 +16,51 @@ interface PreOrderItem {
 export default function usePreOrder() {
   const [preOrders, setPreOrders] = useState<PreOrderItem[]>([]);
 
-  // Load pre-orders from localStorage on initial load
+  // Initialize preOrders from localStorage
   useEffect(() => {
-    const storedOrders = JSON.parse(localStorage.getItem('preOrders') || '[]');
+    const storedOrders = JSON.parse(localStorage.getItem("preOrders") || "[]");
     setPreOrders(storedOrders);
   }, []);
 
-  // Save pre-orders to localStorage whenever they change
+  // Sync the preOrders state to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('preOrders', JSON.stringify(preOrders));
+    if (preOrders.length > 0) {
+      localStorage.setItem("preOrders", JSON.stringify(preOrders));
+    }
   }, [preOrders]);
 
-  // Add item to pre-order or update existing item
   const addItemToPreOrder = (item: PreOrderItem) => {
     setPreOrders((prevOrders) => {
       const existingItemIndex = prevOrders.findIndex(
         (order) =>
           order.id === item.id &&
-          JSON.stringify(order.ingredients) === JSON.stringify(item.ingredients) &&
-          order.plating === item.plating &&
-          order.cookingMethod === item.cookingMethod &&
-          order.seasonalSelection === item.seasonalSelection &&
+          order.ingredients === item.ingredients &&
+          order.portionSize === item.portionSize &&
+          order.spiceLevel === item.spiceLevel &&
+          order.addOns.join(",") === item.addOns.join(",") &&
           order.drinkPairing === item.drinkPairing
       );
-
+  
       if (existingItemIndex !== -1) {
-        // Item already exists, so update quantity
         const updatedOrders = [...prevOrders];
         updatedOrders[existingItemIndex].quantity += item.quantity;
         return updatedOrders;
       }
-
-      // Item doesn't exist, so add new item
+  
       return [...prevOrders, item];
     });
   };
+  
 
-  // Clear pre-orders from state and localStorage
   const clearPreOrder = () => {
     setPreOrders([]);
-    localStorage.removeItem('preOrders');
+    localStorage.removeItem("preOrders");
   };
 
-  return { 
-    preOrders, 
-    preOrderCount: preOrders.reduce((total, item) => total + item.quantity, 0), 
-    addItemToPreOrder, 
-    clearPreOrder 
+  return {
+    preOrders,
+    preOrderCount: preOrders.reduce((total, item) => total + item.quantity, 0),
+    addItemToPreOrder,
+    clearPreOrder,
   };
 }
