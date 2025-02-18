@@ -56,7 +56,7 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
       <nav>Navigation Bar</nav>
 
       <section className="py-4 mx-4 md:mx-14 z-10 fixed slide-in-from-bottom-28 left-0 right-0 flex justify-center bottom-24">
-        <FloatingButtons preOrderCount={preOrderCount} setPreOrderCount={clearPreOrder} />
+        <FloatingButtons preOrderCount={preOrderCount} clearPreOrder={clearPreOrder} />
       </section>
 
       <section className="relative bg-[url('/hilton.png')] bg-cover bg-center bg-no-repeat py-16 sm:py-32 px-4 md:px-14 text-white">
