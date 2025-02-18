@@ -2,13 +2,13 @@ import React, { FC } from "react";
 
 interface FloatingButtonsProps {
   preOrderCount: number;
-  setPreOrderCount: () => void;
+  clearPreOrder: () => void;
 }
 
-const FloatingButtons: FC<FloatingButtonsProps> = ({ preOrderCount, setPreOrderCount }) => {
+const FloatingButtons: FC<FloatingButtonsProps> = ({ preOrderCount, clearPreOrder }) => {
   const handleCancelPreOrder = () => {
     if (window.confirm("Are you sure you want to cancel the pre-order?")) {
-      setPreOrderCount(); 
+      clearPreOrder(); 
       alert("Pre-order canceled.");
     }
   };
