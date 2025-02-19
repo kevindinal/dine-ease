@@ -67,7 +67,7 @@ const FoodCard: FC<FoodCardProps> = ({
   return (
     <div className="flex items-center justify-center px-2">
       <div
-        className="cursor-pointer w-full sm:w-[400px] h-auto sm:h-[480px] bg-white rounded-3xl shadow-xl overflow-hidden border border-black transition-all hover:scale-105 hover:delay-200"
+        className="cursor-pointer w-full sm:w-[400px] h-auto sm:h-[480px] bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 transition-all hover:scale-105 hover:delay-200"
         onClick={handleCardClick}
       >
         <div className="relative w-full h-40 sm:h-56 border-b-2 border-black">
