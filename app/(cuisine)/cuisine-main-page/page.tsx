@@ -7,7 +7,6 @@ import { Readex_Pro } from "next/font/google";
 import FoodCard from "../components/FoodCard";
 import FloatingButtons from "../components/FloatingButtons";
 import { categories, recommendedForYou, todaysSpecials, chefsSpecials } from "../data/data";
-import Link from "next/link";
 
 const readexPro = Readex_Pro({ subsets: ["latin"], weight: ["400", "700"] });
 
@@ -15,22 +14,11 @@ interface MealPreOrderMainProps {
   hotelImage?: string;
 }
 
-interface PreOrderItem {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-  quantity: number;
-  ingredients: string[];
-  plating: string;
-  cookingMethod: string;
-  seasonalSelection: boolean;
-  drinkPairing: string;
-}
-
 export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) {
   const { preOrderCount, addItemToPreOrder, clearPreOrder } = usePreOrder();
+
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
   const categoriesRef = useRef<HTMLDivElement>(null);
 
   const allDisplayedCuisines = [...recommendedForYou, ...todaysSpecials, ...chefsSpecials];
@@ -69,28 +57,28 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
       </section>
 
       <section className="py-6 sm:py-8 mx-4 md:mx-14 border-b border-black">
-  <h2 className="text-2xl sm:text-3xl font-semibold text-[#121212] mb-4 sm:mb-6 tracking-wide">Cuisine Categories</h2>
-  <div 
-    ref={categoriesRef}
-    className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory p-4 sm:p-8 rounded-2xl gap-4 sm:gap-6 justify-center md:justify-center items-center"
-  >
-    <div
-      className="cursor-pointer flex-none snap-start flex flex-col items-center transition-all hover:scale-110"
-      onClick={() => handleCategoryClick(null)}
-    >
-      <FoodCategory imageSrc="/all-categories.png" foodType="All Categories" />
-    </div>
-    {categories.map((category, index) => (
-      <div
-        key={index}
-        className="cursor-pointer flex-none snap-start flex flex-col items-center transition-all hover:scale-110"
-        onClick={() => handleCategoryClick(category.foodType)}
-      >
-        <FoodCategory imageSrc={category.imageSrc} foodType={category.foodType} />
-      </div>
-    ))}
-  </div>
-</section>
+        <h2 className="text-2xl sm:text-3xl font-semibold text-[#121212] mb-4 sm:mb-6 tracking-wide">Cuisine Categories</h2>
+        <div
+          ref={categoriesRef}
+          className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory p-4 sm:p-8 rounded-2xl gap-4 sm:gap-6 justify-center md:justify-center items-center"
+        >
+          <div
+            className="cursor-pointer flex-none snap-start flex flex-col items-center transition-all hover:scale-110"
+            onClick={() => handleCategoryClick(null)}
+          >
+            <FoodCategory imageSrc="/all-categories.png" foodType="All Categories" />
+          </div>
+          {categories.map((category, index) => (
+            <div
+              key={index}
+              className="cursor-pointer flex-none snap-start flex flex-col items-center transition-all hover:scale-110"
+              onClick={() => handleCategoryClick(category.foodType)}
+            >
+              <FoodCategory imageSrc={category.imageSrc} foodType={category.foodType} />
+            </div>
+          ))}
+        </div>
+      </section>
 
 
       {selectedCategory ? (

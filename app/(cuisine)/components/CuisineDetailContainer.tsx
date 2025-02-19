@@ -15,7 +15,7 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
   const [selectedSize, setSelectedSize] = useState("Regular");
   const [spiceLevel, setSpiceLevel] = useState("Mild");
   const [addOns, setAddOns] = useState<string[]>([]);
-  const [selectedDrink, setSelectedDrink] = useState<string>("Water"); 
+  const [selectedDrink, setSelectedDrink] = useState<string>("Water");
 
   useEffect(() => {
     const name = searchParams.get("name");
@@ -38,21 +38,20 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
     ? cuisineDetails.carouselImages
     : [cuisineDetails.image];
 
-    const handleAddToPreOrderFromCard = () => {
-      const customizations = {
-        name: cuisineDetails.name,
-        price: cuisineDetails.price,
-        image: cuisineDetails.image,
-        size: selectedSize,
-        spiceLevel,
-        addOns,
-        drink: selectedDrink,
-      };
-      console.log('Adding to pre-order:', customizations);  // Debugging line
-      handleAddToPreOrder(customizations);  // Pass to pre-order handler
-   };
-   
-  
+  const handleAddToPreOrderFromCard = () => {
+    const customizations = {
+      name: cuisineDetails.name,
+      price: cuisineDetails.price,
+      image: cuisineDetails.image,
+      size: selectedSize,
+      spiceLevel,
+      addOns,
+      drink: selectedDrink,
+    };
+    console.log('Adding to pre-order:', customizations);
+    handleAddToPreOrder(customizations);
+  };
+
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -71,9 +70,8 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
             {carouselImages.map((img, index) => (
               <div
                 key={index}
-                className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer ${
-                  index === currentImageIndex ? "ring-2 ring-red-500" : ""
-                }`}
+                className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer ${index === currentImageIndex ? "ring-2 ring-red-500" : ""
+                  }`}
                 onClick={() => setCurrentImageIndex(index)}
               >
                 <Image
@@ -115,16 +113,15 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
 
           <div className="space-y-4">
             <h2 className="font-semibold text-gray-900">Customize Your Order</h2>
-            
+
             <div>
               <h3 className="text-sm text-gray-700 mb-2">Select Portion Size</h3>
               <div className="grid grid-cols-3 gap-2">
                 {["Regular", "Large (+$4)", "Extra Large (+$7)"].map((size) => (
                   <button
                     key={size}
-                    className={`p-2 border rounded ${
-                      selectedSize === size.split(" ")[0] ? "bg-red-500 text-white" : "text-gray-700"
-                    }`}
+                    className={`p-2 border rounded ${selectedSize === size.split(" ")[0] ? "bg-red-500 text-white" : "text-gray-700"
+                      }`}
                     onClick={() => setSelectedSize(size.split(" ")[0])}
                   >
                     {size}
@@ -139,9 +136,8 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
                 {["Mild", "Medium", "Hot"].map((level) => (
                   <button
                     key={level}
-                    className={`p-2 border rounded ${
-                      spiceLevel === level ? "bg-red-500 text-white" : "text-gray-700"
-                    }`}
+                    className={`p-2 border rounded ${spiceLevel === level ? "bg-red-500 text-white" : "text-gray-700"
+                      }`}
                     onClick={() => setSpiceLevel(level)}
                   >
                     {level}
@@ -184,9 +180,8 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
                 {["Water", "Lemonade", "Iced Tea", "Soda"].map((drink) => (
                   <button
                     key={drink}
-                    className={`p-2 border rounded ${
-                      selectedDrink === drink ? "bg-red-500 text-white" : "text-gray-700"
-                    }`}
+                    className={`p-2 border rounded ${selectedDrink === drink ? "bg-red-500 text-white" : "text-gray-700"
+                      }`}
                     onClick={() => setSelectedDrink(drink)}
                   >
                     {drink}

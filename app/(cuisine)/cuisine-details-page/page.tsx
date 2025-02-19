@@ -8,24 +8,21 @@ import { recommendedForYou } from "../data/data";
 import usePreOrder from "../hooks/usePreOrder";
 
 const MealDetailsPage: React.FC = () => {
- const { preOrderCount, addItemToPreOrder, clearPreOrder } = usePreOrder();
+  const { preOrderCount, addItemToPreOrder, clearPreOrder } = usePreOrder();
 
- const handleAddToPreOrder = (customizations: any) => {
-  addItemToPreOrder({
-    id: crypto.randomUUID(), 
-    name: customizations.name, 
-    quantity: 1, 
-    ingredients: "", 
-    portionSize: customizations.size,
-    spiceLevel: customizations.spiceLevel, 
-    drinkPairing: customizations.drink, 
-    price: 0, 
-    image: "", 
-    addOns: customizations.addOns, 
-  });
-};
-  const handleClearPreOrder = () => {
-    clearPreOrder();
+  const handleAddToPreOrder = (customizations: any) => {
+    addItemToPreOrder({
+      id: crypto.randomUUID(),
+      name: customizations.name,
+      quantity: 1,
+      ingredients: "",
+      portionSize: customizations.size,
+      spiceLevel: customizations.spiceLevel,
+      drinkPairing: customizations.drink,
+      price: 0,
+      image: "",
+      addOns: customizations.addOns,
+    });
   };
 
   const limitedCuisines = recommendedForYou.slice(0, 6);
@@ -56,7 +53,7 @@ const MealDetailsPage: React.FC = () => {
                 description={cuisine.description}
                 price={cuisine.price}
                 carouselImages={cuisine.carouselImages}
-                onAddToPreOrder={handleAddToPreOrder} 
+                onAddToPreOrder={handleAddToPreOrder}
               />
             </div>
           ))}

@@ -49,16 +49,14 @@ const FoodCard: FC<FoodCardProps> = ({
       addOns,
       drinkPairing,
     };
-  
+
     console.log("Added to pre-order:", customizations);
-  
-    // LocalStorage handling if needed (although it's handled in the hook)
+
     localStorage.setItem("preOrder", JSON.stringify(customizations));
-  
-    // Call the parent handler to add to the pre-order
+
     onAddToPreOrder(customizations);
   };
-  
+
 
   const handleCardClick = () => {
     router.push(`/cuisine-details-page?name=${encodeURIComponent(name)}`);
