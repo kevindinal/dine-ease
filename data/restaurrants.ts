@@ -9,9 +9,11 @@ export type Restaurant = {
     category: string;
     priceRange: string;
     location: string;
-    menu: { item: string; price: string }[];
+    featuredMenu: { name: string; price: string; image: string }[]; // Updated key
     photos: string[];
     times: string[];
+    address: string;
+    description: string;
   };
   
   export const restaurants: Restaurant[] = [
@@ -25,11 +27,13 @@ export type Restaurant = {
       cuisine: "International",
       category: "Global, International - $$$",
       priceRange: "$$$",
+      description: "Hi I'm Kevin!",
+      address: "279/6 Hospital Road",
       location: "Hilton Colombo, Sri Lanka",
-      menu: [
-        { item: "Grilled Salmon", price: "$25" },
-        { item: "Classic Cheeseburger", price: "$18" },
-        { item: "Vegetarian Pasta", price: "$20" },
+      featuredMenu: [
+        { name: "Grilled Salmon", price: "$32", image: "https://example.com/salmon.jpg" },
+        { name: "Pan-Seared Duck", price: "$38", image: "https://example.com/duck.jpg" },
+        { name: "Truffle Pasta", price: "$28", image: "https://example.com/pasta.jpg" },
       ],
       photos: [
         "https://hiltoncolombo1.com/resturant-gallery/6271610003271G3-1.jpg",
@@ -48,11 +52,13 @@ export type Restaurant = {
       cuisine: "Sri Lankan, Continental",
       category: "Fine Dining - $$$$",
       priceRange: "$$$$",
+      description: "Hi I'm Kevin!",
+      address: "279/6 Hospital Road",
       location: "Kingsbury, Colombo, Sri Lanka",
-      menu: [
-        { item: "Lobster Thermidor", price: "$40" },
-        { item: "Black Angus Steak", price: "$50" },
-        { item: "Vegetarian Platter", price: "$22" },
+      featuredMenu: [
+        { name: "Lobster Thermidor", price: "$40", image: "https://example.com/lobster.jpg" },
+        { name: "Black Angus Steak", price: "$50", image: "https://example.com/steak.jpg" },
+        { name: "Vegetarian Platter", price: "$22", image: "https://example.com/veggie.jpg" },
       ],
       photos: [
         "https://thekingsbury.com/uploads/gallery/restaurant1.jpg",
