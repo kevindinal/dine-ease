@@ -1,10 +1,14 @@
 import { auth, db } from "./firebase"; 
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
+import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
 
 // Sign Up Function
 export const signUp = async (email: string, password: string, firstName: string, lastName: string, mobile: string, city: string, country: string) => {
-    try {
+    
+  const [createUserWithEmailAndPassword] = useCreateUserWithEmailAndPassword(auth);
+  
+  try {
         // Check if the email already exists
         const userRef = doc(db, "users", email);
         const userSnap = await getDoc(userRef);
@@ -14,8 +18,8 @@ export const signUp = async (email: string, password: string, firstName: string,
         }
 
         // Create user in Firebase Auth
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+        const userCredential = await createUserWithEmailAndPassword(email, password);
+        const user = userCredential!.user;
 
         // Store additional user details in Firestore
         await setDoc(doc(db, "users", user.uid), {
@@ -71,7 +75,7 @@ export const signInWithGoogle = async (router: any) => {
         }
 
         // Navigate to dashboard
-        router.push("/dashboard");
+        router.push("/");
 
         return user;
     } catch (error: any) {

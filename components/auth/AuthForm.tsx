@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { authformSchema } from '@/lib/utils';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -13,25 +14,42 @@ import { auth, db } from '@/lib/firebase'; // Import Firebase
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { signInWithGoogle } from '@/lib/auth';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 const provider = new GoogleAuthProvider();
 
+const authFormSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters long'),
+  firstname: z.string().optional(),
+  lastname: z.string().optional(),
+  mobile: z.string().optional(),
+  city: z.string().optional(),
+  country: z.string().optional(),
+});
+
+type AuthFormSchema = z.infer<typeof authFormSchema>;
+
 const AuthForm = ({ type, className, ...props }: { type: string; className?: string; [key: string]: any }) => {
   const router = useRouter();
+  const [user, loading] = useAuthState(auth);
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
+
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleAuth = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const { register, handleSubmit, formState: { errors } } = useForm<AuthFormSchema>({
+    resolver: zodResolver(authFormSchema),
+  });
+
+  const handleAuth = async (data: AuthFormSchema) => {
     setIsLoading(true);
 
-    const formData = new FormData(event.target as HTMLFormElement);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const firstName = formData.get('firstname') as string;
-    const lastName = formData.get('lastname') as string;
-    const mobile = formData.get('mobile') as string;
-    const city = formData.get('city') as string;
-    const country = formData.get('country') as string;
+    const { email, password, firstname, lastname, mobile, city, country } = data;
 
     try {
       if (type === 'sign-up') {
@@ -42,8 +60,8 @@ const AuthForm = ({ type, className, ...props }: { type: string; className?: str
         // Store user in Firestore
         await setDoc(doc(db, 'users', user.uid), {
           uid: user.uid,
-          firstName,
-          lastName,
+          firstName: firstname,
+          lastName: lastname,
           email,
           mobile,
           city,
@@ -56,7 +74,7 @@ const AuthForm = ({ type, className, ...props }: { type: string; className?: str
         await signInWithEmailAndPassword(auth, email, password);
       }
 
-      router.push('/dashboard'); // Redirect to dashboard
+      router.push('/'); // Redirect to dashboard
     } catch (error: any) {
       console.error('Auth Error:', error.message);
     } finally {
@@ -65,7 +83,7 @@ const AuthForm = ({ type, className, ...props }: { type: string; className?: str
   };
 
   return (
-    <form className={cn('flex flex-col gap-6', className)} {...props} onSubmit={handleAuth}>
+    <form className={cn('flex flex-col gap-6', className)} {...props} onSubmit={handleSubmit(handleAuth)}>
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">{type === 'sign-in' ? 'Sign in to your account' : 'Create an account'}</h1>
         <p className="text-balance text-sm text-muted-foreground">
@@ -78,31 +96,37 @@ const AuthForm = ({ type, className, ...props }: { type: string; className?: str
           <>
             <div className="grid gap-2">
               <Label htmlFor="firstname">First Name</Label>
-              <Input id="firstname" name="firstname" type="text" placeholder="Your first name" required />
+              <Input id="firstname" {...register('firstname')} type="text" placeholder="Your first name" />
+              {errors.firstname && <p className="text-red-500">{errors.firstname.message}</p>}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="lastname">Last Name</Label>
-              <Input id="lastname" name="lastname" type="text" placeholder="Your last name" required />
+              <Input id="lastname" {...register('lastname')} type="text" placeholder="Your last name" />
+              {errors.lastname && <p className="text-red-500">{errors.lastname.message}</p>}
             </div>
             <div className="flex gap-2">
               <div className="grid gap-2">
                 <Label htmlFor="mobile">Mobile Number</Label>
-                <Input id="mobile" name="mobile" type="tel" placeholder="123-456-7890" required />
+                <Input id="mobile" {...register('mobile')} type="tel" placeholder="123-456-7890" />
+                {errors.mobile && <p className="text-red-500">{errors.mobile.message}</p>}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="city">City</Label>
-                <Input id="city" name="city" type="text" placeholder="Your city" required />
+                <Input id="city" {...register('city')} type="text" placeholder="Your city" />
+                {errors.city && <p className="text-red-500">{errors.city.message}</p>}
               </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="country">Country</Label>
-              <Input id="country" name="country" type="text" placeholder="Your country" required />
+              <Input id="country" {...register('country')} type="text" placeholder="Your country" />
+              {errors.country && <p className="text-red-500">{errors.country.message}</p>}
             </div>
           </>
         )}
         <div className="grid gap-2">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+          <Input id="email" {...register('email')} type="email" placeholder="m@example.com" required />
+          {errors.email && <p className="text-red-500">{errors.email.message}</p>}
         </div>
         <div className="grid gap-2">
           <div className="flex items-center">
@@ -113,7 +137,8 @@ const AuthForm = ({ type, className, ...props }: { type: string; className?: str
               </a>
             )}
           </div>
-          <Input id="password" name="password" type="password" required />
+          <Input id="password" {...register('password')} type="password" required />
+          {errors.password && <p className="text-red-500">{errors.password.message}</p>}
         </div>
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? 'Processing...' : type === 'sign-in' ? 'Log in' : 'Create account'}

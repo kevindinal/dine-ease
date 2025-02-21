@@ -3,6 +3,7 @@ import AuthForm from "@/components/auth/AuthForm";
 import Image from "next/image";
 
 const SignIn = () => {
+  
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       {/* Left side: Scrollable form section */}
