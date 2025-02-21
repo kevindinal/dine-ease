@@ -85,30 +85,30 @@ export default function RestaurantBooking() {
         </div>
       </div>
 
-      {/* Featured Menu */}
-<div className="p-8 max-w-6xl mx-auto">
-<h2 className="text-2xl font-semibold mb-6 text-gray-800">Featured Menu</h2>
-<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-  <div className="bg-white p-4 rounded-lg shadow flex flex-col">
-    <img src="https://www.dinneratthezoo.com/wp-content/uploads/2019/05/grilled-salmon-final-2.jpg" alt="Grilled Salmon" className="w-full h-48 object-cover rounded-lg mb-4" />
-    <h3 className="mt-2 font-semibold text-gray-800">Grilled Salmon</h3>
-    <p className="text-gray-700 mb-2">Fresh Atlantic salmon with seasonal vegetables</p>
-    <p className="text-red-500 font-semibold">$32</p>
-  </div>
-  <div className="bg-white p-4 rounded-lg shadow flex flex-col">
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCH9SwLz4kQKwXhf8lzDnoupISsGn9RNpdXw&s" alt="Pan-Seared Duck" className="w-full h-48 object-cover rounded-lg mb-4" />
-    <h3 className="mt-2 font-semibold text-gray-800">Pan-Seared Duck</h3>
-    <p className="text-gray-700 mb-2">Duck breast with cherry reduction</p>
-    <p className="text-red-500 font-semibold">$38</p>
-  </div>
-  <div className="bg-white p-4 rounded-lg shadow flex flex-col">
-    <img src="https://www.milkandhoneynutrition.com/wp-content/uploads/2020/12/truffle-mushroom-pasta-5.jpg" alt="Truffle Pasta" className="w-full h-48 object-cover rounded-lg mb-4" />
-    <h3 className="mt-2 font-semibold text-gray-800">Truffle Pasta</h3>
-    <p className="text-gray-700 mb-2">Handmade pasta with black truffle</p>
-    <p className="text-red-500 font-semibold">$28</p>
-  </div>
-</div>
-</div>
+            {/* Featured Menu */}
+      <div className="p-8 max-w-6xl mx-auto">
+      <h2 className="text-2xl font-semibold mb-6 text-gray-800">Featured Menu</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white p-4 rounded-lg shadow flex flex-col">
+          <img src="https://www.dinneratthezoo.com/wp-content/uploads/2019/05/grilled-salmon-final-2.jpg" alt="Grilled Salmon" className="w-full h-48 object-cover rounded-lg mb-4" />
+          <h3 className="mt-2 font-semibold text-gray-800">Grilled Salmon</h3>
+          <p className="text-gray-700 mb-2">Fresh Atlantic salmon with seasonal vegetables</p>
+          <p className="text-red-500 font-semibold">$32</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow flex flex-col">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCH9SwLz4kQKwXhf8lzDnoupISsGn9RNpdXw&s" alt="Pan-Seared Duck" className="w-full h-48 object-cover rounded-lg mb-4" />
+          <h3 className="mt-2 font-semibold text-gray-800">Pan-Seared Duck</h3>
+          <p className="text-gray-700 mb-2">Duck breast with cherry reduction</p>
+          <p className="text-red-500 font-semibold">$38</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow flex flex-col">
+          <img src="https://www.milkandhoneynutrition.com/wp-content/uploads/2020/12/truffle-mushroom-pasta-5.jpg" alt="Truffle Pasta" className="w-full h-48 object-cover rounded-lg mb-4" />
+          <h3 className="mt-2 font-semibold text-gray-800">Truffle Pasta</h3>
+          <p className="text-gray-700 mb-2">Handmade pasta with black truffle</p>
+          <p className="text-red-500 font-semibold">$28</p>
+        </div>
+      </div>
+      </div>
 
       {/* Location Section */}
       <div className="p-8 max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -126,36 +126,36 @@ export default function RestaurantBooking() {
         </div>
       </div>
 
-     {/* Guest Reviews */}
-<div className="p-8 max-w-6xl mx-auto">
-<h2 className="text-2xl font-semibold mb-6 text-gray-800">Guest Reviews</h2>
-<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-  <div className="bg-white p-4 rounded-lg shadow flex flex-col items-start">
-    <h3 className="font-semibold text-gray-800">Sarah Johnson</h3>
-    <p className="text-gray-600 text-sm">December 2023</p>
-    <div className="flex text-yellow-400">
-      <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
-    </div>
-    <p className="text-gray-700 mt-2">Exceptional dining experience! The fusion dishes were innovative and delicious.</p>
-  </div>
-  <div className="bg-white p-4 rounded-lg shadow flex flex-col items-start">
-    <h3 className="font-semibold text-gray-800">Michael Chen</h3>
-    <p className="text-gray-600 text-sm">November 2023</p>
-    <div className="flex text-yellow-400">
-      <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
-    </div>
-    <p className="text-gray-700 mt-2">Perfect atmosphere for a business dinner. Service was impeccable.</p>
-  </div>
-  <div className="bg-white p-4 rounded-lg shadow flex flex-col items-start">
-    <h3 className="font-semibold text-gray-800">Emma Williams</h3>
-    <p className="text-gray-600 text-sm">November 2023</p>
-    <div className="flex text-yellow-400">
-      <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
-    </div>
-    <p className="text-gray-700 mt-2">Lovely ambiance and great food. The dessert menu was outstanding.</p>
-  </div>
-</div>
-</div>
+          {/* Guest Reviews */}
+      <div className="p-8 max-w-6xl mx-auto">
+      <h2 className="text-2xl font-semibold mb-6 text-gray-800">Guest Reviews</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white p-4 rounded-lg shadow flex flex-col items-start">
+            <h3 className="font-semibold text-gray-800">Sarah Johnson</h3>
+            <p className="text-gray-600 text-sm">December 2023</p>
+            <div className="flex text-yellow-400">
+              <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
+            </div>
+            <p className="text-gray-700 mt-2">Exceptional dining experience! The fusion dishes were innovative and delicious.</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow flex flex-col items-start">
+            <h3 className="font-semibold text-gray-800">Michael Chen</h3>
+            <p className="text-gray-600 text-sm">November 2023</p>
+            <div className="flex text-yellow-400">
+              <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
+            </div>
+            <p className="text-gray-700 mt-2">Perfect atmosphere for a business dinner. Service was impeccable.</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow flex flex-col items-start">
+            <h3 className="font-semibold text-gray-800">Emma Williams</h3>
+            <p className="text-gray-600 text-sm">November 2023</p>
+            <div className="flex text-yellow-400">
+              <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
+            </div>
+            <p className="text-gray-700 mt-2">Lovely ambiance and great food. The dessert menu was outstanding.</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
