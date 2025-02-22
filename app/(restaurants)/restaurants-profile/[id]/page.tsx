@@ -96,6 +96,7 @@ export default function RestaurantBooking() {
           <div className="p-4 bg-white shadow-lg rounded-lg">
             <h3 className="font-semibold"><FaWifi className="text-red-500" /> Private Events</h3>
           </div>
+          
         </div>
       </div>
 
