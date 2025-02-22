@@ -36,6 +36,9 @@ export type Restaurant = {
         { name: "Grilled Salmon", price: "$32", image: "https://www.dinneratthezoo.com/wp-content/uploads/2019/05/grilled-salmon-final-2.jpg" },
         { name: "Pan-Seared Duck", price: "$38", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCH9SwLz4kQKwXhf8lzDnoupISsGn9RNpdXw&s" },
         { name: "Truffle Pasta", price: "$28", image: "https://www.milkandhoneynutrition.com/wp-content/uploads/2020/12/truffle-mushroom-pasta-5.jpg" },
+        { name: "Potatoes - FrenchEntrée", price: "$78", image: "https://www.frenchentree.com/wp-content/uploads/2021/05/p058_French92-000-e1526033669896.png" },
+        { name: "Gourmet Burger", price: "$18", image: "https://weberseasonings.com/wp-content/uploads/weber-burger-34.jpg" },
+        { name: "Crispy Wrap", price: "$28", image: "https://cdn.tasteatlas.com//images/dishes/f4291f3e82f84c33a5997f801e8fb24f.jpg?w=375&h=280" },
       ],
       photos: [
         "https://cf.bstatic.com/xdata/images/hotel/max1024x768/612342474.jpg?k=027a217399df0ebe6e714352acfcb5b135be0a32a1b8a46adcebbc1f2b2a4a19&o=&hp=1",
