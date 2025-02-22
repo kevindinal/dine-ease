@@ -33,43 +33,68 @@ export default function RestaurantBooking() {
       </div>
 
       {/* About Section */}
-      <div className="p-8 max-w-6xl mx-auto">
-        <h2 className="text-3xl font-semibold mb-4">About {restaurant.name}</h2>
-        <p className="mb-4">{restaurant.about}</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="p-8 max-w-8xl mx-auto">
+        {/* Main Container - Two Columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+          {/* Left Side - About, Cuisine & Details */}
           <div>
-            <h3 className="text-xl font-semibold">Cuisine</h3>
-            <p>{restaurant.cuisine}</p>
+            {/* About Description */}
+            <h2 className="text-4xl font-semibold mb-4">About {restaurant.name}</h2>
+            <p className="mb-6">{restaurant.about}</p>
+
+            {/* Two Columns for Cuisine & Details */}
+            <div className="grid grid-cols-2">
+              {/* Cuisine List */}
+              <div>
+                <h3 className="text-xl font-semibold mb-2">Cuisine</h3>
+                <ul className="list-disc ml-5 space-y-1">
+                  {restaurant.cuisine.map((cuisine, index) => (
+                    <li key={index}>{cuisine}</li>
+                  ))}
+                </ul>
+              </div>
+              
+              {/* Restaurant Details */}
+              <div>
+                <h3 className="text-xl font-semibold mb-2">Details</h3>
+                <p><strong>Price Range:</strong> {restaurant.priceRange}</p>
+                <p><strong>Dining Style:</strong> {restaurant.category}</p>
+                <p><strong>Dress Code:</strong> {restaurant.location}</p>
+              </div>
+            </div>
           </div>
-          <div>
-            <h3 className="text-xl font-semibold">Details</h3>
-            <p>Price Range: {restaurant.priceRange}</p>
-            <p>Category: {restaurant.category}</p>
-            <p>Location: {restaurant.location}</p>
-          </div>
-        </div>
-        {/* Image Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-          {restaurant.photos.map((photo, index) => (
-            <img key={index} src={photo} className="w-full rounded-lg" alt="Restaurant Photo" />
+
+          {/* Right Side - 2x2 Image Grid */}
+          <div className="grid grid-cols-2 gap-4">
+          {restaurant.photos.slice(0, 4).map((photo, index) => (
+            <img 
+              key={index} 
+              src={photo} 
+              className="w-full h-[180px] md:h-[220px] object-cover rounded-lg" 
+              alt="Restaurant Photo" 
+            />
           ))}
         </div>
+        </div>
       </div>
+
+
+
 
       {/* Services Section */}
       <div className="bg-gray-100 py-8">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
           <div className="p-4 bg-white shadow-lg rounded-lg">
-            <h3 className="font-semibold"><FaCar /> Fine Dining</h3>
+            <h3 className="font-semibold"><FaCar className="text-red-500" /> Fine Dining</h3>
           </div>
           <div className="p-4 bg-white shadow-lg rounded-lg">
-            <h3 className="font-semibold"><FaBus /> Event Catering</h3>
+            <h3 className="font-semibold"><FaBus className="text-red-500" /> Event Catering</h3>
           </div>
           <div className="p-4 bg-white shadow-lg rounded-lg">
-            <h3 className="font-semibold"><FaCreditCard /> Outdoor Seating</h3>
+            <h3 className="font-semibold"><FaCreditCard className="text-red-500" /> Outdoor Seating</h3>
           </div>
           <div className="p-4 bg-white shadow-lg rounded-lg">
-            <h3 className="font-semibold"><FaWifi /> Private Events</h3>
+            <h3 className="font-semibold"><FaWifi className="text-red-500" /> Private Events</h3>
           </div>
         </div>
       </div>

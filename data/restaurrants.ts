@@ -5,7 +5,7 @@ export type Restaurant = {
     bannerImage: string;
     rating: number;
     reviews: number;
-    cuisine: string;
+    cuisine: string[];
     category: string;
     priceRange: string;
     location: string;
@@ -25,7 +25,7 @@ export type Restaurant = {
       bannerImage: "https://resizer.otstatic.com/v2/photos/wide-xlarge/2/41686450.jpg",
       rating: 5,
       reviews: 120,
-      cuisine: "International",
+      cuisine: ["International", "Sri Lankan", "Chineese"],
       category: "Global, International - $$$",
       priceRange: "$$$",
       description: "Experience Modern Asian Fusion Dining",
