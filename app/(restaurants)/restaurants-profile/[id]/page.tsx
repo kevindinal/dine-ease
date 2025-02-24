@@ -169,3 +169,73 @@ export default async function RestaurantBooking() {
     </div>
   );
 }
+
+
+// /app/(restaurants)/restaurants-profile/[id]/page.tsx
+
+// import { getRestaurantById } from '@/lib/firebase/restaurants';
+// import ReservationForm from '@/app/components/ReservationForm';
+
+// export default async function RestaurantProfile({ 
+//   params 
+// }: { 
+//   params: { id: string } 
+// }) {
+//   const restaurant = await getRestaurantById(params.id);
+
+//   if (!restaurant) {
+//     return <div>Restaurant not found</div>;
+//   }
+  
+//   // Get available times for today
+//   const today = new Date().toISOString().split('T')[0];
+//   const availableTimes = restaurant.availability[today] || [];
+
+//   return (
+//     <div className="container mx-auto p-4">
+//       <div className="flex flex-col md:flex-row gap-8">
+//         <div className="md:w-2/3">
+//           <h1 className="text-3xl font-bold">{restaurant.name}</h1>
+          
+//           <div className="flex items-center my-2">
+//             {[...Array(5)].map((_, i) => (
+//               <span key={i} className="text-yellow-400">
+//                 {i < Math.floor(restaurant.rating) ? '★' : '☆'}
+//               </span>
+//             ))}
+//             <span className="ml-2">{restaurant.rating} ({restaurant.reviewCount} reviews)</span>
+//           </div>
+          
+//           <p className="text-gray-500">{restaurant.cuisine.join(', ')} • {restaurant.priceRange}</p>
+//           <p className="mt-2">{restaurant.location.address}</p>
+          
+//           <div className="mt-4">
+//             <h2 className="text-xl font-bold">About</h2>
+//             <p className="mt-2">{restaurant.description}</p>
+//           </div>
+          
+//           <div className="mt-4">
+//             <h2 className="text-xl font-bold">Photos</h2>
+//             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+//               {restaurant.images.map((image, index) => (
+//                 <img 
+//                   key={index} 
+//                   src={image} 
+//                   alt={`${restaurant.name} - ${index + 1}`}
+//                   className="rounded-lg w-full h-48 object-cover"
+//                 />
+//               ))}
+//             </div>
+//           </div>
+//         </div>
+        
+//         <div className="md:w-1/3">
+//           <ReservationForm 
+//             restaurantId={restaurant.id} 
+//             availableTimes={availableTimes}
+//           />
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }

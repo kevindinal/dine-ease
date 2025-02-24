@@ -8,7 +8,7 @@ import {
   query, 
   where 
 } from 'firebase/firestore';
-import { Restaurant } from '@/app/types/restaurants';
+import { Restaurant } from '@/app/(restaurants)/types/restaurants';
 
 export const restaurantsCollection = collection(db, 'restaurants');
 
