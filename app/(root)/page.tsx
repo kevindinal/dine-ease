@@ -48,11 +48,11 @@ export default function Home() {
 
 
   return (
-    <div>
-      <h1>Welcome!</h1>
+    <div className='flex flex-col items-center justify-center h-screen gap-4'>
+      <h1 className='font-black'>Welcome! This is a Temporary Home Page</h1>
       {user && (
         <div>
-          <p>Current User: {user.email}</p>
+          <p>Current User: {user.uid}</p>
           <p>First Name: {userData?.firstName} </p>
           <p>Last Name: {userData?.lastName} </p>
           <p>Email: {userData?.email} </p>

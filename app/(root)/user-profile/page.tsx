@@ -244,6 +244,7 @@ const Profile = () => {
                         type="email"
                         {...register("email")}
                         aria-invalid={!!errors.email}
+                        disabled
                       />
                       {errors.email && (
                         <p className="text-sm text-destructive">
