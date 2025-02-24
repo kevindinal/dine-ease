@@ -4,6 +4,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import CheckoutPage from "./CheckoutPage";
 import { Elements } from "@stripe/react-stripe-js";
 import convertToSubcurrency from "@/lib/convertToSubcurrency";
+import exp from "constants";
 
 if (process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY === undefined){
   throw new Error("NEXT_PUBLIC_STRIPE_PUBLIC_KEY is not defined");
@@ -34,10 +35,11 @@ export default function Home() {
           currency: "lkr",
         }}
       >
-        <div className="bg-[#FFECEB] p-6 rounded-lg shadow-md">
+        <div className="bg-[#FFECEB] p-6 rounded-lg shadow-md min-h-[250px] flex flex-col justify-center">
           <CheckoutPage amount={amount} />
         </div>
       </Elements>
     </main>
   );
 }
+

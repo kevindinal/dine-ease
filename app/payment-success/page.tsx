@@ -1,18 +1,30 @@
-export default function PaymentSuccess({
-    searchParams: { amount },
-  }: {
-    searchParams: { amount: string };
-  }) {
-    return (
-      <main className="max-w-6xl mx-auto p-10 text-white text-center border m-10 rounded-md bg-gradient-to-tr from-blue-500 to-purple-500">
-        <div className="mb-10">
-          <h1 className="text-4xl font-extrabold mb-2">Thank you!</h1>
-          <h2 className="text-2xl">You successfully sent</h2>
-  
-          <div className="bg-white p-2 rounded-md text-purple-500 mt-5 text-4xl font-bold">
-            Rs.{amount}
-          </div>
+"use client";
+
+import { useRouter, useSearchParams } from "next/navigation";
+
+const PaymentSuccessPage = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const amount = searchParams.get("amount");
+
+  return (
+    <div className="flex justify-center items-center h-screen bg-[#FFECEB]">
+      <div className="bg-gradient-to-r from-[#FA4032] to-[#FB665B] text-white p-8 rounded-xl shadow-lg text-center w-96">
+        <h1 className="text-3xl font-extrabold">🎉 Thank you!</h1>
+        <p className="text-lg mt-2">Your payment was successful</p>
+        <div className="text-3xl font-bold bg-[#FEC6C2] text-[#FA4032] p-3 rounded-lg my-5">
+          Rs.{amount}
         </div>
-      </main>
-    );
-  }
+        {/* Order Status Button */}
+        <button
+          onClick={() => router.push("/order-status")}
+          className="bg-[#FA4032] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#FC8C84] transition duration-300 shadow-md"
+        >
+          View Order Status
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default PaymentSuccessPage;

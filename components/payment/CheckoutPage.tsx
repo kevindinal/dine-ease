@@ -7,19 +7,23 @@ import {
   PaymentElement,
 } from "@stripe/react-stripe-js";
 import convertToSubcurrency from "@/lib/convertToSubcurrency";
+import { useRouter } from "next/navigation";
 
 const CheckoutPage = ({ amount }: { amount: number }) => {
   const stripe = useStripe();
   const elements = useElements();
+  const router = useRouter();
+
   const [errorMessage, setErrorMessage] = useState<string>();
   const [clientSecret, setClientSecret] = useState("");
   const [loading, setLoading] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false); // New State
 
   useEffect(() => {
     fetch("/api/create-payment-intent", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({ amount: convertToSubcurrency(amount) }),
     })
@@ -52,12 +56,9 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
     });
 
     if (error) {
-      // This point is only reached if there's an immediate error when
-      // confirming the payment. Show the error to your customer (for example, payment details incomplete)
       setErrorMessage(error.message);
     } else {
-      // The payment UI automatically closes with a success animation.
-      // Your customer is redirected to your `return_url`.
+      setPaymentSuccess(true); // Set success flag
     }
 
     setLoading(false);
@@ -79,18 +80,33 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-2 rounded-md">
-      {clientSecret && <PaymentElement />}
+    <div className="bg-white p-4 rounded-md text-center">
+      {!paymentSuccess ? (
+        <form onSubmit={handleSubmit}>
+          {clientSecret && <PaymentElement />}
+          {errorMessage && <div className="text-red-500">{errorMessage}</div>}
 
-      {errorMessage && <div>{errorMessage}</div>}
-
-      <button
-        disabled={!stripe || loading}
-        className="text-white w-full p-5 bg-black mt-2 rounded-md font-bold disabled:opacity-50 disabled:animate-pulse"
-      >
-        {!loading ? `Pay Rs.${amount}` : "Processing..."}
-      </button>
-    </form>
+          <button
+            disabled={!stripe || loading}
+            className="text-white w-full p-4 bg-black mt-2 rounded-md font-bold disabled:opacity-50 disabled:animate-pulse"
+          >
+            {!loading ? `Pay Rs.${amount}` : "Processing..."}
+          </button>
+        </form>
+      ) : (
+        <div>
+          <h2 className="text-green-600 text-lg font-semibold mt-4">
+            Payment Successful 🎉
+          </h2>
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
+            onClick={() => router.push("/order-status")}
+          >
+            Order Status
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 
