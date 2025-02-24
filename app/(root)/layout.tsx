@@ -7,7 +7,6 @@ import React, { useEffect, useState } from 'react';
 import { ReactNode } from 'react';
 
 
-
 type LayoutProps = {
     children: ReactNode;
 };

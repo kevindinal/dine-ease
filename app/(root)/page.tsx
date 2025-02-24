@@ -20,7 +20,11 @@ export default function Home() {
       if (!loading && !user) {
         router.push('/sign-in');
       }
-      setUserData(await getUserData());
+      try {
+        setUserData(await getUserData());
+      } catch (error) {
+        console.log('Error fetching user data:', error);
+      }
     };
 
     fetchData();

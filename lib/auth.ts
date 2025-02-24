@@ -1,12 +1,25 @@
 import { UserProp } from "@/types";
 import { auth, db } from "./firebase"; 
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
 
 
 
 // Sign Up Function
+/**
+ * Signs up a new user with the provided details.
+ *
+ * @param email - The email address of the user.
+ * @param password - The password for the user's account.
+ * @param firstName - The first name of the user.
+ * @param lastName - The last name of the user.
+ * @param mobile - The mobile number of the user.
+ * @param city - The city where the user resides.
+ * @param country - The country where the user resides.
+ * @returns A promise that resolves to the created user object.
+ * @throws An error if the email already exists or if there is an issue during the sign-up process.
+ */
 export const signUp = async (email: string, password: string, firstName: string, lastName: string, mobile: string, city: string, country: string) => {
     
   const [createUserWithEmailAndPassword] = useCreateUserWithEmailAndPassword(auth);
@@ -120,5 +133,25 @@ export const getUserData = async (): Promise<UserProp> => {
         return userSnap.data() as UserProp;
     } catch (error: any) {
         throw new Error(error.message);
+    }
+};
+
+// Function to update user data
+export const updateUserData = async (userData: Partial<UserProp>): Promise<void> => {
+    try {
+        const user = auth.currentUser;
+
+        if (!user) {
+            throw new Error("No user is currently signed in.");
+        }
+
+        const userRef = doc(db, "users", user.uid);
+
+        // Update the document with the provided userData
+        await updateDoc(userRef, userData);
+
+        console.log("User data updated successfully.");
+    } catch (error: any) {
+        throw new Error(`Failed to update user data: ${error.message}`);
     }
 };

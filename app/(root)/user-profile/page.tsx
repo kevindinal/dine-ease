@@ -38,7 +38,9 @@ import { useRouter } from "next/navigation";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { UserProp } from "@/types";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { getUserData, logout, updateUserData } from "@/lib/auth";
 
 const profileSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -56,43 +58,41 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
 
-  const [user, setUser] = useState<UserProp | null>(null);
-  const auth = getAuth();
+  const [user, loading] = useAuthState(auth);
+  const [userData, setUserData] = useState<UserProp | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (userAuth) => {
-      if (userAuth) {
-        const userDocRef = doc(db, 'users', userAuth.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          setUser(userDoc.data() as UserProp);
-        }
-      } else {
-        setUser(null);
+    const fetchData = async () => {
+      if (!loading && !user) {
+        router.push('/sign-in');
       }
-    });
+      try {
+        setUserData(await getUserData());
+      } catch (error) {
+        console.log('Error fetching user data:', error);
+      }
+    };
 
-    return () => unsubscribe();
-  }, [auth]);
+    fetchData();
+  }, [user, loading, router]);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     getValues,
+    reset,
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
-    defaultValues: {
-      email: user?.email || "john.doe@example.com",
-      firstName: user?.firstName || "John",
-      lastName: user?.lastName || "Doe",
-      mobile: user?.mobile || "1234567890",
-      city: user?.city || "New York",
-      country: user?.country || "USA",
-    }
   });
 
-  if (!user) {
+  useEffect(() => {
+    if (userData) {
+      reset(userData);
+    }
+  }, [userData, reset]);
+
+  if (!userData) {
     return <div>Loading... or Not Logged In</div>;
   }
 
@@ -100,7 +100,9 @@ const Profile = () => {
     setIsLoading(true);
     try {
       console.log("Updating profile:", data);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
+      await updateUserData(data);
+
       toast.success("Profile updated successfully!");
     } catch (error) {
       toast.error("Failed to update profile");
@@ -109,9 +111,14 @@ const Profile = () => {
     setIsLoading(false);
   };
 
-  const handleSignOut = () => {
-    router.push("/sign-in");
-    toast.success("Signed out successfully");
+  const handleSignOut = async () => {
+    try {
+      await logout();
+      router.push("/sign-in");
+      toast.success("Signed out successfully");
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const firstNameInitial = getValues("firstName")?.charAt(0) || "";
@@ -133,6 +140,8 @@ const Profile = () => {
               </p>
             </div>
           </div>
+
+          {/* Render an Alert Box */}
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm">Sign Out</Button>
@@ -153,6 +162,7 @@ const Profile = () => {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+
         </div>
 
         <Tabs
@@ -288,6 +298,7 @@ const Profile = () => {
                     <Button type="submit" disabled={isLoading}>
                       {isLoading ? "Saving..." : "Save Changes"}
                     </Button>
+                    {/* Later Add a Dialog Box with password confirmation before saving changes */}
                   </div>
                 </form>
               </CardContent>
