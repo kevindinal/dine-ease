@@ -4,12 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaCalendarAlt, FaClock, FaUsers, FaSearch, FaStar } from "react-icons/fa";
 import { restaurants } from "@/data/restaurrants";
+import { getAllRestaurants } from '@/lib/firebase/restaurants';
 
-export default function RestaurantBooking() {
+export default async function RestaurantBooking() {
   const [date, setDate] = useState("2025-02-02");
   const [time, setTime] = useState("19:00");
   const [people, setPeople] = useState(2);
   const [search, setSearch] = useState("");
+  // const restaurants = await getAllRestaurants();
 
   const router = useRouter();
 

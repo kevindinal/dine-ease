@@ -4,12 +4,22 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaCalendar, FaClock, FaUsers, FaStar, FaBus, FaCar, FaCreditCard, FaWifi } from "react-icons/fa6";
 import { restaurants } from "@/data/restaurrants";
+import { getRestaurantById } from '@/lib/firebase/restaurants';
 
-export default function RestaurantBooking() {
+export default async function RestaurantBooking() {
   const [search, setSearch] = useState("");
   const router = useRouter();
 
   const restaurant = restaurants.find((r) => r.id === 1) || restaurants[0];
+//   params 
+// }: { 
+//   params: { id: string } 
+// }) {
+//   const restaurant = await getRestaurantById(params.id);
+
+//   if (!restaurant) {
+//     return <div>Restaurant not found</div>;
+//   }
 
   return (
     <div className="text-gray-900">
