@@ -1,16 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Trash2 } from "lucide-react";
+import { db } from "@/lib/firebase"; // Firebase import
+import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
 
 const SummaryPage = () => {
+  const [reservation, setReservation] = useState<{
+    date: string;
+    time: string;
+    guests: string;
+    table: string;
+  } | null>(null);
+
   const [items, setItems] = useState([
     { id: 1, name: "Beef Burger", price: 1000.0, quantity: 2, image: "/placeholder.svg" },
     { id: 2, name: "Pizza", price: 200.0, quantity: 1, image: "/placeholder.svg" },
-    { id: 3, name: "Chicken", price: 299.99, quantity: 1, image: "/placeholder.svg" }
+    { id: 3, name: "Chicken", price: 299.99, quantity: 1, image: "/placeholder.svg" },
   ]);
+
+  useEffect(() => {
+    const fetchReservation = async () => {
+      try {
+        const userId = "user123"; // Replace with actual user ID (use auth)
+        const q = query(
+          collection(db, "reservations"),
+          where("userId", "==", userId),
+          orderBy("createdAt", "desc"),
+          limit(1)
+        );
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const data = querySnapshot.docs[0].data();
+          setReservation({
+            date: data.date,
+            time: data.time,
+            guests: data.guests,
+            table: data.table,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching reservation:", error);
+      }
+    };
+
+    fetchReservation();
+  }, []);
 
   // Function to handle item deletion
   const handleDelete = (id: number) => {
@@ -21,7 +58,8 @@ const SummaryPage = () => {
   const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
-    <Card className="p-6 shadow-lg rounded-xl border bg-[#FFECEB]">
+    <Card className="p-6 shadow-lg rounded-xl border bg-[#FFECEB] w-full max-w-4xl mx-auto">
+
       {/* Header */}
       <div className="flex justify-between items-center border-b border-[#FC8C84] pb-4 mb-6">
         <h2 className="text-2xl font-bold text-[#FA4032]">Order Summary</h2>
@@ -32,10 +70,16 @@ const SummaryPage = () => {
 
       {/* Reservation Details */}
       <div className="space-y-4 mb-6 text-gray-700">
-        <DetailRow label="Date" value="Friday, Dec 15, 2023" />
-        <DetailRow label="Time" value="7:30 PM" />
-        <DetailRow label="Guests" value="4 people" />
-        <DetailRow label="Table" value="Table 12" />
+        {reservation ? (
+          <>
+            <DetailRow label="Date" value={reservation.date} />
+            <DetailRow label="Time" value={reservation.time} />
+            <DetailRow label="Guests" value={reservation.guests} />
+            <DetailRow label="Table" value={reservation.table} />
+          </>
+        ) : (
+          <p className="text-gray-600">Loading reservation details...</p>
+        )}
       </div>
 
       {/* Pre-Ordered Items */}
