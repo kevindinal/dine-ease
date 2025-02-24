@@ -1,7 +1,10 @@
+import { UserProp } from "@/types";
 import { auth, db } from "./firebase"; 
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
+
+
 
 // Sign Up Function
 export const signUp = async (email: string, password: string, firstName: string, lastName: string, mobile: string, city: string, country: string) => {
@@ -87,6 +90,34 @@ export const signInWithGoogle = async (router: any) => {
 export const logout = async () => {
     try {
         await signOut(auth);
+    } catch (error: any) {
+        throw new Error(error.message);
+    }
+};
+
+
+// Function to get user data
+export const getUserData = async (): Promise<UserProp> => {
+    try {
+        // Get the currently signed-in user
+        const user = auth.currentUser;
+
+        console.log(user);
+
+        if (!user) {
+            throw new Error("No user is currently signed in.");
+        }
+
+        // Reference to the user's document in Firestore
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists()) {
+            throw new Error("User data not found.");
+        }
+
+        // Return the user data
+        return userSnap.data() as UserProp;
     } catch (error: any) {
         throw new Error(error.message);
     }
