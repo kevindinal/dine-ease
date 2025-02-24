@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
-import { Wallet, Calendar, User } from "lucide-react";
+import { Wallet, Calendar, User, Loader, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,6 +41,7 @@ import { UserProp } from "@/types";
 import { auth, db } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { getUserData, logout, updateUserData } from "@/lib/auth";
+
 
 const profileSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -93,7 +94,7 @@ const Profile = () => {
   }, [userData, reset]);
 
   if (!userData) {
-    return <div>Loading... or Not Logged In</div>;
+    return <div className="w-full h-screen flex justify-center items-center animate-spin"> <Loader2 /> </div>;
   }
 
   const onSubmit = async (data: ProfileFormData) => {
