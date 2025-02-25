@@ -17,21 +17,21 @@ interface Category {
 }
 
 export const categories: Category[] = [
-  { imageSrc: "/placeholder.jpeg", foodType: "Indian" },
-  { imageSrc: "/placeholder.jpeg", foodType: "Mongolian" },
-  { imageSrc: "/placeholder.jpeg", foodType: "Chinese" },
-  { imageSrc: "/placeholder.jpeg", foodType: "Sri Lankan" },
+  { imageSrc: "/cate-india.jpg", foodType: "Indian" },
+  { imageSrc: "/cate-mongo.jpg", foodType: "Mongolian" },
+  { imageSrc: "/cate-china.jpg", foodType: "Chinese" },
+  { imageSrc: "/cate-sri.jpg", foodType: "Sri Lankan" },
 ];
 
 export const recommendedForYou: Special[] = [
   {
     id: 1,
-    image: "/placeholder.jpeg",
+    image: "/butter-chicken-1.jpg",
     carouselImages: [
-      "/placeholder.jpeg",
-      "/placeholder.jpeg",
-      "/placeholder.jpeg",
-      "/hilton.png",
+      "/butter-chicken-1.jpg",
+      "/butter-chicken-2.jpg",
+      "/butter-chicken-3.jpg",
+      "/butter-chicken-4.jpg",
     ],
     rating: 4.8, // Changed to a number
     name: "Butter Chicken",
@@ -43,12 +43,12 @@ export const recommendedForYou: Special[] = [
   },
   {
     id: 2,
-    image: "/placeholder.jpeg",
+    image: "/kung-pao-1.jpg",
     carouselImages: [
-      "/placeholder.jpeg",
-      "/placeholder.jpeg",
-      "/placeholder.jpeg",
-      "/hilton.png",
+      "/kung-pao-1.jpg",
+      "/kung-pao-2.jpg",
+      "/kung-pao-3.jpg",
+      "/kung-pao-4.jpg",
     ],
     rating: 4.6, // Changed to a number
     name: "Kung Pao Chicken",
@@ -60,12 +60,12 @@ export const recommendedForYou: Special[] = [
   },
   {
     id: 3,
-    image: "/placeholder.jpeg",
+    image: "/mongo-beef-1.jpg",
     carouselImages: [
-      "/placeholder.jpeg",
-      "/placeholder.jpeg",
-      "/placeholder.jpeg",
-      "/hilton.png",
+      "/mongo-beef-1.jpg",
+      "/mongo-beef-2.jpg",
+      "/mongo-beef-3.jpg",
+      "/mongo-beef-4.jpg",
     ],
     rating: 4.7, // Changed to a number
     name: "Mongolian Beef",
