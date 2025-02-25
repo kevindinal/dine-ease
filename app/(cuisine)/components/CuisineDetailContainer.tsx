@@ -117,7 +117,7 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
             <div>
               <h3 className="text-sm text-gray-700 mb-2">Select Portion Size</h3>
               <div className="grid grid-cols-3 gap-2">
-                {["Regular", "Large (+$4)", "Extra Large (+$7)"].map((size) => (
+                {["Regular", "Large (+Rs.400)", "Extra Large (+Rs.700)"].map((size) => (
                   <button
                     key={size}
                     className={`p-2 border rounded ${selectedSize === size.split(" ")[0] ? "bg-red-500 text-white" : "text-gray-700"
@@ -150,10 +150,10 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
               <h3 className="text-sm text-gray-700 mb-2">Add-ons</h3>
               <div className="grid grid-cols-2 gap-2 text-black">
                 {[
-                  ["Extra Avocado", "$2"],
-                  ["Extra Salmon", "$6"],
-                  ["Extra Sauce", "$1"],
-                  ["Brown Rice", "$1"]
+                  ["Extra Avocado", "Rs.200"],
+                  ["Extra Salmon", "Rs.600"],
+                  ["Extra Sauce", "Rs.100"],
+                  ["Brown Rice", "Rs.150"]
                 ].map(([item, price]) => (
                   <label key={item} className="flex items-center p-2 border rounded">
                     <input
