@@ -35,8 +35,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { useRouter } from "next/navigation";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { IoIosArrowBack } from "react-icons/io";
 import { UserProp } from "@/types";
 import { auth, db } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -94,7 +93,7 @@ const Profile = () => {
   }, [userData, reset]);
 
   if (!userData) {
-    return <div className="w-full h-screen flex justify-center items-center animate-spin"> <Loader2 /> </div>;
+    return <div className="w-full h-screen flex justify-center items-center animate-spin overflow-hidden"> <Loader2 /> </div>;
   }
 
   const onSubmit = async (data: ProfileFormData) => {
@@ -126,6 +125,12 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <div>
+        <Button variant="ghost" onClick={() => router.push('/')} className="ml-1 mt-3">
+          <IoIosArrowBack className="text-2xl"/>
+          Back
+        </Button>
+      </div>
       <div className="mx-auto max-w-4xl space-y-8 p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="flex items-center gap-6">

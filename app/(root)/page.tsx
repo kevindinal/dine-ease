@@ -62,6 +62,11 @@ export default function Home() {
           <Button type="submit" onClick={handleLogout} className='m-5'>
             Logout
           </Button>
+          <div className='flex flex-col gap-4'>
+            <Button type="submit" onClick={() => router.push('/user-profile')} className='m-5'>
+              User Profile
+            </Button>
+          </div>
         </div>
       )}
     </div>
