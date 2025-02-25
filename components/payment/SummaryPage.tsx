@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Trash2 } from "lucide-react";
-import { db } from "@/lib/firebase"; // Firebase import
+import { db } from "@/lib/firebase"; 
 import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
-import PaymentForm from "./PaymentForm"; // Import Payment Form
+import PaymentForm from "./PaymentForm"; 
 
 const SummaryPage = () => {
   const [reservation, setReservation] = useState<{
@@ -24,12 +24,15 @@ const SummaryPage = () => {
     { id: 3, name: "Chicken", price: 299.99, quantity: 1, image: "/placeholder.svg" },
   ]);
 
-  const [isOpen, setIsOpen] = useState(false); // Modal state
+  const [isOpen, setIsOpen] = useState(false); 
+  const [points, setPoints] = useState(500); // Assume the customer has 500 points
+  const [discountApplied, setDiscountApplied] = useState(false);
+  const [totalPrice, setTotalPrice] = useState(0);
 
   useEffect(() => {
     const fetchReservation = async () => {
       try {
-        const userId = "user123"; // Replace with actual user ID (use auth)
+        const userId = "user123"; 
         const q = query(
           collection(db, "reservations"),
           where("userId", "==", userId),
@@ -54,13 +57,24 @@ const SummaryPage = () => {
     fetchReservation();
   }, []);
 
+  useEffect(() => {
+    const calculatedTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    setTotalPrice(calculatedTotal);
+  }, [items]);
+
   // Function to handle item deletion
   const handleDelete = (id: number) => {
     setItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 
-  // Calculate total price dynamically
-  const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  // Function to apply points discount
+  const applyPointsDiscount = () => {
+    if (discountApplied || points <= 0) return;
+    const discount = Math.min(points, totalPrice); 
+    setTotalPrice(totalPrice - discount);
+    setPoints(points - discount); 
+    setDiscountApplied(true);
+  };
 
   return (
     <Card className="p-6 shadow-lg rounded-xl border bg-[#FFECEB] w-full max-w-4xl mx-auto">
@@ -114,15 +128,29 @@ const SummaryPage = () => {
         </div>
       </div>
 
-      {/* Total Price & Checkout Buttons */}
+      {/* Total Price & Points */}
       <div className="border-t border-[#FC8C84] pt-6 mt-6">
         <div className="flex justify-between items-center mb-4">
           <span className="text-xl font-semibold text-gray-800">Total:</span>
           <span className="text-xl font-bold text-[#FA4032]">Rs.{totalPrice.toFixed(2)}</span>
         </div>
 
+        {/* Points Section */}
+        <div className="flex justify-between items-center mb-4">
+          <span className="text-lg font-medium text-gray-800">Points Available:</span>
+          <span className="text-lg font-bold text-[#FA4032]">{points}</span>
+        </div>
+
+        <Button 
+          className={`w-full bg-blue-500 text-white hover:bg-blue-600 ${discountApplied && "opacity-50 cursor-not-allowed"}`}
+          onClick={applyPointsDiscount}
+          disabled={discountApplied}
+        >
+          Reduce from Total
+        </Button>
+
         {/* Payment Buttons */}
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col md:flex-row gap-4 mt-4">
           <Button className="w-full md:w-1/2 bg-gray-700 text-white hover:bg-gray-800">Pay at Restaurant</Button>
           <Button className="w-full md:w-1/2 bg-[#FA4032] text-white hover:bg-[#FB665B]" onClick={() => setIsOpen(true)}>
             Pay Now
@@ -149,14 +177,14 @@ const SummaryPage = () => {
       </Transition>
     </Card>
   );
+  
 };
-
-// Component for reservation details
 const DetailRow = ({ label, value }: { label: string; value: string }) => (
   <div className="flex justify-between">
     <span className="text-gray-700">{label}</span>
     <span className="font-medium text-gray-900">{value}</span>
   </div>
 );
+
 
 export default SummaryPage;
