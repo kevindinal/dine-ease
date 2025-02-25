@@ -12,7 +12,7 @@ import {
   serverTimestamp,
   Timestamp
 } from 'firebase/firestore';
-import { Reservation } from '@/types/restaurant';
+import { Reservation } from '@/app/(restaurants)/types/restaurants';
 
 export const reservationsCollection = collection(db, 'reservations');
 
