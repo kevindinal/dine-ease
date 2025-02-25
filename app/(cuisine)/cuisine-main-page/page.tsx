@@ -6,7 +6,10 @@ import FoodCategory from "../components/FoodCategory";
 import { Readex_Pro } from "next/font/google";
 import FoodCard from "../components/FoodCard";
 import FloatingButtons from "../components/FloatingButtons";
-import { categories, recommendedForYou, todaysSpecials, chefsSpecials } from "../data/data";
+import { recommendedForYou, todaysSpecials, chefsSpecials } from "../data/data";
+
+import { useRestaurant } from "../hooks/useRestaurant";
+import { useCategories } from "../hooks/useCategories";
 
 const readexPro = Readex_Pro({ subsets: ["latin"], weight: ["400", "700"] });
 
@@ -15,7 +18,15 @@ interface MealPreOrderMainProps {
 }
 
 export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) {
+
+  const restaurantId = "restaurant_1";
+
+  const { restaurant, loading: restaurantLoading, error: restaurantError} = useRestaurant(restaurantId || "");
+  const { categories, loading: categoriesLoading, error: categoriesError} = useCategories(restaurantId);
+
   const { preOrderCount, addItemToPreOrder, clearPreOrder } = usePreOrder();
+
+  
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -39,19 +50,23 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
     </div>
   );
 
+  if (restaurantLoading) return <div>Loading...</div>;
+  if (restaurantError) return <div>Error: {restaurantError} </div>;
+  if (categoriesError) return <div>Error loading categories: {categoriesError}</div>
+  if (!restaurant) return <div>Restaurant not found</div>;
+
   return (
     <div className={`${readexPro.className} bg-fixed min-h-screen bg-[#F5F5F5]`}>
-      <nav>Navigation Bar</nav>
 
       <section className="py-4 mx-4 md:mx-14 z-10 fixed slide-in-from-bottom-28 left-0 right-0 flex justify-center bottom-24">
         <FloatingButtons preOrderCount={preOrderCount} clearPreOrder={clearPreOrder} />
       </section>
 
-      <section className="relative bg-[url('/hilton.png')] bg-cover bg-center bg-no-repeat py-16 sm:py-32 px-4 md:px-14 text-white">
+      <section className="relative bg-cover bg-center bg-no-repeat py-16 sm:py-32 px-4 md:px-14 text-white" style={{ backgroundImage: `url(${restaurant.mealPageHotelImage})`}}>
         <div className="bg-[#121212] bg-opacity-70 backdrop-blur-sm p-6 sm:p-16">
-          <h2 className="text-3xl sm:text-5xl font-semibold mb-4 sm:mb-6 tracking-wide">Hilton Colombo</h2>
+          <h2 className="text-3xl sm:text-5xl font-semibold mb-4 sm:mb-6 tracking-wide">{restaurant.name}</h2>
           <p className="text-base sm:text-lg leading-relaxed font-light">
-            Experience the finest dining at Hilton Colombo, offering a blend of local and international cuisines crafted by top chefs.
+            {restaurant.mealPageDesc}
           </p>
         </div>
       </section>
@@ -66,15 +81,15 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
             className="cursor-pointer flex-none snap-start flex flex-col items-center transition-all hover:scale-110"
             onClick={() => handleCategoryClick(null)}
           >
-            <FoodCategory imageSrc="/all-categories.png" foodType="All Categories" />
+            <FoodCategory imageSrc="/cate-all.jpg" foodType="All Categories" />
           </div>
-          {categories.map((category, index) => (
+          {categories.map((category) => (
             <div
-              key={index}
+              key={category.id}
               className="cursor-pointer flex-none snap-start flex flex-col items-center transition-all hover:scale-110"
-              onClick={() => handleCategoryClick(category.foodType)}
+              onClick={() => handleCategoryClick(category.name)}
             >
-              <FoodCategory imageSrc={category.imageSrc} foodType={category.foodType} />
+              <FoodCategory imageSrc={category.image} foodType={category.name} />
             </div>
           ))}
         </div>
@@ -86,7 +101,7 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
           <h2 className="text-2xl sm:text-3xl font-semibold text-[#121212] mb-4 sm:mb-6 tracking-wide">
             {selectedCategory}
           </h2>
-          <div className="flex flex-wrap -mx-2 sm:-mx-4">
+           <div className="flex flex-wrap -mx-2 sm:-mx-4">
             {filteredCuisines?.map(renderFoodCard)}
           </div>
         </section>

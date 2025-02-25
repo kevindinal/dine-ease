@@ -29,10 +29,6 @@ const MealDetailsPage: React.FC = () => {
 
   return (
     <div>
-      <section className="relative py-32 px-4 md:px-14 text-black">
-        Navbar
-      </section>
-
       <section className="py-4 mx-4 md:mx-14 z-10 fixed bottom-32 left-0 right-0 flex justify-center">
         <FloatingButtons preOrderCount={preOrderCount} clearPreOrder={clearPreOrder} />
       </section>
