@@ -6,6 +6,9 @@ import { Card } from "@/components/ui/card";
 import { Trash2 } from "lucide-react";
 import { db } from "@/lib/firebase"; // Firebase import
 import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import { Dialog, Transition } from "@headlessui/react";
+import { Fragment } from "react";
+import PaymentForm from "./PaymentForm"; // Import Payment Form
 
 const SummaryPage = () => {
   const [reservation, setReservation] = useState<{
@@ -16,10 +19,12 @@ const SummaryPage = () => {
   } | null>(null);
 
   const [items, setItems] = useState([
-    { id: 1, name: "Beef Burger", price: 1000.0, quantity: 2, image: "/placeholder.svg" },
+    { id: 1, name: "Beef Burger", price: 1000.0, quantity: 1, image: "/placeholder.svg" },
     { id: 2, name: "Pizza", price: 200.0, quantity: 1, image: "/placeholder.svg" },
     { id: 3, name: "Chicken", price: 299.99, quantity: 1, image: "/placeholder.svg" },
   ]);
+
+  const [isOpen, setIsOpen] = useState(false); // Modal state
 
   useEffect(() => {
     const fetchReservation = async () => {
@@ -59,7 +64,6 @@ const SummaryPage = () => {
 
   return (
     <Card className="p-6 shadow-lg rounded-xl border bg-[#FFECEB] w-full max-w-4xl mx-auto">
-
       {/* Header */}
       <div className="flex justify-between items-center border-b border-[#FC8C84] pb-4 mb-6">
         <h2 className="text-2xl font-bold text-[#FA4032]">Order Summary</h2>
@@ -98,12 +102,7 @@ const SummaryPage = () => {
                 </div>
                 <div className="flex items-center space-x-4">
                   <span className="font-medium text-gray-900">Rs.{(item.price * item.quantity).toFixed(2)}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-[#FA4032] hover:text-[#FB665B]"
-                    onClick={() => handleDelete(item.id)}
-                  >
+                  <Button variant="ghost" size="icon" className="text-[#FA4032] hover:text-[#FB665B]" onClick={() => handleDelete(item.id)}>
                     <Trash2 className="h-5 w-5" />
                   </Button>
                 </div>
@@ -115,11 +114,39 @@ const SummaryPage = () => {
         </div>
       </div>
 
-      {/* Total Price & Checkout Button */}
-      <div className="border-t border-[#FC8C84] pt-6 mt-6 flex justify-between items-center">
-        <span className="text-xl font-semibold text-gray-800">Total:</span>
-        <span className="text-xl font-bold text-[#FA4032]">Rs.{totalPrice.toFixed(2)}</span>
+      {/* Total Price & Checkout Buttons */}
+      <div className="border-t border-[#FC8C84] pt-6 mt-6">
+        <div className="flex justify-between items-center mb-4">
+          <span className="text-xl font-semibold text-gray-800">Total:</span>
+          <span className="text-xl font-bold text-[#FA4032]">Rs.{totalPrice.toFixed(2)}</span>
+        </div>
+
+        {/* Payment Buttons */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <Button className="w-full md:w-1/2 bg-gray-700 text-white hover:bg-gray-800">Pay at Restaurant</Button>
+          <Button className="w-full md:w-1/2 bg-[#FA4032] text-white hover:bg-[#FB665B]" onClick={() => setIsOpen(true)}>
+            Pay Now
+          </Button>
+        </div>
       </div>
+
+      {/* Payment Modal */}
+      <Transition appear show={isOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-10" onClose={() => setIsOpen(false)}>
+          <div className="fixed inset-0 bg-black bg-opacity-25" />
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <PaymentForm amount={totalPrice} />
+                <Button className="mt-4 w-full bg-gray-500 text-white hover:bg-gray-700" onClick={() => setIsOpen(false)}>
+                  Close
+                </Button>
+              </Dialog.Panel>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
     </Card>
   );
 };

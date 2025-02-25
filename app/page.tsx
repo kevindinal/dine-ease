@@ -7,7 +7,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
      
      <SummaryPage/>
-      <PaymentForm/>
+      
 
     </div>
   );
