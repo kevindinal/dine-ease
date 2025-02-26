@@ -10,6 +10,7 @@ import { recommendedForYou, todaysSpecials, chefsSpecials } from "../data/data";
 
 import { useRestaurant } from "../hooks/useRestaurant";
 import { useCategories } from "../hooks/useCategories";
+import {useMealsByCategory } from "../hooks/useMeals";
 
 const readexPro = Readex_Pro({ subsets: ["latin"], weight: ["400", "700"] });
 
@@ -20,26 +21,40 @@ interface MealPreOrderMainProps {
 export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) {
 
   const restaurantId = "restaurant_1";
+  const categoryId = "category_1";
 
   const { restaurant, loading: restaurantLoading, error: restaurantError} = useRestaurant(restaurantId || "");
   const { categories, loading: categoriesLoading, error: categoriesError} = useCategories(restaurantId);
+  const { meals: allMeals, loading: mealsLoading, error: mealsError } = useMealsByCategory(restaurantId, categoryId);
 
   const { preOrderCount, addItemToPreOrder, clearPreOrder } = usePreOrder();
-
-  
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const categoriesRef = useRef<HTMLDivElement>(null);
 
-  const allDisplayedCuisines = [...recommendedForYou, ...todaysSpecials, ...chefsSpecials];
+  const { meals: categoryMeals, loading: categoryMealsLoading } = useMealsByCategory(restaurantId, selectedCategory || "");
+
+  const allDisplayedCuisines = selectedCategory ? categoryMeals : allMeals;
 
   const handleCategoryClick = (category: string | null) => {
     setSelectedCategory(category);
   };
 
+  const getRecommendedMeals = () => {
+    return allMeals.filter((meal, index) => index < 5);
+  };
+
+  const getChefSpecials = () => {
+    return allMeals.filter((meal, index) => index >= 5 && index < 10);
+  }
+
+  const getTodaysSpecials = () => {
+    return allMeals.filter((meal, index) => index > 5);
+  }
+
   const filteredCuisines = selectedCategory
-    ? allDisplayedCuisines.filter((cuisine) => cuisine.category === selectedCategory)
+    ? allDisplayedCuisines.filter(() =>  selectedCategory)
     : null;
 
   const renderFoodCard = (cuisine: any) => (
