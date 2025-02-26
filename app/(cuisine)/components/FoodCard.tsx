@@ -3,6 +3,7 @@ import React, { FC, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface FoodCardProps {
+  id: string;
   image: string;
   name: string;
   rating: number;
