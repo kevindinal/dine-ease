@@ -18,7 +18,7 @@ const PaymentSuccessPage = () => {
         {/* Order Status Button */}
         <button
           onClick={() => router.push("/order-status")}
-          className="bg-[#FA4032] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#FC8C84] transition duration-300 shadow-md"
+          className="bg-[#6f0303] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#FC8C84] transition duration-300 shadow-md"
         >
           View Order Status
         </button>

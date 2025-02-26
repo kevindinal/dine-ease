@@ -159,7 +159,7 @@ const SummaryPage = () => {
       </div>
 
 
-      {/* Payment Modal */}
+    
       {/* Payment Modal */}
 <Transition appear show={isOpen} as={Fragment}>
   <Dialog as="div" className="relative z-10" onClose={() => setIsOpen(false)}>
