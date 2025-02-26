@@ -1,4 +1,4 @@
-// lib/firebaseAdmin.ts (Server-side Firebase Admin initialization)
+// Server-side Firebase Admin initialization
 import admin from 'firebase-admin';
 
 if (!admin.apps.length) {
