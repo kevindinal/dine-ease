@@ -20,11 +20,14 @@ export const mealService = {
         }
     },
 
-    getMealsByCategoryId: async (categoryId: string): Promise<Meal[]> => {
+    getMealsByCategoryId: async (restaurantId: string, categoryId: string): Promise<Meal[]> => {
         try {
-            const mealsRef = collection(db, "meals");
-            const mealQuery = query(mealsRef, where("category_id", "==", categoryId));
-            const snapshot = await getDocs(mealQuery);
+            const mealsRef = collection(db, "restaurants", restaurantId, "categories", categoryId, "meals");
+            const snapshot = await getDocs(mealsRef);
+
+            if (snapshot.empty) {
+                return [];
+            }
 
             return snapshot.docs.map(doc => ({
                 id: doc.id,

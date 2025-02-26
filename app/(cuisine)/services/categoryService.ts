@@ -5,9 +5,12 @@ import { Category } from "../types/category";
 export const categoryService = {
     getCategoriesByRestaurantId: async (restaurantId: string): Promise<Category[]> => {
         try {
-            const categoriesRef = collection(db, "categories");
-            const categoryQuery = query(categoriesRef, where("restaurant_id", "==", restaurantId));
-            const snapshot = await getDocs(categoryQuery);
+            const categoriesRef = collection(db, "restaurants", restaurantId, "categories");
+            const snapshot = await getDocs(categoriesRef);
+
+            if (snapshot.empty) {
+                return [];
+            }
 
             return snapshot.docs.map(doc => ({
                 id: doc.id,
