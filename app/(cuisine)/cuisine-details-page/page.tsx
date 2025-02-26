@@ -43,6 +43,7 @@ const MealDetailsPage: React.FC = () => {
           {limitedCuisines.map((cuisine) => (
             <div key={cuisine.id} className="min-w-[calc(25%-1rem)] flex-none scroll-snap-align-start">
               <FoodCard
+                id=""
                 image={cuisine.image}
                 rating={cuisine.rating}
                 name={cuisine.name}

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Star } from "lucide-react";
 import { Special, recommendedForYou, chefsSpecials, todaysSpecials } from "../data/data";
+import { useMealsById } from "../hooks/useMeals";
 
 interface CuisineDetailContainerProps {
   handleAddToPreOrder: (customizations: any) => void;
@@ -16,6 +17,24 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
   const [spiceLevel, setSpiceLevel] = useState("Mild");
   const [addOns, setAddOns] = useState<string[]>([]);
   const [selectedDrink, setSelectedDrink] = useState<string>("Water");
+
+  const mealId = searchParams.get("id");
+
+  const { meal, loading, error} = useMealsById(mealId || "");
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  if (!meal) {
+    return <div>Meal not found</div>;
+  }
+
+  const carouselImages = meal.carouselImages?.length ? meal.carouselImages : [meal.image];
 
   useEffect(() => {
     const name = searchParams.get("name");
@@ -33,10 +52,6 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
   if (!cuisineDetails) {
     return <div>Loading...</div>;
   }
-
-  const carouselImages = cuisineDetails.carouselImages?.length
-    ? cuisineDetails.carouselImages
-    : [cuisineDetails.image];
 
   const handleAddToPreOrderFromCard = () => {
     const customizations = {
