@@ -1,5 +1,6 @@
-import PaymentForm from "@/components/payment/PaymentForm";
-import SummaryPage from "@/components/payment/SummaryPage";
+import PaymentForm from "@/app/(payments)/PaymentForm";
+import SummaryPage from "@/app/(payments)/SummaryPage";
+
 
 
 export default function Home() {
