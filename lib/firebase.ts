@@ -20,27 +20,29 @@ const firebaseConfig = {
 export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+export const messaging = getMessaging(app);
 // export { app, auth, db };
 
-const messaging = async () => {
-  const supported = await isSupported();
-  return supported ? getMessaging(app) : null;
-};
+// const messaging = async () => {
+//   const supported = await isSupported();
+//   return supported ? getMessaging(app) : null;
+// };
 
-export const fetchToken = async () => {
-  try {
-    const fcmMessaging = await messaging();
-    if (fcmMessaging) {
-      const token = await getToken(fcmMessaging, {
-        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_FCM_VAPID_KEY,
-      });
-      return token;
-    }
-    return null;
-  } catch (err) {
-    console.error("An error occurred while fetching the token:", err);
-    return null;
-  }
-};
+// export const fetchToken = async () => {
+//   try {
+//     const fcmMessaging = await messaging();
+//     if (fcmMessaging) {
+//       const token = await getToken(fcmMessaging, {
+//         vapidKey: process.env.NEXT_PUBLIC_FIREBASE_FCM_VAPID_KEY,
+//       });
+//       return token;
+//     }
+//     return null;
+//   } catch (err) {
+//     console.error("An error occurred while fetching the token:", err);
+//     return null;
+//   }
+// };
 
-export { messaging };
+// export { messaging };
