@@ -160,22 +160,24 @@ const SummaryPage = () => {
 
 
       {/* Payment Modal */}
-      <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={() => setIsOpen(false)}>
-          <div className="fixed inset-0 bg-black bg-opacity-25" />
+      {/* Payment Modal */}
+<Transition appear show={isOpen} as={Fragment}>
+  <Dialog as="div" className="relative z-10" onClose={() => setIsOpen(false)}>
+    <div className="fixed inset-0 bg-black bg-opacity-25" />
 
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <PaymentForm amount={totalPrice} />
-                <Button className="mt-4 w-full bg-gray-500 text-white hover:bg-gray-700" onClick={() => setIsOpen(false)}>
-                  Close
-                </Button>
-              </Dialog.Panel>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
+    <div className="fixed inset-0 overflow-y-auto">
+      <div className="flex min-h-full items-center justify-center p-4 text-center">
+        <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-lg bg-white p-8 text-left align-middle shadow-xl transition-all">
+          <PaymentForm amount={totalPrice} />
+          <Button className="mt-4 w-full bg-gray-500 text-white hover:bg-gray-700" onClick={() => setIsOpen(false)}>
+            Close
+          </Button>
+        </Dialog.Panel>
+      </div>
+    </div>
+  </Dialog>
+</Transition>
+
     </Card>
   );
   
