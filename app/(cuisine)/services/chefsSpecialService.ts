@@ -4,7 +4,7 @@ import { Restaurant } from "../types/restaurant";
 import { Category } from "../types/category";
 import { Meal } from "../types/meal";
 
-export const chefsSpecials = {
+export const chefsSpecialsService = {
     getChefsSpecials: async (restaurantId: string): Promise<Meal[]> => {
         try {
             const specialsRef = collection(db, "restaurants", restaurantId, "chefsSpecial");
