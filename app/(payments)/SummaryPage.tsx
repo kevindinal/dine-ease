@@ -1,14 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Trash2 } from "lucide-react";
-import { db } from "@/lib/firebase"; 
+import { db } from "@/lib/firebase";
 import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment } from "react";
-import PaymentForm from "./PaymentForm"; 
+import PaymentForm from "./PaymentForm";
+
+// Define OrderItem type
+type OrderItem = {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+};
 
 const SummaryPage = () => {
   const [reservation, setReservation] = useState<{
@@ -18,21 +26,25 @@ const SummaryPage = () => {
     table: string;
   } | null>(null);
 
-  const [items, setItems] = useState([
-    { id: 1, name: "Beef Burger", price: 1000.0, quantity: 1, image: "/placeholder.svg" },
-    { id: 2, name: "Pizza", price: 200.0, quantity: 1, image: "/placeholder.svg" },
-    { id: 3, name: "Chicken", price: 299.99, quantity: 1, image: "/placeholder.svg" },
-  ]);
+  // Fetching Order Summary from Local Storage
+  const [items, setItems] = useState<OrderItem[]>([]);
 
-  const [isOpen, setIsOpen] = useState(false); 
-  const [points, setPoints] = useState(500); // Assume the customer has 500 points
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedItems = localStorage.getItem("cartItems");
+      setItems(savedItems ? JSON.parse(savedItems) : []);
+    }
+  }, []);
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [points, setPoints] = useState(500);
   const [discountApplied, setDiscountApplied] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
 
   useEffect(() => {
     const fetchReservation = async () => {
       try {
-        const userId = "user123"; 
+        const userId = "user123";
         const q = query(
           collection(db, "reservations"),
           where("userId", "==", userId),
@@ -62,37 +74,32 @@ const SummaryPage = () => {
     setTotalPrice(calculatedTotal);
   }, [items]);
 
-  // Function to handle item deletion
   const handleDelete = (id: number) => {
     setItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 
-  // Function to apply points discount
   const applyPointsDiscount = () => {
     if (discountApplied || points <= 0) return;
-    const discount = Math.min(points, totalPrice); 
+    const discount = Math.min(points, totalPrice);
     setTotalPrice(totalPrice - discount);
-    setPoints(points - discount); 
+    setPoints(points - discount);
     setDiscountApplied(true);
   };
 
   return (
     <Card className="p-6 shadow-lg rounded-xl border bg-[#FFECEB] w-full max-w-4xl mx-auto">
-      {/* Header */}
       <div className="flex justify-between items-center border-b border-[#FC8C84] pb-4 mb-6">
-  <h2 className="text-2xl font-bold text-[#FA4032]">Order Summary</h2>
-  <Button variant="ghost" size="sm" className="text-[#FA4032] hover:text-[#FB665B]">
-    Edit
-  </Button>
-</div>
+        <h2 className="text-2xl font-bold text-[#FA4032]">Order Summary</h2>
+        <Button variant="ghost" size="sm" className="text-[#FA4032] hover:text-[#FB665B]">
+          Edit
+        </Button>
+      </div>
 
-{/* Available Points Display */}
-<div className="flex justify-between items-center mb-4">
-  <span className="text-lg font-medium text-gray-800">Available Points:</span>
-  <span className="text-lg font-bold text-[#FA4032]">{points}</span>
-</div>
+      <div className="flex justify-between items-center mb-4">
+        <span className="text-lg font-medium text-gray-800">Available Points:</span>
+        <span className="text-lg font-bold text-[#FA4032]">{points}</span>
+      </div>
 
-      {/* Reservation Details */}
       <div className="space-y-4 mb-6 text-gray-700">
         {reservation ? (
           <>
@@ -106,7 +113,6 @@ const SummaryPage = () => {
         )}
       </div>
 
-      {/* Pre-Ordered Items */}
       <div className="border-t border-[#FC8C84] pt-6">
         <h3 className="text-lg font-semibold mb-4 text-[#FA4032]">Pre-ordered Items</h3>
         <div className="space-y-4">
@@ -134,22 +140,16 @@ const SummaryPage = () => {
         </div>
       </div>
 
-      {/* Total Price & Points */}
       <div className="border-t border-[#FC8C84] pt-6 mt-6">
         <div className="flex justify-between items-center mb-4">
           <span className="text-xl font-semibold text-gray-800">Total:</span>
           <span className="text-xl font-bold text-[#FA4032]">Rs.{totalPrice.toFixed(2)}</span>
         </div>
 
-        <Button 
-          className={`w-full bg-blue-500 text-white hover:bg-blue-600 ${discountApplied && "opacity-50 cursor-not-allowed"}`}
-          onClick={applyPointsDiscount}
-          disabled={discountApplied}
-        >
+        <Button className={`w-full bg-blue-500 text-white hover:bg-blue-600 ${discountApplied && "opacity-50 cursor-not-allowed"}`} onClick={applyPointsDiscount} disabled={discountApplied}>
           Reduce from Total
         </Button>
 
-        {/* Payment Buttons */}
         <div className="flex flex-col md:flex-row gap-4 mt-4">
           <Button className="w-full md:w-1/2 bg-gray-700 text-white hover:bg-gray-800">Pay at Restaurant</Button>
           <Button className="w-full md:w-1/2 bg-[#FA4032] text-white hover:bg-[#FB665B]" onClick={() => setIsOpen(true)}>
@@ -157,37 +157,15 @@ const SummaryPage = () => {
           </Button>
         </div>
       </div>
-
-
-    
-      {/* Payment Modal */}
-<Transition appear show={isOpen} as={Fragment}>
-  <Dialog as="div" className="relative z-10" onClose={() => setIsOpen(false)}>
-    <div className="fixed inset-0 bg-black bg-opacity-25" />
-
-    <div className="fixed inset-0 overflow-y-auto">
-      <div className="flex min-h-full items-center justify-center p-4 text-center">
-        <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-lg bg-white p-8 text-left align-middle shadow-xl transition-all">
-          <PaymentForm amount={totalPrice} />
-          <Button className="mt-4 w-full bg-gray-500 text-white hover:bg-gray-700" onClick={() => setIsOpen(false)}>
-            Close
-          </Button>
-        </Dialog.Panel>
-      </div>
-    </div>
-  </Dialog>
-</Transition>
-
     </Card>
   );
-  
 };
+
 const DetailRow = ({ label, value }: { label: string; value: string }) => (
   <div className="flex justify-between">
     <span className="text-gray-700">{label}</span>
     <span className="font-medium text-gray-900">{value}</span>
   </div>
 );
-
 
 export default SummaryPage;
