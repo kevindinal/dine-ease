@@ -1,11 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {
-  useStripe,
-  useElements,
-  PaymentElement,
-} from "@stripe/react-stripe-js";
+import { useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js";
 import convertToSubcurrency from "@/lib/convertToSubcurrency";
 import { useRouter } from "next/navigation";
 
@@ -31,34 +27,22 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
       .then((data) => setClientSecret(data.clientSecret));
   }, [amount]);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handlePayment = async () => {
     setLoading(true);
 
-    if (!stripe || !elements) {
-      return;
-    }
+    const order = { amount: convertToSubcurrency(amount) }; // Example order data
 
-    const { error: submitError } = await elements.submit();
-
-    if (submitError) {
-      setErrorMessage(submitError.message);
-      setLoading(false);
-      return;
-    }
-
-    const { error } = await stripe.confirmPayment({
-      elements,
-      clientSecret,
-      confirmParams: {
-        return_url: `http://www.localhost:3000/payment-success?amount=${amount}`,
-      },
+    const res = await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(order),
     });
 
-    if (error) {
-      setErrorMessage(error.message);
+    const { sessionUrl } = await res.json();
+    if (sessionUrl) {
+      window.location.href = sessionUrl;
     } else {
-      setPaymentSuccess(true); // Set success flag
+      setErrorMessage("Failed to initiate payment.");
     }
 
     setLoading(false);
@@ -82,13 +66,14 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
   return (
     <div className="bg-white p-4 rounded-md text-center">
       {!paymentSuccess ? (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={(e) => e.preventDefault()}>
           {clientSecret && <PaymentElement />}
           {errorMessage && <div className="text-red-500">{errorMessage}</div>}
 
           <button
-            disabled={!stripe || loading}
+            disabled={loading}
             className="text-white w-full p-4 bg-black mt-2 rounded-md font-bold disabled:opacity-50 disabled:animate-pulse"
+            onClick={handlePayment}
           >
             {!loading ? `Pay Rs.${amount}` : "Processing..."}
           </button>
