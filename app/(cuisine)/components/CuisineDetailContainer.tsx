@@ -1,8 +1,9 @@
+"use client"
+
 import { useSearchParams } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Star } from "lucide-react";
-import { Special, recommendedForYou, chefsSpecials, todaysSpecials } from "../data/data";
 import { useMealsById } from "../hooks/useMeals";
 
 interface CuisineDetailContainerProps {
@@ -11,53 +12,107 @@ interface CuisineDetailContainerProps {
 
 const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleAddToPreOrder }) => {
   const searchParams = useSearchParams();
+  const mealId = searchParams.get("id") || "";
+  const restaurantId = searchParams.get("restaurantId") || "";
+  const categoryId = searchParams.get("categoryId") || "";
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [cuisineDetails, setCuisineDetails] = useState<Special | null>(null);
   const [selectedSize, setSelectedSize] = useState("Regular");
   const [spiceLevel, setSpiceLevel] = useState("Mild");
   const [addOns, setAddOns] = useState<string[]>([]);
   const [selectedDrink, setSelectedDrink] = useState<string>("Water");
+  const [imageError, setImageError] = useState<string | null>(null);
 
-  const mealId = searchParams.get("id");
+  const { meal, loading, error } = useMealsById(mealId, restaurantId, categoryId);
 
-  const { meal, loading, error} = useMealsById(mealId || "");
+  // Reset the image index when the meal changes
+  useEffect(() => {
+    setCurrentImageIndex(0);
+    setImageError(null);
+  }, [meal]);
+
+  useEffect(() => {
+    console.log("Params:", mealId, restaurantId, categoryId);
+  }, [mealId, restaurantId, categoryId]);
+
+  // Debug the meal object and image URLs
+  // Debug the meal object and image URLs
+  useEffect(() => {
+    if (meal && meal.carouselImages) {
+      console.log("Meal object:", meal);
+      console.log("Image URL:", meal.image);
+      console.log("Image Carousel:", meal.carouselImages);
+    }
+  }, [meal]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center min-h-[400px]">
+      <div className="text-lg">Loading meal details...</div>
+    </div>;
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div className="flex justify-center items-center min-h-[400px]">
+      <div className="text-lg text-red-500">Error: {error}</div>
+    </div>;
   }
 
   if (!meal) {
-    return <div>Meal not found</div>;
+    return <div className="flex justify-center items-center min-h-[400px]">
+      <div className="text-lg">Meal not found</div>
+    </div>;
   }
 
-  const carouselImages = meal.carouselImages?.length ? meal.carouselImages : [meal.image];
+  // Determine the proper images to display
+  const getCarouselImages = () => {
+    // Debug the image carousel data
+    console.log("Getting carousel images");
+    console.log("carouselImages type:", typeof meal.carouselImages);
+    console.log("carouselImages value:", meal.carouselImages);
 
-  useEffect(() => {
-    const name = searchParams.get("name");
-    if (name) {
-      const decodedName = decodeURIComponent(name);
-      const cuisine = [...recommendedForYou, ...chefsSpecials, ...todaysSpecials].find(
-        (item) => item.name === decodedName
-      );
-      if (cuisine) {
-        setCuisineDetails(cuisine);
+    // More safely handle the carousel images
+    let images: string[] = [];
+
+    try {
+      // Check if carouselImages exists and is an array
+      if (meal && meal.carouselImages && Array.isArray(meal.carouselImages)) {
+        console.log("Using carouselImages array");
+        images = meal.carouselImages;
       }
-    }
-  }, [searchParams]);
+      // Fallback to imageUrl if available
+      else if (meal && meal.image) {
+        console.log("Falling back to imageUrl");
+        images = [meal.image];
+      }
+      // Default placeholder if no images are available
+      else {
+        console.log("Using placeholder image");
+        images = ["/placeholder-image.jpg"];
+      }
 
-  if (!cuisineDetails) {
-    return <div>Loading...</div>;
+      console.log("Final images array:", images);
+      return images;
+    } catch (err) {
+      console.error("Error processing images:", err);
+      setImageError(err instanceof Error ? err.message : "Unknown image error");
+      return ["/placeholder-image.jpg"];
+    }
+  };
+
+  const carouselImages = getCarouselImages();
+
+  // Ensure currentImageIndex is within bounds
+  if (currentImageIndex >= carouselImages.length) {
+    setCurrentImageIndex(0);
   }
 
   const handleAddToPreOrderFromCard = () => {
     const customizations = {
-      name: cuisineDetails.name,
-      price: cuisineDetails.price,
-      image: cuisineDetails.image,
+      id: meal.id,
+      name: meal.name,
+      price: calculateTotalPrice(),
+      basePrice: meal.price,
+      image: meal.image || (carouselImages.length > 0 ? carouselImages[0] : null),
       size: selectedSize,
       spiceLevel,
       addOns,
@@ -67,62 +122,103 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
     handleAddToPreOrder(customizations);
   };
 
+  const calculateTotalPrice = () => {
+    let total = meal.price;
+
+    if (selectedSize === "Large") total += 400;
+    if (selectedSize === "Extra Large") total += 700;
+
+    if (addOns.includes("Extra Avocado")) total += 200;
+    if (addOns.includes("Extra Salmon")) total += 600;
+    if (addOns.includes("Extra Sauce")) total += 100;
+    if (addOns.includes("Brown Rice")) total += 150;
+
+    return total;
+  };
 
   return (
     <div className="max-w-7xl mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-4">
-          <div className="relative aspect-[4/3] rounded-lg overflow-hidden">
-            <Image
-              src={carouselImages[currentImageIndex]}
-              alt={cuisineDetails.name}
-              layout="fill"
-              objectFit="cover"
-              className="rounded-lg"
-            />
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            {carouselImages.map((img, index) => (
-              <div
-                key={index}
-                className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer ${index === currentImageIndex ? "ring-2 ring-red-500" : ""
-                  }`}
-                onClick={() => setCurrentImageIndex(index)}
-              >
+          {imageError && (
+            <div className="p-4 mb-4 bg-red-100 text-red-700 rounded">
+              Image Error: {imageError}
+            </div>
+          )}
+
+          <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100">
+            {carouselImages.length > 0 && (
+              <>
                 <Image
-                  src={img}
-                  alt={`Thumbnail ${index + 1}`}
-                  layout="fill"
-                  objectFit="cover"
+                  src={carouselImages[currentImageIndex]}
+                  alt={meal.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  style={{ objectFit: "cover" }}
+                  className="rounded-lg"
+                  priority
+                  onError={() => {
+                    console.error("Image failed to load:", carouselImages[currentImageIndex]);
+                    setImageError(`Failed to load image: ${carouselImages[currentImageIndex]}`);
+                  }}
                 />
-              </div>
-            ))}
+                <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 text-xs rounded">
+                  {currentImageIndex + 1}/{carouselImages.length}
+                </div>
+              </>
+            )}
           </div>
+
+          {carouselImages.length > 1 && (
+            <div className="grid grid-cols-4 gap-2">
+              {carouselImages.map((img, index) => (
+                <div
+                  key={index}
+                  className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer bg-gray-100 ${index === currentImageIndex ? "ring-2 ring-red-500" : ""
+                    }`}
+                  onClick={() => setCurrentImageIndex(index)}
+                >
+                  <Image
+                    src={img}
+                    alt={`Thumbnail ${index + 1}`}
+                    fill
+                    sizes="(max-width: 768px) 25vw, 12vw"
+                    style={{ objectFit: "cover" }}
+                    onError={() => {
+                      console.error("Thumbnail failed to load:", img);
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="space-y-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{cuisineDetails.name}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{meal.name}</h1>
             <div className="flex items-center gap-2 mt-2">
               <div className="flex items-center">
-                {[...Array(Math.floor(cuisineDetails.rating))].map((_, i) => (
+                {[...Array(Math.floor(meal.rating || 0))].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                 ))}
-                {cuisineDetails.rating % 1 > 0 && (
+                {(meal.rating || 0) % 1 > 0 && (
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" strokeWidth={1} />
                 )}
               </div>
-              <span className="text-gray-600">{cuisineDetails.rating} (245 reviews)</span>
+              <span className="text-gray-600">{meal.rating || 0} (245 reviews)</span>
             </div>
-            <div className="text-2xl font-bold text-red-500 mt-2">Rs. {cuisineDetails.price}</div>
+            <div className="text-2xl font-bold text-red-500 mt-2">Rs. {meal.price}</div>
           </div>
 
           <div className="space-y-4">
             <h2 className="font-semibold text-gray-900">Description</h2>
-            <p className="text-gray-600">{cuisineDetails.description}</p>
+            <p className="text-gray-600">{meal.longDescription || meal.description}</p>
 
             <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-              <div>🍽️ Serves 1</div>
+              <div> Serves 1</div>
+              {meal.isTodaysSpecial && <div> Today's Special</div>}
+              {meal.isChefsSpecial && <div> Chef's Special</div>}
             </div>
           </div>
 
@@ -213,7 +309,10 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
             >
               Add to Pre-Order
             </button>
-            <button className="flex-1 border border-gray-300 py-3 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+            <button
+              onClick={() => window.history.back()}
+              className="flex-1 border border-gray-300 py-3 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+            >
               Go Back
             </button>
           </div>
