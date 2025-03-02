@@ -8,7 +8,7 @@ interface UseChefsSpecialsReturn {
     error: string | null;
 }
 
-export const UseChefsSpecials = (restaurantId: string): UseChefsSpecialsReturn => {
+export const useChefsSpecials = (restaurantId: string): UseChefsSpecialsReturn => {
     const [meals, setMeals] = useState<Meal[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);

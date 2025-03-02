@@ -3,13 +3,13 @@ import { Meal } from "../types/meal";
 import { todaysSpecialService } from "../services/todaysSpecialService";
 
 interface UseTodaysSpecialsReturn {
-    meals: Meal[];
+    meals: Meal[] | null;
     loading: boolean;
     error: string | null;
 }
 
 export const useTodaysSpecials = (restaurantId: string): UseTodaysSpecialsReturn => {
-    const [ meals, setMeals ] = useState<Meal[]>([]);
+    const [ meals, setMeals ] = useState<Meal[] | null>(null);
     const [ loading, setLoading ] = useState<boolean>(true);
     const [ error, setError ] = useState<string | null>(null);
 
