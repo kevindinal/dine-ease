@@ -1,9 +1,13 @@
+"use client"
+
 import Image from "next/image";
 import React, { FC, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface FoodCardProps {
   id: string;
+  restaurantId: string;
+  categoryId: string;
   image: string;
   name: string;
   rating: number;
@@ -21,6 +25,9 @@ interface FoodCardProps {
 }
 
 const FoodCard: FC<FoodCardProps> = ({
+  id,
+  restaurantId,
+  categoryId,
   image,
   name,
   rating,
@@ -30,6 +37,7 @@ const FoodCard: FC<FoodCardProps> = ({
   onAddToPreOrder,
 }) => {
   const router = useRouter();
+  
   const [quantity, setQuantity] = useState(1);
   const [ingredients, setIngredients] = useState("");
   const [portionSize, setPortionSize] = useState("Regular");
@@ -58,10 +66,10 @@ const FoodCard: FC<FoodCardProps> = ({
     onAddToPreOrder(customizations);
   };
 
-
   const handleCardClick = () => {
-    router.push(`/cuisine-details-page?name=${encodeURIComponent(name)}`);
-  };
+    console.log("Card clicked:", id, restaurantId, categoryId);
+    router.push(`/cuisine-details-page?id=${id}&restaurantId=${restaurantId}&categoryId=${categoryId}`);
+  };  
 
   return (
     <div className="flex items-center justify-center px-2">
@@ -84,9 +92,6 @@ const FoodCard: FC<FoodCardProps> = ({
           <p className="font-bold text-gray-700 text-lg sm:text-[22px] leading-6 sm:leading-7 mb-1">
             {name}
           </p>
-          <div className="flex flex-row">
-            <p className="text-[#3C3C4399] text-sm sm:text-[17px] mr-2">★ {rating}</p>
-          </div>
           <p className="text-[#7C7C80] text-sm sm:text-[15px] mt-4 sm:mt-6 line-clamp-2">
             {description}
           </p>
