@@ -61,7 +61,7 @@ useEffect(() => {
   
 
   const [isOpen, setIsOpen] = useState(false);
-  const [points, setPoints] = useState(500);
+  const [points, setPoints] = useState(100);
   const [discountApplied, setDiscountApplied] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
 
