@@ -146,15 +146,27 @@ const SummaryPage = () => {
           <span className="text-xl font-bold text-[#FA4032]">Rs.{totalPrice.toFixed(2)}</span>
         </div>
 
-        <Button className={`w-full bg-blue-500 text-white hover:bg-blue-600 ${discountApplied && "opacity-50 cursor-not-allowed"}`} onClick={applyPointsDiscount} disabled={discountApplied}>
-          Reduce from Total
-        </Button>
+        <Button
+  className={`w-full h-14 bg-blue-500 text-white hover:bg-blue-600 rounded-lg ${
+    discountApplied && "opacity-50 cursor-not-allowed"
+  }`}
+  onClick={applyPointsDiscount}
+  disabled={discountApplied}
+>
+  Reduce from Total
+</Button>
+
 
         <div className="flex flex-col md:flex-row gap-4 mt-4">
-          <Button className="w-full md:w-1/2 bg-gray-700 text-white hover:bg-gray-800">Pay at Restaurant</Button>
-          <Button className="w-full md:w-1/2 bg-[#FA4032] text-white hover:bg-[#FB665B]" onClick={() => setIsOpen(true)}>
-            Pay Now
-          </Button>
+  <Button className="w-full md:w-1/2 h-14 bg-gray-700 text-white hover:bg-gray-800 rounded-lg">
+    Pay at Restaurant
+  </Button>
+  <Button
+    className="w-full md:w-1/2 h-14 bg-[#FA4032] text-white hover:bg-[#FB665B] rounded-lg"
+    onClick={() => setIsOpen(true)}
+  >
+    Pay Now
+  </Button>
         </div>
       </div>
     </Card>

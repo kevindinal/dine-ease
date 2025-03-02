@@ -4,6 +4,6 @@ const Button = ({ children, ...props }: any) => {
         {children}
       </button>
     );
-  };
+  }
   export { Button };
   
