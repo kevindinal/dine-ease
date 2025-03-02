@@ -29,12 +29,36 @@ const SummaryPage = () => {
   // Fetching Order Summary from Local Storage
   const [items, setItems] = useState<OrderItem[]>([]);
 
-  useEffect(() => {
+//   useEffect(() => {
+//     if (typeof window !== "undefined") {
+//       const savedItems = localStorage.getItem("cartItems");
+//       setItems(savedItems ? JSON.parse(savedItems) : []);
+//     }
+//   }, []);
+
+useEffect(() => {
     if (typeof window !== "undefined") {
       const savedItems = localStorage.getItem("cartItems");
-      setItems(savedItems ? JSON.parse(savedItems) : []);
+      let itemsArray: OrderItem[] = savedItems ? JSON.parse(savedItems) : [];
+  
+      // Add a test item if the cart is empty
+      if (itemsArray.length === 0) {
+        itemsArray = [
+          {
+            id: 999,
+            name: "Test Meal",
+            price: 200,
+            quantity: 1,
+            image: "https://via.placeholder.com/150", // Placeholder image
+          },
+        ];
+        localStorage.setItem("cartItems", JSON.stringify(itemsArray));
+      }
+  
+      setItems(itemsArray);
     }
   }, []);
+  
 
   const [isOpen, setIsOpen] = useState(false);
   const [points, setPoints] = useState(500);
