@@ -1,77 +1,44 @@
 import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, getDoc, doc } from "firebase/firestore";
 import { Meal } from "../types/meal";
 
 export const mealService = {
+  getMealsByCategory: async (restaurantId: string, categoryId: string): Promise<Meal[] | null> => {
+    try {
+      const mealsRef = collection(db, "restaurants", restaurantId, "categories", categoryId, "meals");
+      const snapshot = await getDocs(mealsRef);
 
-    getMealsByRestaurantId: async (restaurantId: string): Promise<Meal[]> => {
-        try {
-            const mealsRef = collection(db, "meals");
-            const mealQuery = query(mealsRef, where("restaurant_id", "==", restaurantId));
-            const snapshot = await getDocs(mealQuery);
+      if (snapshot.empty) {
+        return null;
+      }
 
-            return snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...(doc.data() as Omit<Meal, "id">)
-            }));
-        } catch (error) {
-            console.error("Error fetching meals by restaurant: ", error);
-            throw error;
-        }
-    },
-
-    getMealsByCategoryId: async (restaurantId: string, categoryId: string): Promise<Meal[]> => {
-        try {
-            const mealsRef = collection(db, "restaurants", restaurantId, "categories", categoryId, "meals");
-            const snapshot = await getDocs(mealsRef);
-
-            if (snapshot.empty) {
-                return [];
-            }
-
-            return snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...(doc.data() as Omit<Meal, "id">)
-            }));
-        } catch (error) {
-            console.error("Error fetching meals by restaurant: ", error);
-            throw error;
-        }
-    },
-
-    getMealsByRestaurantAndCategory: async (restaurantId: string, categoryId: string): Promise<Meal[]> => {
-        try {
-            const mealsRef = collection(db, "meals");
-            const mealsQuery = query(mealsRef, where("restaurant_id", "==", restaurantId), where("category_id", "==", categoryId));
-            const snapshot = await getDocs(mealsQuery);
-
-            return snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...(doc.data() as Omit<Meal, "id">)
-            }));
-        } catch (error) {
-            console.error("Error fetching meals by restaurant and category: ", error);
-            throw error;
-        }
-    },
-
-    getMealById: async (mealId: string): Promise<Meal | null> => {
-        try {
-            const mealsRef = collection(db, "meals");
-            const mealsQuery = query(mealsRef, where("id", "==", mealId));
-            const snapshot = await getDocs(mealsQuery);
-
-            if (snapshot.empty) {
-                return null;
-            }
-
-            return {
-                id: snapshot.docs[0].id,
-                ...(snapshot.docs[0].data() as Omit<Meal, "id">)
-            };
-        } catch (error) {
-            console.error("Error fetching meal by ID: ", error);
-            throw error;
-        }
+      return snapshot.docs.map((doc) => ({
+        id: doc.id,
+       ...(doc.data() as Omit<Meal, "id">)
+      }));
+    } catch (error) {
+      console.error("Error fetching meals: ", error);
+      throw error;
     }
-}
+  },
+
+  getMealsById: async (restaurantId: string, categoryId: string, mealId: string): Promise<Meal | null> => {
+    try {
+      console.log("Fetching meal with:", restaurantId, categoryId, mealId);
+      const mealRef = doc(db, "restaurants", restaurantId, "categories", categoryId, "meals", mealId);
+      const snapshot = await getDoc(mealRef);
+  
+      if (!snapshot.exists()) {
+        return null;
+      }
+  
+      return {
+        id: snapshot.id,
+       ...(snapshot.data() as Omit<Meal, "id">)
+      };
+    } catch (error) {
+      console.error("Error fetching meal: ", error);
+      throw error;
+    }
+  }
+};
