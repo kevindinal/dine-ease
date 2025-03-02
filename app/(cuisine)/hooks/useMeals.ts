@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Meal } from "../types/meal";
 import { mealService } from "../services/mealService";
@@ -39,16 +40,34 @@ export const useMeals = (restaurantId: string, categoryId: string): UseMealsRetu
   return { meals, loading, error };
 };
 
-export const useMealsById = (mealId: string, restaurantId: string, categoryId: string) => {
+export const useMealsById = (mealId: string, restaurantId: string, categoryId?: string) => {
   const [meal, setMeal] = useState<Meal | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [foundCategoryId, setFoundCategoryId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMeal = async () => {
       try {
         setLoading(true);
-        const data: Meal | null = await mealService.getMealsById(restaurantId, categoryId, mealId);
+        
+        // If categoryId is not provided, find it first
+        let effectiveCategoryId = categoryId;
+        if (!effectiveCategoryId) {
+          console.log("Finding category for meal:", mealId);
+          const foundCategory = await mealService.findMealCategory(restaurantId, mealId);
+          if (!foundCategory) {
+            setError("Could not determine category for this meal");
+            setLoading(false);
+            return;
+          }
+          effectiveCategoryId = foundCategory;
+          setFoundCategoryId(foundCategory);
+          console.log("Found category:", foundCategory);
+        }
+        
+        // Now fetch the meal with the category ID
+        const data: Meal | null = await mealService.getMealsById(restaurantId, effectiveCategoryId, mealId);
         if (data) {
           setMeal(data);
           setError(null);
@@ -63,7 +82,7 @@ export const useMealsById = (mealId: string, restaurantId: string, categoryId: s
       }
     };
 
-    if (mealId && restaurantId && categoryId) {
+    if (mealId && restaurantId) {
       fetchMeal();
     } else {
       setMeal(null);
@@ -71,5 +90,5 @@ export const useMealsById = (mealId: string, restaurantId: string, categoryId: s
     }
   }, [mealId, restaurantId, categoryId]);
 
-  return { meal, loading, error };
+  return { meal, loading, error, categoryId: foundCategoryId || categoryId };
 };

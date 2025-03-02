@@ -7,21 +7,14 @@ import { useRouter } from "next/navigation";
 interface FoodCardProps {
   id: string;
   restaurantId: string;
-  categoryId: string;
+  categoryId?: string; // Make categoryId optional
   image: string;
   name: string;
   rating: number;
   description: string;
   price: number;
-  carouselImages: string[];
-  onAddToPreOrder: (customizations: {
-    quantity: number;
-    ingredients: string;
-    portionSize: string;
-    spiceLevel: string;
-    addOns: string;
-    drinkPairing: string;
-  }) => void;
+  carouselImages?: string[];
+  onAddToPreOrder: (customizations: any) => void;
 }
 
 const FoodCard: FC<FoodCardProps> = ({
@@ -33,7 +26,7 @@ const FoodCard: FC<FoodCardProps> = ({
   rating,
   description,
   price,
-  carouselImages,
+  carouselImages = [],
   onAddToPreOrder,
 }) => {
   const router = useRouter();
@@ -67,8 +60,17 @@ const FoodCard: FC<FoodCardProps> = ({
   };
 
   const handleCardClick = () => {
+    // Navigate to cuisine details with the meal ID and restaurant ID
+    // The categoryId will be determined by the hook if not provided
+    const url = `/cuisine-details-page?id=${id}&restaurantId=${restaurantId}`;
+    
+    // Only add categoryId to the URL if it's available
+    const fullUrl = categoryId ? `${url}&categoryId=${categoryId}` : url;
+    
     console.log("Card clicked:", id, restaurantId, categoryId);
-    router.push(`/cuisine-details-page?id=${id}&restaurantId=${restaurantId}&categoryId=${categoryId}`);
+    console.log("Navigating to:", fullUrl);
+    
+    router.push(fullUrl);
   };  
 
   return (
@@ -92,7 +94,7 @@ const FoodCard: FC<FoodCardProps> = ({
           <p className="font-bold text-gray-700 text-lg sm:text-[22px] leading-6 sm:leading-7 mb-1">
             {name}
           </p>
-          <p className="text-[#7C7C80] text-sm sm:text-[15px] mt-4 sm:mt-6 line-clamp-2">
+          <p className="text-[#7C7C80] text-xs sm:text-[15px] mt-4 sm:mt-6 line-clamp-2">
             {description}
           </p>
           <div className="flex flex-row mt-3 sm:mt-4 justify-between items-center">
@@ -102,7 +104,7 @@ const FoodCard: FC<FoodCardProps> = ({
                 e.stopPropagation();
                 handleAddToPreOrder();
               }}
-              className="px-2 py-1 sm:py-2 text-sm sm:text-base font-medium tracking-wide text-center capitalize transition-colors duration-300 transform rounded-[14px] bg-[#FB665B] hover:bg-[#FA4032] focus:ring-[#FB665B] focus:outline-none focus:ring-opacity-80 border border-black"
+              className="px-2 py-1 sm:py-2 text-xs sm:text-base font-medium tracking-wide text-center capitalize transition-colors duration-300 transform rounded-[14px] bg-[#FB665B] hover:bg-[#FA4032] focus:ring-[#FB665B] focus:outline-none focus:ring-opacity-80 border border-black"
             >
               Add to Pre-order
             </button>

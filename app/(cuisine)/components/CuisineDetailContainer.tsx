@@ -14,7 +14,7 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
   const searchParams = useSearchParams();
   const mealId = searchParams.get("id") || "";
   const restaurantId = searchParams.get("restaurantId") || "";
-  const categoryId = searchParams.get("categoryId") || "";
+  const categoryIdFromUrl = searchParams.get("categoryId") || undefined;
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState("Regular");
@@ -23,7 +23,8 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
   const [selectedDrink, setSelectedDrink] = useState<string>("Water");
   const [imageError, setImageError] = useState<string | null>(null);
 
-  const { meal, loading, error } = useMealsById(mealId, restaurantId, categoryId);
+  // The enhanced hook now handles finding the categoryId if not provided
+  const { meal, loading, error, categoryId: resolvedCategoryId } = useMealsById(mealId, restaurantId, categoryIdFromUrl);
 
   // Reset the image index when the meal changes
   useEffect(() => {
@@ -32,18 +33,21 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
   }, [meal]);
 
   useEffect(() => {
-    console.log("Params:", mealId, restaurantId, categoryId);
-  }, [mealId, restaurantId, categoryId]);
+    console.log("Params:", mealId, restaurantId, categoryIdFromUrl);
+    if (resolvedCategoryId && resolvedCategoryId !== categoryIdFromUrl) {
+      console.log("Resolved category ID:", resolvedCategoryId);
+    }
+  }, [mealId, restaurantId, categoryIdFromUrl, resolvedCategoryId]);
 
-  // Debug the meal object and image URLs
   // Debug the meal object and image URLs
   useEffect(() => {
     if (meal && meal.carouselImages) {
       console.log("Meal object:", meal);
+      console.log("Category ID:", resolvedCategoryId);
       console.log("Image URL:", meal.image);
       console.log("Image Carousel:", meal.carouselImages);
     }
-  }, [meal]);
+  }, [meal, resolvedCategoryId]);
 
   if (loading) {
     return <div className="flex justify-center items-center min-h-[400px]">
@@ -117,6 +121,7 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
       spiceLevel,
       addOns,
       drink: selectedDrink,
+      categoryId: resolvedCategoryId // Include the resolved categoryId
     };
     console.log('Adding to pre-order:', customizations);
     handleAddToPreOrder(customizations);
@@ -209,6 +214,11 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
               <span className="text-gray-600">{meal.rating || 0} (245 reviews)</span>
             </div>
             <div className="text-2xl font-bold text-red-500 mt-2">Rs. {meal.price}</div>
+            {resolvedCategoryId && (
+              <div className="text-sm text-gray-500 mt-1">
+                Category ID: {resolvedCategoryId}
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -216,9 +226,9 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
             <p className="text-gray-600">{meal.longDescription || meal.description}</p>
 
             <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-              <div> Serves 1</div>
-              {meal.isTodaysSpecial && <div> Today's Special</div>}
-              {meal.isChefsSpecial && <div> Chef's Special</div>}
+              <div>Serves 1</div>
+              {meal.isTodaysSpecial && <div>Today's Special</div>}
+              {meal.isChefsSpecial && <div>Chef's Special</div>}
             </div>
           </div>
 
