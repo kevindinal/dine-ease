@@ -8,6 +8,7 @@ import { db } from "@/lib/firebase";
 import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
 import { Dialog, Transition } from "@headlessui/react";
 import PaymentForm from "./PaymentForm";
+import second from '@/app/payment-success/page'
 
 // Define OrderItem type
 type OrderItem = {
@@ -210,6 +211,8 @@ const DetailRow = ({ label, value }: { label: string; value: string }) => (
       <span className="font-medium text-gray-900">{value}</span>
     </div>
   );
+
+  
   
 
 export default SummaryPage;
