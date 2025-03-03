@@ -24,21 +24,34 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ amount: convertToSubcurrency(amount) }),
         });
-  
+
         const data = await response.json();
-        setClientSecret(data.clientSecret || null); // ✅ Fix applied here
+        if (data.clientSecret) {
+          setClientSecret(data.clientSecret);
+        } else {
+          setErrorMessage("Failed to initialize payment");
+        }
       } catch (error) {
         setErrorMessage("Failed to initialize payment");
       }
     };
-  
+
     fetchClientSecret();
   }, [amount]);
-  
 
   // Handle payment submission
   const handlePayment = async () => {
-    if (!stripe || !elements || !clientSecret) {
+    if (!stripe) {
+      setErrorMessage("Stripe has not loaded yet.");
+      return;
+    }
+
+    if (!elements) {
+      setErrorMessage("Elements have not loaded yet.");
+      return;
+    }
+
+    if (!clientSecret) {
       setErrorMessage("Payment could not be initialized");
       return;
     }
@@ -48,18 +61,17 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
     // First, submit the payment form to validate inputs
     const { error: submitError } = await elements.submit();
     if (submitError) {
-        setErrorMessage(submitError.message || "An unknown error occurred.");
-
+      setErrorMessage(submitError.message || "An unknown error occurred.");
       setLoading(false);
       return;
     }
 
     // Then, confirm the payment with the client secret
     const { error } = await stripe.confirmPayment({
-      elements,
-      clientSecret, // Explicitly passing clientSecret
+      elements: elements, // Ensure elements is not null
+      clientSecret: clientSecret, // Ensure clientSecret is not empty
       confirmParams: {
-        return_url: `${window.location.origin}/order-status`,
+        return_url: `${window.location.origin}/payment-success?amount=${amount}`,
       },
     });
 
