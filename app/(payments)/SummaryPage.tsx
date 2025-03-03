@@ -201,5 +201,13 @@ const SummaryPage = () => {
     </Card>
   );
 };
+// Define DetailRow component
+const DetailRow = ({ label, value }: { label: string; value: string }) => (
+    <div className="flex justify-between">
+      <span className="text-gray-700">{label}</span>
+      <span className="font-medium text-gray-900">{value}</span>
+    </div>
+  );
+  
 
 export default SummaryPage;
