@@ -10,55 +10,73 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
   const elements = useElements();
   const router = useRouter();
 
-  const [errorMessage, setErrorMessage] = useState<string>();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState("");
   const [loading, setLoading] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false); // New State
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
+  // Fetch clientSecret from backend
   useEffect(() => {
-    fetch("/api/create-payment-intent", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ amount: convertToSubcurrency(amount) }),
-    })
-      .then((res) => res.json())
-      .then((data) => setClientSecret(data.clientSecret));
+    const fetchClientSecret = async () => {
+      try {
+        const response = await fetch("/api/create-payment-intent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: convertToSubcurrency(amount) }),
+        });
+  
+        const data = await response.json();
+        setClientSecret(data.clientSecret || null); // ✅ Fix applied here
+      } catch (error) {
+        setErrorMessage("Failed to initialize payment");
+      }
+    };
+  
+    fetchClientSecret();
   }, [amount]);
+  
 
+  // Handle payment submission
   const handlePayment = async () => {
-    setLoading(true);
-
-    const order = { amount: convertToSubcurrency(amount) }; // Example order data
-
-    const res = await fetch("/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(order),
-    });
-
-    const { sessionUrl } = await res.json();
-    if (sessionUrl) {
-      window.location.href = sessionUrl;
-    } else {
-      setErrorMessage("Failed to initiate payment.");
+    if (!stripe || !elements || !clientSecret) {
+      setErrorMessage("Payment could not be initialized");
+      return;
     }
 
-    setLoading(false);
+    setLoading(true);
+
+    // First, submit the payment form to validate inputs
+    const { error: submitError } = await elements.submit();
+    if (submitError) {
+        setErrorMessage(submitError.message || "An unknown error occurred.");
+
+      setLoading(false);
+      return;
+    }
+
+    // Then, confirm the payment with the client secret
+    const { error } = await stripe.confirmPayment({
+      elements,
+      clientSecret, // Explicitly passing clientSecret
+      confirmParams: {
+        return_url: `${window.location.origin}/order-status`,
+      },
+    });
+
+    if (error) {
+      setErrorMessage(error.message || "Payment failed");
+      setLoading(false);
+    } else {
+      setPaymentSuccess(true);
+      setLoading(false);
+    }
   };
 
-  if (!clientSecret || !stripe || !elements) {
+  // Display loading indicator if clientSecret is missing
+  if (!clientSecret) {
     return (
       <div className="flex items-center justify-center">
-        <div
-          className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-e-transparent align-[-0.125em] text-surface motion-reduce:animate-[spin_1.5s_linear_infinite] dark:text-white"
-          role="status"
-        >
-          <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
-            Loading...
-          </span>
-        </div>
+        <div className="animate-spin h-8 w-8 border-4 border-solid border-gray-500 border-t-transparent rounded-full"></div>
       </div>
     );
   }
@@ -67,13 +85,13 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
     <div className="bg-white p-4 rounded-md text-center">
       {!paymentSuccess ? (
         <form onSubmit={(e) => e.preventDefault()}>
-          {clientSecret && <PaymentElement />}
-          {errorMessage && <div className="text-red-500">{errorMessage}</div>}
+          <PaymentElement />
+          {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
 
           <button
-            disabled={loading}
-            className="text-white w-full p-4 bg-black mt-2 rounded-md font-bold disabled:opacity-50 disabled:animate-pulse"
+            className="text-white w-full p-4 bg-black mt-4 rounded-md font-bold disabled:opacity-50"
             onClick={handlePayment}
+            disabled={loading}
           >
             {!loading ? `Pay Rs.${amount}` : "Processing..."}
           </button>
@@ -87,7 +105,7 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
             className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
             onClick={() => router.push("/order-status")}
           >
-            Order Status
+            View Order Status
           </button>
         </div>
       )}

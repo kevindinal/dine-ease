@@ -94,6 +94,8 @@ const SummaryPage = () => {
     setItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 
+  
+
   const applyPointsDiscount = () => {
     if (discountApplied || points <= 0) return;
     const discount = Math.min(points, totalPrice);
