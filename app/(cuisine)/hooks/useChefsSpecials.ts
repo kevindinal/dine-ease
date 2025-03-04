@@ -18,7 +18,7 @@ export const useChefsSpecials = (restaurantId: string): UseChefsSpecialsReturn =
             try {
                 setLoading(true);
                 const data = await chefsSpecialsService.getChefsSpecials(restaurantId);
-                setMeals(data);
+                setMeals(data ?? []);
             } catch (error) {
                 setError(error instanceof Error ? error.message : "An error occurred");
             } finally {

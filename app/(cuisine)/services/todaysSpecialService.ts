@@ -20,10 +20,10 @@ export const todaysSpecialService = {
                             const mealData = mealDoc.data();
                             if (mealData.isTodaysSpecial) {
                                 return {
+                                    ...(mealData as Omit<Meal, 'id'>),
                                     id: mealDoc.id,
                                     categoryId: categoryDoc.id,
-                                    categoryName: categoryDoc.data().name,
-                                  ...(mealData as Omit<Meal, 'id'>)
+                                    categoryName: categoryDoc.data().name
                                 };
                             } else {
                                 return null;
@@ -33,7 +33,7 @@ export const todaysSpecialService = {
 
                     return categoryMeals.filter((meal): meal is Meal => meal!== null) as Meal[];
                 })
-            ).then(meals => meals.flat()); // Use flat to flatten the array of arrays
+            ).then(meals => meals.flat()); 
 
             const filteredMeals = meals.filter((meal): meal is Meal => meal!== null) as Meal[];
             return filteredMeals.length > 0? filteredMeals : null;
