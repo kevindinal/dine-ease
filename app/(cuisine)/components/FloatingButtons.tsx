@@ -1,11 +1,21 @@
 import React, { FC } from "react";
+import { PreOrderItem } from "../types/preOrderTypes";
 
 interface FloatingButtonsProps {
   preOrderCount: number;
+  preOrders: PreOrderItem[];
   clearPreOrder: () => void;
+  removePreOrderItem: (itemId: string, customizationKey: string) => void;
+  onPreOrderCountClick: () => void;
 }
 
-const FloatingButtons: FC<FloatingButtonsProps> = ({ preOrderCount, clearPreOrder }) => {
+const FloatingButtons: FC<FloatingButtonsProps> = ({ 
+  preOrderCount, 
+  preOrders, 
+  clearPreOrder, 
+  removePreOrderItem,
+  onPreOrderCountClick 
+}) => {
   const handleCancelPreOrder = () => {
     if (window.confirm("Are you sure you want to cancel the pre-order?")) {
       clearPreOrder();
@@ -28,7 +38,13 @@ const FloatingButtons: FC<FloatingButtonsProps> = ({ preOrderCount, clearPreOrde
       >
         Proceed to Checkout 🛒
         {preOrderCount > 0 && (
-          <div className="absolute -top-1 -right-1 md:-top-2 md:-right-2 bg-[#FA4032] text-white text-xs md:text-sm font-bold w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center shadow-md border border-black">
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              onPreOrderCountClick();
+            }}
+            className="absolute -top-1 -right-1 md:-top-2 md:-right-2 bg-[#FA4032] text-white text-xs md:text-sm font-bold w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center shadow-md border border-black cursor-pointer"
+          >
             {preOrderCount}
           </div>
         )}
