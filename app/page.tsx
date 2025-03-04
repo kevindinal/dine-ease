@@ -1,11 +1,11 @@
-import Image from "next/image";
-import MealPreOrderMain from "./(cuisine)/cuisine-main-page/page";
+"use client";  // ✅ Add this to make it a Client Component if needed
 
+import RestaurantBooking from "./(restaurants)/restaurants/page";
 
-export default function Home() {
+export default function HomePage() {
   return (
     <div>
-      <MealPreOrderMain />
+      <RestaurantBooking />
     </div>
   );
 }
