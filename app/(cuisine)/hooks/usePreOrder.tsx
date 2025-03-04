@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
-interface PreOrderItem {
+export interface PreOrder {
   id: string;
   name: string;
   quantity: number;
@@ -8,59 +8,64 @@ interface PreOrderItem {
   portionSize: string;
   spiceLevel: string;
   drinkPairing: string;
-  addOns: string[];
   price: number;
   image: string;
+  addOns?: any[];
 }
 
-export default function usePreOrder() {
-  const [preOrders, setPreOrders] = useState<PreOrderItem[]>([]);
+const usePreOrder = () => {
+  const [preOrders, setPreOrders] = useState<PreOrder[]>(() => {
+    if (typeof window !== "undefined") {
+      const savedPreOrders = localStorage.getItem("preOrders");
+      return savedPreOrders ? JSON.parse(savedPreOrders) : [];
+    }
+    return [];
+  });
 
-  // Initialize preOrders from localStorage
   useEffect(() => {
-    const storedOrders = JSON.parse(localStorage.getItem("preOrders") || "[]");
-    setPreOrders(storedOrders);
-  }, []);
-
-  // Sync the preOrders state to localStorage whenever it changes
-  useEffect(() => {
-    if (preOrders.length > 0) {
+    if (typeof window !== "undefined") {
       localStorage.setItem("preOrders", JSON.stringify(preOrders));
     }
   }, [preOrders]);
 
-  const addItemToPreOrder = (item: PreOrderItem) => {
-    setPreOrders((prevOrders) => {
-      const existingItemIndex = prevOrders.findIndex(
-        (order) =>
-          order.id === item.id &&
-          order.ingredients === item.ingredients &&
-          order.portionSize === item.portionSize &&
-          order.spiceLevel === item.spiceLevel &&
-          order.addOns.join(",") === item.addOns.join(",") &&
-          order.drinkPairing === item.drinkPairing
+  const preOrderCount = preOrders.reduce((total, item) => total + item.quantity, 0);
+
+  const addItemToPreOrder = (newItem: PreOrder) => {
+    setPreOrders((prevItems) => {
+      const existingItemIndex = prevItems.findIndex(
+        (item) => 
+          item.id === newItem.id &&
+          item.portionSize === newItem.portionSize &&
+          item.spiceLevel === newItem.spiceLevel &&
+          item.drinkPairing === newItem.drinkPairing &&
+          JSON.stringify(item.addOns) === JSON.stringify(newItem.addOns)
       );
-  
+
       if (existingItemIndex !== -1) {
-        const updatedOrders = [...prevOrders];
-        updatedOrders[existingItemIndex].quantity += item.quantity;
-        return updatedOrders;
+        const updatedItems = [...prevItems];
+        updatedItems[existingItemIndex].quantity += newItem.quantity;
+        return updatedItems;
+      } else {
+        return [...prevItems, newItem];
       }
-  
-      return [...prevOrders, item];
     });
   };
-  
+
+  const removePreOrderItem = (itemId: string) => {
+    setPreOrders((prevItems) => prevItems.filter((item) => item.id !== itemId));
+  };
 
   const clearPreOrder = () => {
     setPreOrders([]);
-    localStorage.removeItem("preOrders");
   };
 
   return {
     preOrders,
-    preOrderCount: preOrders.reduce((total, item) => total + item.quantity, 0),
+    preOrderCount,
     addItemToPreOrder,
+    removePreOrderItem,
     clearPreOrder,
   };
-}
+};
+
+export default usePreOrder;

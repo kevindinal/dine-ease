@@ -23,30 +23,20 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
   const [selectedDrink, setSelectedDrink] = useState<string>("Water");
   const [imageError, setImageError] = useState<string | null>(null);
 
-  // The enhanced hook now handles finding the categoryId if not provided
   const { meal, loading, error, categoryId: resolvedCategoryId } = useMealsById(mealId, restaurantId, categoryIdFromUrl);
 
-  // Reset the image index when the meal changes
   useEffect(() => {
     setCurrentImageIndex(0);
     setImageError(null);
   }, [meal]);
 
   useEffect(() => {
-    console.log("Params:", mealId, restaurantId, categoryIdFromUrl);
-    if (resolvedCategoryId && resolvedCategoryId !== categoryIdFromUrl) {
-      console.log("Resolved category ID:", resolvedCategoryId);
-    }
+    if (categoryIdFromUrl && resolvedCategoryId !== categoryIdFromUrl) {
+      console.log("Category ID from URL does not match resolved category ID");
+    } 
   }, [mealId, restaurantId, categoryIdFromUrl, resolvedCategoryId]);
 
-  // Debug the meal object and image URLs
-  useEffect(() => {
-    if (meal && meal.carouselImages) {
-      console.log("Meal object:", meal);
-      console.log("Category ID:", resolvedCategoryId);
-      console.log("Image URL:", meal.image);
-      console.log("Image Carousel:", meal.carouselImages);
-    }
+  useEffect(() => {    
   }, [meal, resolvedCategoryId]);
 
   if (loading) {
@@ -67,37 +57,23 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
     </div>;
   }
 
-  // Determine the proper images to display
   const getCarouselImages = () => {
-    // Debug the image carousel data
-    console.log("Getting carousel images");
-    console.log("carouselImages type:", typeof meal.carouselImages);
-    console.log("carouselImages value:", meal.carouselImages);
 
-    // More safely handle the carousel images
     let images: string[] = [];
 
     try {
-      // Check if carouselImages exists and is an array
       if (meal && meal.carouselImages && Array.isArray(meal.carouselImages)) {
-        console.log("Using carouselImages array");
         images = meal.carouselImages;
       }
-      // Fallback to imageUrl if available
       else if (meal && meal.image) {
-        console.log("Falling back to imageUrl");
         images = [meal.image];
       }
-      // Default placeholder if no images are available
       else {
-        console.log("Using placeholder image");
         images = ["/placeholder-image.jpg"];
       }
 
-      console.log("Final images array:", images);
       return images;
     } catch (err) {
-      console.error("Error processing images:", err);
       setImageError(err instanceof Error ? err.message : "Unknown image error");
       return ["/placeholder-image.jpg"];
     }
@@ -105,7 +81,6 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
 
   const carouselImages = getCarouselImages();
 
-  // Ensure currentImageIndex is within bounds
   if (currentImageIndex >= carouselImages.length) {
     setCurrentImageIndex(0);
   }
@@ -121,7 +96,7 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
       spiceLevel,
       addOns,
       drink: selectedDrink,
-      categoryId: resolvedCategoryId // Include the resolved categoryId
+      categoryId: resolvedCategoryId 
     };
     console.log('Adding to pre-order:', customizations);
     handleAddToPreOrder(customizations);
@@ -163,7 +138,6 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
                   className="rounded-lg"
                   priority
                   onError={() => {
-                    console.error("Image failed to load:", carouselImages[currentImageIndex]);
                     setImageError(`Failed to load image: ${carouselImages[currentImageIndex]}`);
                   }}
                 />

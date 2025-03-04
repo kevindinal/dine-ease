@@ -7,13 +7,15 @@ import { useSearchParams } from "next/navigation";
 import CuisineDetailContainer from "../components/CuisineDetailContainer";
 import FoodCard from "../components/FoodCard";
 import FloatingButtons from "../components/FloatingButtons";
+import PreOrderModal from "../components/PreOrderModel";
 
 const MealDetailsPage: React.FC = () => {
-  const { preOrderCount, addItemToPreOrder, clearPreOrder } = usePreOrder();
+  const { preOrders, preOrderCount, addItemToPreOrder, removePreOrderItem, clearPreOrder } = usePreOrder();
   const searchParams = useSearchParams();
   const mealId = searchParams.get("id") || "";
   const restaurantId = searchParams.get("restaurantId") || "";
   const categoryId = searchParams.get("categoryId") || "";
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // const { meals: recommendedMeals, loading } = useMeals(restaurantId, "recommended");
 
@@ -36,8 +38,21 @@ const MealDetailsPage: React.FC = () => {
 
   return (
     <div>
-      <section className="py-4 mx-4 md:mx-14 z-10 fixed bottom-32 left-0 right-0 flex justify-center">
-        <FloatingButtons preOrderCount={preOrderCount} clearPreOrder={clearPreOrder} />
+      <PreOrderModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        preOrders={preOrders}
+        removeItem={removePreOrderItem}
+      />
+
+      <section className="py-4 mx-4 md:mx-14 z-10 fixed slide-in-from-bottom-28 left-0 right-0 flex justify-center bottom-24">
+        <FloatingButtons 
+          preOrderCount={preOrderCount} 
+          preOrders={preOrders}
+          clearPreOrder={clearPreOrder}
+          removePreOrderItem={removePreOrderItem}
+          onPreOrderCountClick={() => setIsModalOpen(true)}
+        />
       </section>
 
       <section className="relative py-32 px-4 md:px-14 text-white">
