@@ -20,10 +20,10 @@ export const chefsSpecialsService = {
                             const mealData = mealDoc.data();
                             if (mealData.isChefsSpecial) {
                                 return {
+                                    ...(mealData as Omit<Meal, 'id'>),
                                     id: mealDoc.id,
                                     categoryId: categoryDoc.id,
-                                    categoryName: categoryDoc.data().name,
-                                   ...(mealData as Omit<Meal, 'id'>)
+                                    categoryName: categoryDoc.data().name
                                 };
                             } else {
                                 return null;

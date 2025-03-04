@@ -51,23 +51,22 @@ export const useMealsById = (mealId: string, restaurantId: string, categoryId?: 
       try {
         setLoading(true);
         
-        // If categoryId is not provided, find it first
         let effectiveCategoryId = categoryId;
         if (!effectiveCategoryId) {
-          console.log("Finding category for meal:", mealId);
           const foundCategory = await mealService.findMealCategory(restaurantId, mealId);
+
           if (!foundCategory) {
             setError("Could not determine category for this meal");
             setLoading(false);
             return;
           }
+
           effectiveCategoryId = foundCategory;
           setFoundCategoryId(foundCategory);
-          console.log("Found category:", foundCategory);
         }
         
-        // Now fetch the meal with the category ID
         const data: Meal | null = await mealService.getMealsById(restaurantId, effectiveCategoryId, mealId);
+
         if (data) {
           setMeal(data);
           setError(null);
@@ -75,7 +74,6 @@ export const useMealsById = (mealId: string, restaurantId: string, categoryId?: 
           setError("Meal not found");
         }
       } catch (error) {
-        console.error("Error fetching meal: ", error);
         setError(error instanceof Error? error.message : "An error occurred");
       } finally {
         setLoading(false);

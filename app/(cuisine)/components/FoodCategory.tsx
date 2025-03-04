@@ -13,8 +13,8 @@ const FoodCategory: React.FC<FoodCategoryProps> = ({ imageSrc, foodType }) => {
         <Image
           src={imageSrc}
           alt={foodType}
-          width={96}   // 96px width (adjust for size)
-          height={96}  // 96px height (adjust for size)
+          width={96}  
+          height={96}  
           className='object-cover w-full h-full'
         />
       </div>
