@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createReservation, checkTimeSlotAvailability } from '@/lib/firebase/reservations';
+// import { createReservation, checkTimeSlotAvailability } from '@/lib/firebase/reservations';
 
 interface ReservationFormProps {
   restaurantId: string;
@@ -22,38 +22,38 @@ export default function ReservationForm({ restaurantId, availableTimes }: Reserv
     setLoading(true);
     setError('');
     
-    try {
-      // Assuming you have user authentication in place
-      const userId = 'current-user-id'; // Replace with actual user ID
+  //   try {
+  //     // Assuming you have user authentication in place
+  //     const userId = 'current-user-id'; // Replace with actual user ID
       
-      // Check availability
-      const reservationsCount = await checkTimeSlotAvailability(restaurantId, date, time);
-      if (reservationsCount > 5) { // Assuming 5 reservations per time slot max
-        setError('This time slot is fully booked. Please select another time.');
-        setLoading(false);
-        return;
-      }
+  //     // Check availability
+  //     const reservationsCount = await checkTimeSlotAvailability(restaurantId, date, time);     
+  //     if (reservationsCount > 5) { // Assuming 5 reservations per time slot max
+  //       setError('This time slot is fully booked. Please select another time.');
+  //       setLoading(false);
+  //       return;
+  //     }
       
-      const reservationId = await createReservation({
-        restaurantId,
-        userId,
-        date,
-        time,
-        numberOfGuests: guests,
-        status: 'pending'
-      });
+  //     const reservationId = await createReservation({
+  //       restaurantId,
+  //       userId,
+  //       date,
+  //       time,
+  //       numberOfGuests: guests,
+  //       status: 'pending'
+  //     });
       
-      setSuccess(true);
-      // Reset form
-      setDate('');
-      setTime('');
-      setGuests(2);
-    } catch (err) {
-      setError('Failed to create reservation. Please try again.');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+  //     setSuccess(true);
+  //     // Reset form
+  //     setDate('');
+  //     setTime('');
+  //     setGuests(2);
+  //   } catch (err) {
+  //     setError('Failed to create reservation. Please try again.');
+  //     console.error(err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
   };
 
   return (
