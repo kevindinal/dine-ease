@@ -51,7 +51,7 @@ export type Restaurant = {
 
     {
       id: 2,
-      name: "The Lagoon - Cinnamon Grand Colombo",
+      name: "The Lagoon - Cinnamon Grand ",
       image: "https://www.cinnamonhotels.com/themes/cinnamon/images/cinnamon_grand_lagoon.jpg",
       bannerImage: "https://media.timeout.com/images/105239239/750/422/image.jpg",
       rating: 4,
