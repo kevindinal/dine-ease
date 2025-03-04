@@ -60,11 +60,8 @@ const FoodCard: FC<FoodCardProps> = ({
   };
 
   const handleCardClick = () => {
-    // Navigate to cuisine details with the meal ID and restaurant ID
-    // The categoryId will be determined by the hook if not provided
     const url = `/cuisine-details-page?id=${id}&restaurantId=${restaurantId}`;
     
-    // Only add categoryId to the URL if it's available
     const fullUrl = categoryId ? `${url}&categoryId=${categoryId}` : url;
     
     console.log("Card clicked:", id, restaurantId, categoryId);
@@ -79,7 +76,7 @@ const FoodCard: FC<FoodCardProps> = ({
         className="cursor-pointer w-full sm:w-[400px] h-auto sm:h-[480px] bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 transition-all hover:scale-105 hover:delay-200"
         onClick={handleCardClick}
       >
-        <div className="relative w-full h-40 sm:h-56 border-b-2 border-black">
+        <div className="relative w-full h-40 sm:h-56 ">
           <Image
             src={image}
             alt={name}
@@ -94,17 +91,17 @@ const FoodCard: FC<FoodCardProps> = ({
           <p className="font-bold text-gray-700 text-lg sm:text-[22px] leading-6 sm:leading-7 mb-1">
             {name}
           </p>
-          <p className="text-[#7C7C80] text-xs sm:text-[15px] mt-4 sm:mt-6 line-clamp-2">
+          <p className="text-gray-500 text-xs sm:text-[15px] mt-4 sm:mt-6 line-clamp-2 font-bold ">
             {description}
           </p>
           <div className="flex flex-row mt-3 sm:mt-4 justify-between items-center">
-            <p className="text-sm sm:text-[17px] font-bold">Rs. {price}</p>
+            <p className="text-sm sm:text-[17px] font-bold text-[#FB665B]">Rs. {price}</p>
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 handleAddToPreOrder();
               }}
-              className="px-2 py-1 sm:py-2 text-xs sm:text-base font-medium tracking-wide text-center capitalize transition-colors duration-300 transform rounded-[14px] bg-[#FB665B] hover:bg-[#FA4032] focus:ring-[#FB665B] focus:outline-none focus:ring-opacity-80 border border-black"
+              className="px-2 py-1 sm:py-2 text-white text-xs sm:text-base font-medium tracking-wide text-center capitalize transition-colors duration-300 transform rounded-[14px] bg-[#FB665B] hover:bg-[#FA4032] focus:ring-[#FB665B] focus:outline-none focus:ring-opacity-80 "
             >
               Add to Pre-order
             </button>
