@@ -1,11 +1,11 @@
 "use client";  // ✅ Add this to make it a Client Component if needed
-
-import RestaurantBooking from "./(restaurants)/restaurants/page";
+import Image from "next/image";
+import LandingPage from "./(home)/home-main/page";
 
 export default function HomePage() {
   return (
     <div>
-      <RestaurantBooking />
+      <LandingPage />
     </div>
   );
 }
