@@ -8,7 +8,7 @@ import {
   orderBy,
   limit
 } from 'firebase/firestore';
-import { Restaurant } from '@/app/(restaurants)/types/restaurants';
+import { Restaurant } from '@/app/(restaurants)/types/firebase.';
 
 export const restaurantsCollection = collection(db, 'restaurants');
 
@@ -58,7 +58,7 @@ export async function searchRestaurants({
   // Apply client-side filters (for location)
   if (location) {
     return restaurants.filter(restaurant => 
-      restaurant.location.address.toLowerCase().includes(location.toLowerCase())
+      restaurant.location.toLowerCase().includes(location.toLowerCase())
     );
   }
   
