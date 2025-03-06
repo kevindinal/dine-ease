@@ -33,6 +33,8 @@ export const signUp = async (email: string, password: string, firstName: string,
     const userCredential = await createUserWithEmailAndPassword(email, password);
     const user = userCredential!.user;
 
+    
+
     // Store additional user details in Firestore
     await setDoc(doc(db, "users", user.uid), {
       userId: user.uid,

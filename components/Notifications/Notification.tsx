@@ -1,14 +1,18 @@
 "use client";
 
 import { useEffect } from "react";
-import { requestNotificationPermission } from "../../lib/pushNotification";
+import { onForegroundMessage, requestNotificationPermission } from "../../lib/pushNotification";
 
 const Notifications = () => {
-  useEffect(() => {
-    requestNotificationPermission();
-  }, []);
+ 
+    useEffect(() => {
+        requestNotificationPermission();
+        onForegroundMessage();
+    }, []);
 
-  return <></>;
+    return <></>;
 };
+ 
 
 export default Notifications;
+
