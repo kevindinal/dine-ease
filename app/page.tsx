@@ -7,6 +7,6 @@ export default function HomePage() {
   return (
     <div>
       <MealPreOrderMain/>
-    </div>
+      </div>
   );
 }
