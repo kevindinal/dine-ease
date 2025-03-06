@@ -7,6 +7,7 @@ declare type UserProp = {
     city: string;
     country: string;
     createdAt: Date;
+    FCMToken: string;
 }
 
 export interface UserProp {
@@ -18,4 +19,5 @@ export interface UserProp {
     city: string;
     country: string;
     createdAt: Date;
+    FCMToken: string;
 }

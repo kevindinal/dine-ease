@@ -43,6 +43,7 @@ export const signUp = async (email: string, password: string, firstName: string,
       city,
       country,
       createdAt: new Date(),
+      FCMToken: "",
     });
 
     return user;
@@ -96,6 +97,7 @@ export const signInWithGoogle = async (router: any) => {
         city: "",
         country: "",
         createdAt: new Date(),
+        FCMToken: "",
       });
     }
 
