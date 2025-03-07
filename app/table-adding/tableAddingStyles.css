@@ -177,12 +177,15 @@
   }
   
   input[type="file"]::file-selector-button {
-    color: gray; /* Gray text */
-    cursor: pointer;
+    border: none !important;
+    padding: 0px !important;
+    background-color: #fff !important;
+    color: gray ; /* Gray text */
+    cursor: pointer ;
   }
   
   input[type="file"] {
-    color: gray; /* Change the color of the text "No file chosen" */
+    color: gray !important; /* Change the color of the text "No file chosen" */
     font-size: 16px;
   }
   

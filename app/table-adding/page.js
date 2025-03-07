@@ -2,7 +2,7 @@
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useState, useEffect, useRef } from "react";
-import { db, storage } from "../../lib/firebase/config"; // Import Firebase
+import { db, storage } from "../../lib/firebase/config"; 
 import {
   collection,
   addDoc,
@@ -138,7 +138,7 @@ const SeatingPlanEditor = () => {
       await deleteDoc(tableRef);
       setTables(tables.filter((table) => table.id !== tableToDelete));
       setLoading(false);
-      setShowDeleteModal(false); // Hide the modal after deletion
+      setShowDeleteModal(false); 
     }
   };
 
