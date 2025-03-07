@@ -213,4 +213,20 @@
   .status-tag {
     font-weight: 500;
   }
+
+  .table-details-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .table-details {
+    flex: 1;
+  }
+  
+  .table-image {
+    max-width: 150px;
+    height: auto;
+    border-radius: 8px;
+  }
+  
   

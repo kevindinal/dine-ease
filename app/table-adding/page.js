@@ -2,7 +2,7 @@
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useState, useEffect, useRef } from "react";
-import { db, storage } from "../../lib/firebase/config"; 
+import { db, storage } from "../../lib/firebase/config";
 import {
   collection,
   addDoc,
@@ -16,6 +16,8 @@ import "./tableAddingStyles.css";
 import { PiSeatFill } from "react-icons/pi";
 import { MdOutlineFireplace } from "react-icons/md";
 import { IoMdInformationCircle } from "react-icons/io";
+
+
 
 const SeatingPlanEditor = () => {
   const [tables, setTables] = useState([]);
@@ -138,7 +140,7 @@ const SeatingPlanEditor = () => {
       await deleteDoc(tableRef);
       setTables(tables.filter((table) => table.id !== tableToDelete));
       setLoading(false);
-      setShowDeleteModal(false); 
+      setShowDeleteModal(false);
     }
   };
 
@@ -164,6 +166,7 @@ const SeatingPlanEditor = () => {
     }, 100);
   };
 
+  console.log(tables)
   return (
     <div className="container pt-3 pb-4">
       <div className="row">
@@ -253,14 +256,14 @@ const SeatingPlanEditor = () => {
                       : "Unknown"}
                   </p>
 
-                  {table.imageUrl && (
+                  {/* {table.imgUrl && (
                     <img
                       src={table.imageUrl}
                       alt="Table"
                       className="table-image"
                       width="150"
                     />
-                  )}
+                  )} */}
                   <div className="button-group">
                     <button
                       onClick={(e) => {
@@ -391,33 +394,45 @@ const SeatingPlanEditor = () => {
                   ></button>
                 </div>
                 <div className="modal-body">
-                  <div className="table-info">
-                    <PiSeatFill className="r-icon" />
-                    <p className="tb-information">
-                      {selectedTable.seats} Seats
-                    </p>
-                  </div>
-                  <div className="table-info">
-                    <MdOutlineFireplace className="r-icon" />
-                    <p className="tb-information">{selectedTable.location}</p>
-                  </div>
+                  <div className="table-details-container">
+                    {/* Image on the left side */}
+                    {selectedTable.imgUrl && (
+                      <img
+                        src={`${process.env.PUBLIC_URL}/hilton.png`} 
+                        alt={selectedTable.name}
+                        className="table-image"
+                        style={{
+                          width: "150px",
+                          height: "150px",
+                          borderRadius: "8px",
+                          objectFit: "cover",
+                          marginRight: "15px",
+                        }}
+                      />
+                    )}
 
-                  <div className="table-info">
-                    <IoMdInformationCircle className="r-icon" />
-                    <p className="tb-information">
-                      {selectedTable.description}
-                    </p>
+                    {/* Table information on the right */}
+                    <div className="table-details">
+                      <div className="table-info">
+                        <PiSeatFill className="r-icon" />
+                        <p className="tb-information">
+                          {selectedTable.seats} Seats
+                        </p>
+                      </div>
+                      <div className="table-info">
+                        <MdOutlineFireplace className="r-icon" />
+                        <p className="tb-information">
+                          {selectedTable.location}
+                        </p>
+                      </div>
+                      <div className="table-info">
+                        <IoMdInformationCircle className="r-icon" />
+                        <p className="tb-information">
+                          {selectedTable.description}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-
-                  {selectedTable.imageUrl && (
-                    <img
-                      src={selectedTable.imageUrl}
-                      alt={selectedTable.name}
-                      className="table-image"
-                      width="100%"
-                      style={{ borderRadius: "8px", marginTop: "10px" }}
-                    />
-                  )}
                 </div>
                 <div className="modal-footer">
                   <button
