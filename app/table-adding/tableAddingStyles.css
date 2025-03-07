@@ -1,5 +1,3 @@
-/* General Styling */
-
 /* Form Container */
 .form-container {
     background: #fff;
@@ -33,12 +31,12 @@
   
   input:focus {
     outline: none;
-    border-color: #ff5733; /* Change to your preferred color */
+    border-color: #ff5733; 
   }
   
   textarea:focus {
     outline: none;
-    border-color: #ff5733; /* Change to your preferred color */
+    border-color: #ff5733; 
   }
   
   .form-container button {
@@ -131,7 +129,7 @@
   
   /* Apply blur to the entire background */
   body.modal-open {
-    overflow: hidden; /* Prevent scrolling when modal is open */
+    overflow: hidden; 
   }
   
   /* Modal backdrop to dim and blur the background */
@@ -141,14 +139,13 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Dim the background */
-    backdrop-filter: blur(5px); /* Apply blur effect */
-    z-index: 1040; /* Ensure the backdrop stays behind the modal */
+    background-color: rgba(0, 0, 0, 0.5); 
+    backdrop-filter: blur(5px); 
+    z-index: 1040; 
   }
   
-  /* Ensure the modal is in front and unaffected by the background */
   .modal {
-    z-index: 1050 !important; /* Bring modal in front of the backdrop */
+    z-index: 1050 !important; 
   }
   
   /* Optional: Smooth transition for the modal */
@@ -180,19 +177,19 @@
     border: none !important;
     padding: 0px !important;
     background-color: #fff !important;
-    color: gray ; /* Gray text */
+    color: gray ; 
     cursor: pointer ;
   }
   
   input[type="file"] {
-    color: gray !important; /* Change the color of the text "No file chosen" */
+    color: gray !important; 
     font-size: 16px;
   }
   
   .table-info {
     display: flex;
     align-items: start;
-    gap: 8px; /* Space between icon and text */
+    gap: 8px; 
     margin-bottom: 8px;
   }
   
@@ -202,11 +199,11 @@
   }
   
   .r-icon {
-    font-size: 1.5rem; /* Set a fixed size */
-    width: 18px; /* Ensures the icon doesn't change size */
+    font-size: 1.5rem; 
+    width: 18px; 
     height: 18px;
-    flex-shrink: 0; /* Prevents resizing when text grows */
-    color: #333; /* Change if needed */
+    flex-shrink: 0; 
+    color: #333; 
   }
   
   .modal-title {
