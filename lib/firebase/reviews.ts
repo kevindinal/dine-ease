@@ -14,7 +14,7 @@ import {
     Timestamp 
   } from 'firebase/firestore';
   import { db } from './config';
-  import { Review } from '@/app/(restaurants)/types/firebase.';
+  import { Review } from '@/app/(restaurants)/types/firebase';
   
   const REVIEWS_COLLECTION = 'reviews';
   
