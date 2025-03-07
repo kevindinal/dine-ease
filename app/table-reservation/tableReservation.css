@@ -1,0 +1,118 @@
+  /* Tables Section */
+  .tables-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  
+  /* Individual Table Item */
+  .table-item {
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 8px;
+    width: 100%;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .table-item:hover {
+    transform: scale(1.02);
+  }
+  
+  .table-item h2 {
+    font-size: 1.25rem;
+    margin-bottom: 10px;
+    color: #83818f;
+  }
+  
+  .table-item p {
+    font-size: 1rem;
+    margin: 5px 0;
+    color: #83818f;
+  }
+    
+  /* Loading Indicator */
+  .loading {
+    font-size: 1.5rem;
+    color: #ff0000;
+    text-align: center;
+    margin-top: 50px;
+  }
+  .modal-content {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 0 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Apply blur to the entire background */
+  body.modal-open {
+    overflow: hidden; 
+  }
+  
+  /* Modal backdrop to dim and blur the background */
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); 
+    backdrop-filter: blur(5px); 
+    z-index: 1040; 
+  }
+  
+  .modal {
+    z-index: 1050 !important; 
+  }
+  
+  /* Optional: Smooth transition for the modal */
+  .modal-dialog {
+    transition: all 0.3s ease;
+  }
+  
+  .table-info {
+    display: flex;
+    align-items: start;
+    gap: 8px; 
+    margin-bottom: 8px;
+  }
+  
+  .table-info p {
+    margin: 0px;
+    text-align: justify;
+  }
+  
+  .r-icon {
+    font-size: 1.5rem; 
+    width: 18px; 
+    height: 18px;
+    flex-shrink: 0; 
+    color: #333; 
+  }
+  
+  .modal-title {
+    color: #ff3535;
+  }
+  
+  .status-tag {
+    font-weight: 500;
+  }
+
+  .table-details-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .table-details {
+    flex: 1;
+  }
+  
+  .table-image {
+    max-width: 150px;
+    height: auto;
+    border-radius: 8px;
+  }
+  
+  
