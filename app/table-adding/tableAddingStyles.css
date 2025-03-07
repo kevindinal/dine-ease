@@ -1,0 +1,216 @@
+/* General Styling */
+
+/* Form Container */
+.form-container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+  }
+  
+  .form-container h1 {
+    color: #ff3535;
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  .form-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .form-container textarea,
+  .form-container input {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+  }
+  
+  input:focus {
+    outline: none;
+    border-color: #ff5733; /* Change to your preferred color */
+  }
+  
+  textarea:focus {
+    outline: none;
+    border-color: #ff5733; /* Change to your preferred color */
+  }
+  
+  .form-container button {
+    padding: 10px;
+    margin-top: 5px;
+    background-color: #ff3535;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .form-container button:hover {
+    background-color: #ff0000;
+  }
+  
+  /* Tables Section */
+  .tables-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  
+  /* Individual Table Item */
+  .table-item {
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 8px;
+    width: 100%;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .table-item:hover {
+    transform: scale(1.02);
+  }
+  
+  .table-item h2 {
+    font-size: 1.25rem;
+    margin-bottom: 10px;
+    color: #83818f;
+  }
+  
+  .table-item p {
+    font-size: 1rem;
+    margin: 5px 0;
+    color: #83818f;
+  }
+  
+  /* Buttons */
+  .button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: auto;
+  }
+  
+  .table-item button {
+    padding: 5px 10px;
+    background-color: #83818f;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: background-color 0.2s ease;
+  }
+  
+  .table-item button:hover {
+    cursor: pointer !important;
+    background-color: #ff0000;
+  }
+  
+  /* Loading Indicator */
+  .loading {
+    font-size: 1.5rem;
+    color: #ff0000;
+    text-align: center;
+    margin-top: 50px;
+  }
+  .modal-content {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 0 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Apply blur to the entire background */
+  body.modal-open {
+    overflow: hidden; /* Prevent scrolling when modal is open */
+  }
+  
+  /* Modal backdrop to dim and blur the background */
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Dim the background */
+    backdrop-filter: blur(5px); /* Apply blur effect */
+    z-index: 1040; /* Ensure the backdrop stays behind the modal */
+  }
+  
+  /* Ensure the modal is in front and unaffected by the background */
+  .modal {
+    z-index: 1050 !important; /* Bring modal in front of the backdrop */
+  }
+  
+  /* Optional: Smooth transition for the modal */
+  .modal-dialog {
+    transition: all 0.3s ease;
+  }
+  
+  .btn-del {
+    color: #fff !important;
+    background-color: #ff3535 !important;
+  }
+  
+  .btn-del:hover {
+    color: #fff !important;
+    background-color: #ff0000 !important;
+  }
+  
+  .btn-confirm {
+    color: #fff !important;
+    background-color: #ff3535 !important;
+  }
+  
+  .btn-confirm:hover {
+    color: #fff !important;
+    background-color: #ff0000 !important;
+  }
+  
+  input[type="file"]::file-selector-button {
+    color: gray; /* Gray text */
+    cursor: pointer;
+  }
+  
+  input[type="file"] {
+    color: gray; /* Change the color of the text "No file chosen" */
+    font-size: 16px;
+  }
+  
+  .table-info {
+    display: flex;
+    align-items: start;
+    gap: 8px; /* Space between icon and text */
+    margin-bottom: 8px;
+  }
+  
+  .table-info p {
+    margin: 0px;
+    text-align: justify;
+  }
+  
+  .r-icon {
+    font-size: 1.5rem; /* Set a fixed size */
+    width: 18px; /* Ensures the icon doesn't change size */
+    height: 18px;
+    flex-shrink: 0; /* Prevents resizing when text grows */
+    color: #333; /* Change if needed */
+  }
+  
+  .modal-title {
+    color: #ff3535;
+  }
+  
+  .status-tag {
+    font-weight: 500;
+  }
+  
