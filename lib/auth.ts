@@ -3,6 +3,7 @@ import { auth, db } from "./firebase";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
+import { requestNotificationPermission } from "./pushNotification";
 
 /**
  * Signs up a new user with the provided details.
@@ -33,7 +34,8 @@ export const signUp = async (email: string, password: string, firstName: string,
     const userCredential = await createUserWithEmailAndPassword(email, password);
     const user = userCredential!.user;
 
-    
+    // Get FCm Token
+    const FCMToken = await requestNotificationPermission();
 
     // Store additional user details in Firestore
     await setDoc(doc(db, "users", user.uid), {
@@ -45,7 +47,7 @@ export const signUp = async (email: string, password: string, firstName: string,
       city,
       country,
       createdAt: new Date(),
-      FCMToken: "",
+      FCMToken: FCMToken || "", // Save FCM token if available
     });
 
     return user;
@@ -89,6 +91,9 @@ export const signInWithGoogle = async (router: any) => {
     const userRef = doc(db, "users", user.uid);
     const userSnap = await getDoc(userRef);
 
+    // Get FCM Token
+    const FCMToken = await requestNotificationPermission();
+
     if (!userSnap.exists()) {
       await setDoc(userRef, {
         uid: user.uid,
@@ -101,6 +106,12 @@ export const signInWithGoogle = async (router: any) => {
         createdAt: new Date(),
         FCMToken: "",
       });
+    }
+
+    // Update Firestore with new token
+    if (FCMToken) {
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, { FCMToken });
     }
 
     // Navigate to dashboard
