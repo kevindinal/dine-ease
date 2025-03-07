@@ -1,6 +1,6 @@
 const tableReservation = () => {
     return ( 
-     <h1>hii table reservation</h1>
+     <h1>hii table reservation for users</h1>
      );
 }
  
