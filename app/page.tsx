@@ -1,4 +1,4 @@
-import SummaryPage from "./(payments)/pages/SummaryPage";
+import SummaryPage from "./(payments)/payment-page/page";
 
 export default function HomePage() {
   return (
