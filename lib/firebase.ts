@@ -1,9 +1,7 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
-// import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
-
 
 // Firebase configuration
 const firebaseConfig = {
@@ -21,9 +19,15 @@ export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-const messaging = getMessaging(app);
+// ✅ Ensure Firebase Messaging is only initialized in the browser
+export let messaging: any = null;
 
-export { messaging, getToken, onMessage };
+if (typeof window !== "undefined" && "Notification" in window && "serviceWorker" in navigator) {
+  messaging = getMessaging(app);
+}
+
+export { getToken, onMessage };
+
 
 // // Add the public key generated from the console here.
 // getToken(messaging, {vapidKey: process.env.NEXT_PUBLIC_FIREBASE_FCM_VAPID_KEY}).then((currentToken) => {

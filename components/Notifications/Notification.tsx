@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
-import { onForegroundMessage, requestNotificationPermission } from "../../lib/pushNotification";
+import { checkForTokenRefresh, onForegroundMessage, requestNotificationPermission } from "../../lib/pushNotification";
 
 const Notifications = () => {
  
     useEffect(() => {
         requestNotificationPermission();
         onForegroundMessage();
+        checkForTokenRefresh();
     }, []);
 
     return <></>;
