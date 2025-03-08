@@ -87,7 +87,7 @@ const TableReservation = () => {
 
                   {table.imgUrl && (
                     <img
-                      src={table.imageUrl}
+                      src={table.imgUrl}
                       alt="Table"
                       className="table-image"
                       width="150"
@@ -123,7 +123,6 @@ const TableReservation = () => {
                 </div>
                 <div className="modal-body">
                   <div className="table-details-container">
-                    {/* Image on the left side */}
                     {selectedTable.imgUrl && (
                       <img
                         src={selectedTable.imgUrl} 
@@ -139,7 +138,6 @@ const TableReservation = () => {
                       />
                     )}
 
-                    {/* Table information on the right */}
                     <div className="table-details">
                       <div className="table-info">
                         <PiSeatFill className="r-icon" />

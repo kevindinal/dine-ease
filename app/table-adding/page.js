@@ -17,8 +17,6 @@ import { PiSeatFill } from "react-icons/pi";
 import { MdOutlineFireplace } from "react-icons/md";
 import { IoMdInformationCircle } from "react-icons/io";
 
-
-
 const SeatingPlanEditor = () => {
   const [tables, setTables] = useState([]);
   const [tableData, setTableData] = useState({
@@ -48,17 +46,37 @@ const SeatingPlanEditor = () => {
 
   // Fetch Tables from Firestore
   useEffect(() => {
-    let isMounted = true; // Flag to check if component is mounted
+    let isMounted = true;
+
     const fetchTables = async () => {
       setLoading(true);
       const querySnapshot = await getDocs(collection(db, "tables"));
+
+      const tablesData = await Promise.all(
+        querySnapshot.docs.map(async (docSnap) => {
+          const data = docSnap.data();
+          let imageUrl = data.imageUrl; // If Firestore already has a URL, use it
+
+          // If only the image path is stored, fetch the download URL
+          if (imageUrl && !imageUrl.startsWith("http")) {
+            try {
+              const storageRef = ref(storage, imageUrl);
+              imageUrl = await getDownloadURL(storageRef);
+            } catch (error) {
+              console.error("Error fetching image URL: ", error);
+            }
+          }
+
+          return { id: docSnap.id, ...data, imageUrl };
+        })
+      );
+
       if (isMounted) {
-        setTables(
-          querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-        );
+        setTables(tablesData);
         setLoading(false);
       }
     };
+
     fetchTables();
 
     return () => {
@@ -166,7 +184,9 @@ const SeatingPlanEditor = () => {
     }, 100);
   };
 
-  console.log(tables)
+  
+
+  console.log(selectedTable);
   return (
     <div className="container pt-3 pb-4">
       <div className="row">
@@ -395,11 +415,10 @@ const SeatingPlanEditor = () => {
                 </div>
                 <div className="modal-body">
                   <div className="table-details-container">
-                    {/* Image on the left side */}
-                    {selectedTable.imgUrl && (
+                    {selectedTable.imageUrl && (
                       <img
-                        src={`${process.env.PUBLIC_URL}/hilton.png`} 
-                        alt={selectedTable.name}
+                        src={selectedTable.imageUrl}
+                        alt="Table"
                         className="table-image"
                         style={{
                           width: "150px",
@@ -411,7 +430,6 @@ const SeatingPlanEditor = () => {
                       />
                     )}
 
-                    {/* Table information on the right */}
                     <div className="table-details">
                       <div className="table-info">
                         <PiSeatFill className="r-icon" />
