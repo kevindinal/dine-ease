@@ -126,7 +126,7 @@ const TableReservation = () => {
                     {/* Image on the left side */}
                     {selectedTable.imgUrl && (
                       <img
-                        src={`${process.env.PUBLIC_URL}/hilton.png`} 
+                        src={selectedTable.imgUrl} 
                         alt={selectedTable.name}
                         className="table-image"
                         style={{
