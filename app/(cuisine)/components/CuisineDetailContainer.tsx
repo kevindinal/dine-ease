@@ -176,34 +176,12 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
         <div className="space-y-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{meal.name}</h1>
-            <div className="flex items-center gap-2 mt-2">
-              <div className="flex items-center">
-                {[...Array(Math.floor(meal.rating || 0))].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                ))}
-                {(meal.rating || 0) % 1 > 0 && (
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" strokeWidth={1} />
-                )}
-              </div>
-              <span className="text-gray-600">{meal.rating || 0} (245 reviews)</span>
-            </div>
             <div className="text-2xl font-bold text-red-500 mt-2">Rs. {meal.price}</div>
-            {resolvedCategoryId && (
-              <div className="text-sm text-gray-500 mt-1">
-                Category ID: {resolvedCategoryId}
-              </div>
-            )}
           </div>
 
           <div className="space-y-4">
             <h2 className="font-semibold text-gray-900">Description</h2>
             <p className="text-gray-600">{meal.longDescription || meal.description}</p>
-
-            <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-              <div>Serves 1</div>
-              {meal.isTodaysSpecial && <div>Today's Special</div>}
-              {meal.isChefsSpecial && <div>Chef's Special</div>}
-            </div>
           </div>
 
           <div className="space-y-4">
@@ -215,7 +193,7 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
                 {["Regular", "Large (+Rs.400)", "Extra Large (+Rs.700)"].map((size) => (
                   <button
                     key={size}
-                    className={`p-2 border rounded ${selectedSize === size.split(" ")[0] ? "bg-red-500 text-white" : "text-gray-700"
+                    className={`p-2 border rounded-xl ${selectedSize === size.split(" ")[0] ? "bg-red-500 text-white" : "text-gray-700"
                       }`}
                     onClick={() => setSelectedSize(size.split(" ")[0])}
                   >
@@ -231,7 +209,7 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
                 {["Mild", "Medium", "Hot"].map((level) => (
                   <button
                     key={level}
-                    className={`p-2 border rounded ${spiceLevel === level ? "bg-red-500 text-white" : "text-gray-700"
+                    className={`p-2 border rounded-xl ${spiceLevel === level ? "bg-red-500 text-white" : "text-gray-700"
                       }`}
                     onClick={() => setSpiceLevel(level)}
                   >
@@ -243,7 +221,7 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
 
             <div>
               <h3 className="text-sm text-gray-700 mb-2">Add-ons</h3>
-              <div className="grid grid-cols-2 gap-2 text-black">
+              <div className="grid grid-cols-2 gap-2 text-black rounded-xl">
                 {[
                   ["Extra Avocado", "Rs.200"],
                   ["Extra Salmon", "Rs.600"],
@@ -275,7 +253,7 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
                 {["Water", "Lemonade", "Iced Tea", "Soda"].map((drink) => (
                   <button
                     key={drink}
-                    className={`p-2 border rounded ${selectedDrink === drink ? "bg-red-500 text-white" : "text-gray-700"
+                    className={`p-2 border rounded-xl ${selectedDrink === drink ? "bg-red-500 text-white" : "text-gray-700"
                       }`}
                     onClick={() => setSelectedDrink(drink)}
                   >
@@ -289,13 +267,13 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
           <div className="flex gap-4">
             <button
               onClick={handleAddToPreOrderFromCard}
-              className="flex-1 bg-red-500 text-white py-3 rounded-lg font-semibold hover:bg-red-600 transition-colors"
+              className="flex-1 bg-red-500 text-white py-3 rounded-2xl font-semibold hover:bg-red-600 transition-colors"
             >
               Add to Pre-Order
             </button>
             <button
               onClick={() => window.history.back()}
-              className="flex-1 border border-gray-300 py-3 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex-1 border border-gray-300 py-3 rounded-2xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Go Back
             </button>
