@@ -12,6 +12,18 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../tableReservation.css"; // Reuse styles
 import { useParams } from "next/navigation";
 
+
+import { FaBed } from "react-icons/fa";
+import { FaPhoneAlt } from "react-icons/fa";
+import { FaLocationArrow } from "react-icons/fa";
+import { FaSignsPost } from "react-icons/fa6";
+import { FaMoneyBill } from "react-icons/fa";
+import dynamic from "next/dynamic";
+
+const ThreeSixtyViewer = dynamic(() => import("../thresixty"), {
+  ssr: false, // Disable server-side rendering
+});
+
 const TableDetails = () => {
   const { id } = useParams(); 
   const [table, setTable] = useState(null);
@@ -43,6 +55,7 @@ const TableDetails = () => {
             try {
               const storageRef = ref(storage, imageUrl);
               imageUrl = await getDownloadURL(storageRef);
+              console.log("Fetched image URL:", imageUrl);
             } catch (error) {
               console.error("Error fetching image URL:", error);
             }
@@ -63,7 +76,8 @@ const TableDetails = () => {
   }, [id]);
   
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) return <div className="loading">
+    <div className="spinner"></div></div>;
   if (!table) return <div className="error">Table not found</div>;
 
   return (
@@ -72,6 +86,90 @@ const TableDetails = () => {
         ← Back
       </button>
 
+      <div className="table-info-space mt-5">
+          <div className="container mb-5">
+            <div className="row">
+              <div className="col-12 ">
+                <div className="image-slider-space">
+                  <ThreeSixtyViewer imageUrl="/ff.jpg"/>
+                </div>
+              </div>
+              <div className="col-12 col-lg-6 mt-4 mt-lg-0">
+                <div className="table-details-space">
+                  <div className="col-12">
+                    <h3>{table.name}</h3>
+
+                  </div>
+                  <div className="col-12">
+                    <p className="text-align-justify">
+                      {table.description}
+                    </p>
+                    <p>
+                    <FaMoneyBill className="me-3"  />
+                     hi
+                      <i className="bi bi-currency-dollar"></i>
+                    </p>
+                    <p>
+                      <FaPhoneAlt className="me-3" />
+                      049239293294
+                    </p>
+                    <p>
+                      <FaLocationArrow className="me-3" />
+                      {table.location}
+                    </p>
+                    <p>
+                      <FaSignsPost className="me-3" />
+                      34w332
+                    </p>
+                  </div>
+                  <div className="col-12 mt-4">
+                    <div className="row">
+                      <div className="col-12 col-lg-4">
+                        <div className="small-info">
+                          <i className="bi bi-columns-gap"></i>
+                          <p
+            style={{
+              color:
+                table.status && table.status.toLowerCase() === "available"
+                  ? "#4bd010"
+                  : "red",
+            }}
+            className="status-tag"
+          >
+            {table.status
+              ? table.status.charAt(0).toUpperCase() + table.status.slice(1)
+              : "Unknown"}
+          </p>
+                        </div>
+                      </div>
+
+                      <div className="col-12 col-lg-4 mt-2 mt-lg-0">
+                        <div className="small-info">
+                          <FaBed />
+                          3
+                        </div>
+                      </div>
+
+                      <div className="col-12 col-lg-4 mt-2 mt-lg-0">
+                        <div className="small-info">
+                          <i className="bi bi-currency-dollar "></i>
+                          fdfdf
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            
+          </div>
+        </div>
+
+
+
+      
+{/*       
       <div className="table-details-container">
         {table.imageUrl && (
           <img
@@ -116,7 +214,7 @@ const TableDetails = () => {
               : "Unknown"}
           </p>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
