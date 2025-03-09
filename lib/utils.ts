@@ -20,11 +20,9 @@ export const authformSchema = (type: string) => z.object({
   email: z.string().email(),
   password: z.string().min(8),
 })
-// lib/firebase/utils.ts
+
 import { 
   collection, 
-  query, 
-  where, 
   getDocs, 
   writeBatch, 
   doc,

@@ -36,7 +36,7 @@ const AuthForm = ({ type, className, ...props }: { type: string; className?: str
 
   useEffect(() => {
     if (!loading && user) {
-      router.push('/');
+      router.push('/'); // Change route to home page
     }
   }, [user, loading, router]);
 

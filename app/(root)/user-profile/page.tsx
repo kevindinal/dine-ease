@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
-import { Wallet, Calendar, User, Loader, Loader2 } from "lucide-react";
+import { Wallet, Calendar, User, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,10 +37,9 @@ import {
 import { useRouter } from "next/navigation";
 import { IoIosArrowBack } from "react-icons/io";
 import { UserProp } from "@/types";
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { getUserData, logout, updateUserData } from "@/lib/auth";
-
 
 const profileSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -53,7 +52,7 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
-const Profile = () => {
+const Profile: React.FC = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
@@ -67,7 +66,8 @@ const Profile = () => {
         router.push('/sign-in');
       }
       try {
-        setUserData(await getUserData());
+        const data = await getUserData();
+        setUserData(data);
       } catch (error) {
         console.log('Error fetching user data:', error);
       }
@@ -93,16 +93,17 @@ const Profile = () => {
   }, [userData, reset]);
 
   if (!userData) {
-    return <div className="w-full h-screen flex justify-center items-center animate-spin overflow-hidden"> <Loader2 /> </div>;
+    return (
+      <div className="w-full h-screen flex justify-center items-center">
+        <Loader2 className="animate-spin" />
+      </div>
+    );
   }
 
   const onSubmit = async (data: ProfileFormData) => {
     setIsLoading(true);
     try {
-      console.log("Updating profile:", data);
-      // await new Promise((resolve) => setTimeout(resolve, 1000));
       await updateUserData(data);
-
       toast.success("Profile updated successfully!");
     } catch (error) {
       toast.error("Failed to update profile");
@@ -127,7 +128,7 @@ const Profile = () => {
     <div className="min-h-screen bg-background">
       <div>
         <Button variant="ghost" onClick={() => router.push('/')} className="ml-1 mt-3">
-          <IoIosArrowBack className="text-2xl"/>
+          <IoIosArrowBack className="text-2xl" />
           Back
         </Button>
       </div>
@@ -147,7 +148,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Render an Alert Box */}
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm">Sign Out</Button>
@@ -168,7 +168,6 @@ const Profile = () => {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-
         </div>
 
         <Tabs
@@ -305,7 +304,6 @@ const Profile = () => {
                     <Button type="submit" disabled={isLoading}>
                       {isLoading ? "Saving..." : "Save Changes"}
                     </Button>
-                    {/* Later Add a Dialog Box with password confirmation before saving changes */}
                   </div>
                 </form>
               </CardContent>
