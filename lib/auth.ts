@@ -35,7 +35,7 @@ export const signUp = async (email: string, password: string, firstName: string,
 
     // Store additional user details in Firestore
     await setDoc(doc(db, "users", user.uid), {
-      userId: user.uid,
+      uid: user.uid,
       firstName,
       lastName,
       email,
