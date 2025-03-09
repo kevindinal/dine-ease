@@ -27,6 +27,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         if (!loading && !user) {
             // Toast to notify user to sign in first
             toast.error("Please sign in first");
+
             router.push('/sign-in');
         }
     };

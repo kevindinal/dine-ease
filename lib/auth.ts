@@ -100,7 +100,7 @@ export const signInWithGoogle = async (router: any) => {
     }
 
     // Navigate to dashboard
-    router.push("/");
+    router.push("/home-main");
 
     return user;
   } catch (error: any) {
