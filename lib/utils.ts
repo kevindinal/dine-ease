@@ -103,3 +103,10 @@ export const clearCollection = async (collectionName: string): Promise<void> => 
     throw error;
   }
 };
+
+import { ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
