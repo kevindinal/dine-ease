@@ -1,118 +1,120 @@
-  /* Tables Section */
-  .tables-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
-  }
-  
-  /* Individual Table Item */
-  .table-item {
-    border: 1px solid #ccc;
-    padding: 15px;
-    border-radius: 8px;
-    width: 100%;
-    height: 200px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    cursor: pointer;
-    transition: transform 0.2s ease-in-out;
-  }
-  
-  .table-item:hover {
-    transform: scale(1.02);
-  }
-  
-  .table-item h2 {
-    font-size: 1.25rem;
-    margin-bottom: 10px;
-    color: #83818f;
-  }
-  
-  .table-item p {
-    font-size: 1rem;
-    margin: 5px 0;
-    color: #83818f;
-  }
-    
-  /* Loading Indicator */
-  .loading {
-    font-size: 1.5rem;
-    color: #ff0000;
-    text-align: center;
-    margin-top: 50px;
-  }
-  .modal-content {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 0 15px rgba(0, 0, 0, 0.2);
-  }
-  
-  /* Apply blur to the entire background */
-  body.modal-open {
-    overflow: hidden; 
-  }
-  
-  /* Modal backdrop to dim and blur the background */
-  .modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); 
-    backdrop-filter: blur(5px); 
-    z-index: 1040; 
-  }
-  
-  .modal {
-    z-index: 1050 !important; 
-  }
-  
-  /* Optional: Smooth transition for the modal */
-  .modal-dialog {
-    transition: all 0.3s ease;
-  }
-  
-  .table-info {
-    display: flex;
-    align-items: start;
-    gap: 8px; 
-    margin-bottom: 8px;
-  }
-  
-  .table-info p {
-    margin: 0px;
-    text-align: justify;
-  }
-  
-  .r-icon {
-    font-size: 1.5rem; 
-    width: 18px; 
-    height: 18px;
-    flex-shrink: 0; 
-    color: #333; 
-  }
-  
-  .modal-title {
-    color: #ff3535;
-  }
-  
-  .status-tag {
-    font-weight: 500;
-  }
+/* Tables Section */
+.tables-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  justify-content: center;
+}
 
-  .table-details-container {
-    display: flex;
-    align-items: center;
+/* Individual Table Item */
+.table-item {
+  border: 1px solid #ccc;
+  padding: 15px;
+  border-radius: 8px;
+  width: 100%;
+  min-width: 250px; /* Ensures tables are a bit wider */
+  max-width: 400px; /* Prevents them from getting too large on big screens */
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-item:hover {
+  transform: scale(1.02);
+}
+
+.table-item h2 {
+  font-size: 1.25rem;
+  color: #83818f;
+  text-align: center;
+}
+
+.table-item p {
+  font-size: 1rem;
+  margin: 5px 0;
+  color: #83818f;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Seat Representation */
+.seats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.seat {
+  background-color: rgb(255,53,53,0.1);
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* Status Tag */
+.status-tag {
+  font-weight: 500;
+}
+
+/* Loading Indicator */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: calc(100vh - 500px);
+  margin-top: 50px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(0, 0, 0, 0.1);
+  border-top: 5px solid #FF0000;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
   }
-  
-  .table-details {
-    flex: 1;
+  100% {
+    transform: rotate(360deg);
   }
-  
-  .table-image {
-    max-width: 150px;
-    height: auto;
-    border-radius: 8px;
+}
+
+.loading p {
+  margin-top: 10px;
+  font-size: 1.2rem;
+  color: #555;
+}
+
+
+/* Seat Icon */
+.r-icon {
+  font-size: 1.5rem;
+  width: 35px;
+  height: 35px;
+  border: none;
+  background-color: transparent !important;
+  color: #5c5c5c !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .table-item {
+    min-width: 100%; /* Full width on smaller screens */
   }
-  
-  
+}
