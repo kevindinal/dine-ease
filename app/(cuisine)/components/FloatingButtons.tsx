@@ -1,5 +1,6 @@
 import React, { FC } from "react";
 import { PreOrderItem } from "../types/preOrderTypes";
+import { useRouter } from "next/navigation"; // Note: using next/navigation for App Router
 
 interface FloatingButtonsProps {
   preOrderCount: number;
@@ -16,11 +17,18 @@ const FloatingButtons: FC<FloatingButtonsProps> = ({
   removePreOrderItem,
   onPreOrderCountClick 
 }) => {
+  const router = useRouter(); // App Router's useRouter
+
   const handleCancelPreOrder = () => {
     if (window.confirm("Are you sure you want to cancel the pre-order?")) {
       clearPreOrder();
       alert("Pre-order canceled.");
     }
+  };
+
+  const handleCheckout = () => {
+    // Since (payments) is a route group, it doesn't appear in the URL path
+    router.push("/payment-page/summaryPage");
   };
 
   return (
@@ -33,7 +41,7 @@ const FloatingButtons: FC<FloatingButtonsProps> = ({
       </button>
 
       <button
-        onClick={() => alert(`Proceeding to checkout with ${preOrderCount} items.`)}
+        onClick={handleCheckout}
         className="relative px-3 py-1 text-sm md:px-4 md:py-2 md:text-base bg-[#FA4032] text-white rounded-lg font-bold shadow-lg hover:bg-green-600 border border-black"
       >
         Proceed to Checkout 🛒
