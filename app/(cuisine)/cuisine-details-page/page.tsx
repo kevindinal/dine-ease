@@ -55,7 +55,7 @@ const MealDetailsPage: React.FC = () => {
         />
       </section>
 
-      <section className="relative py-32 px-4 md:px-14 text-white">
+      <section className="relative py-20 px-4 md:px-14 text-white">
         <CuisineDetailContainer
 
           handleAddToPreOrder={handleAddToPreOrder}

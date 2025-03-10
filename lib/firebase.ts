@@ -3,6 +3,7 @@ import { getApp, getApps, initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 // import { getMessaging, getToken, isSupported } from "firebase/messaging";
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
 
 
 // Firebase configuration
@@ -19,6 +20,9 @@ const firebaseConfig = {
 export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+const storage = getStorage(app);
+
+export {storage, ref, getDownloadURL };
 
 // export const messaging = getMessaging(app);
 // export { app, auth, db };

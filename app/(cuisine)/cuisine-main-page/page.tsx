@@ -20,7 +20,7 @@ interface MealPreOrderMainProps {
 }
 
 export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) {
-  const restaurantId = "restaurant_1";
+  const restaurantId = "h36o6Km7wlFRtuL40p1d";
   const categoryId = "category_1";
 
   const { restaurant, loading: restaurantLoading, error: restaurantError } = useRestaurant(restaurantId || "");
