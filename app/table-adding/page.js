@@ -249,7 +249,9 @@ const SeatingPlanEditor = () => {
         <div className="col-lg-8 col-md-7 col-12 pt-0 pt-lg-4 pt-md-4">
           <div className="tables-container">
             {loading ? (
-              <div className="loading">Loading...</div>
+              
+              <div className="loading">
+                <div className="spinner"></div></div>
             ) : (
               tables.map((table) => (
                 <div

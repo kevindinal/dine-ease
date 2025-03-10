@@ -6,6 +6,8 @@ const ThreeSixtyViewer = ({ imageUrl }) => {
   const viewerRef = useRef(null); // Store the viewer instance
 
   useEffect(() => {
+    console.log("ThreeSixtyViewer component rendered");
+
     if (typeof window === "undefined") return; // Ensure it's running on client-side
 
     // If viewerRef already has an instance, skip initialization
