@@ -24,7 +24,7 @@ const Navbar = () => {
     { title: 'Home', href: '/home-main' },
     // { title: 'Features', href: '#features' },
     // { title: 'Restaurants', href: '#restaurants' },
-    { title: 'Reservations', href: '#reservations' },
+    { title: 'Reservations', href: '/restaurants' },
     { title: 'Contact', href: '#contact' },
   ];
 

@@ -11,4 +11,5 @@ export interface Meal {
     carouselImages: string[];
     isTodaysSpecial: boolean;
     isChefsSpecial: boolean;
+    arModelUrl: string;
   }
