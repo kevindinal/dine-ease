@@ -112,22 +112,32 @@ const TableDetails = () => {
                 <div className="col-12">
                   <div className="table-name">
                     <h3>{table.name}</h3>
-                    <div className="status-tag-holder">
-                    <p
-                      style={{
-                        color:
-                          table.status &&
-                          table.status.toLowerCase() === "available"
-                            ? "#4bd010"
-                            : "red",
-                      }}
-                      className="status-tag"
+                    <div
+                      className={
+                        table.status &&
+                        table.status.toLowerCase() === "available"
+                          ? "status-tag-holder"
+                          : table.status &&
+                            table.status.toLowerCase() === "reserved"
+                          ? "status-tag-holder-r"
+                          : ""
+                      }
                     >
-                      {table.status
-                        ? table.status.charAt(0).toUpperCase() +
-                          table.status.slice(1)
-                        : "Unknown"}
-                    </p>
+                      <p
+                        style={{
+                          color:
+                            table.status &&
+                            table.status.toLowerCase() === "available"
+                              ? "#4bd010"
+                              : "red",
+                        }}
+                        className="status-tag"
+                      >
+                        {table.status
+                          ? table.status.charAt(0).toUpperCase() +
+                            table.status.slice(1)
+                          : "Unknown"}
+                      </p>
                     </div>
                   </div>
                 </div>

@@ -56,3 +56,10 @@
   border-radius: 20px;
   border: 2px solid #53ab8b;
 }
+
+.status-tag-holder-r{
+  padding: 0px 8px;
+  background-color: rgba(249, 5, 5, 0.08);
+  border-radius: 20px;
+  border: 2px solid #ff0000;
+}
