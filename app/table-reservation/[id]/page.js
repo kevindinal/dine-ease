@@ -147,10 +147,10 @@ const TableDetails = () => {
                     <MdFireplace className="me-2" />
                     {table.location}
                   </p>
-                  <p className="info-tag">
+                  {/* <p className="info-tag">
                     <FaMoneyCheckDollar className="me-2" />
                     120$
-                  </p>
+                  </p> */}
                 </div>
               </div>
             </div>
@@ -158,52 +158,6 @@ const TableDetails = () => {
         </div>
       </div>
 
-      {/*       
-      <div className="table-details-container">
-        {table.imageUrl && (
-          <img
-            src={table.imageUrl}
-            alt={table.name}
-            className="table-image"
-            style={{
-              width: "200px",
-              height: "200px",
-              borderRadius: "8px",
-              objectFit: "cover",
-              marginRight: "15px",
-            }}
-          />
-        )}
-
-        <div className="table-details">
-          <h2>{table.name}</h2>
-          <div className="table-info">
-            <PiSeatFill className="r-icon" />
-            <p className="tb-information">{table.seats} Seats</p>
-          </div>
-          <div className="table-info">
-            <MdOutlineFireplace className="r-icon" />
-            <p className="tb-information">{table.location}</p>
-          </div>
-          <div className="table-info">
-            <IoMdInformationCircle className="r-icon" />
-            <p className="tb-information">{table.description}</p>
-          </div>
-          <p
-            style={{
-              color:
-                table.status && table.status.toLowerCase() === "available"
-                  ? "#4bd010"
-                  : "red",
-            }}
-            className="status-tag"
-          >
-            {table.status
-              ? table.status.charAt(0).toUpperCase() + table.status.slice(1)
-              : "Unknown"}
-          </p>
-        </div>
-      </div> */}
     </div>
   );
 };
