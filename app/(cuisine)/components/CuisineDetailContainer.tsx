@@ -5,6 +5,17 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Star } from "lucide-react";
 import { useMealsById } from "../hooks/useMeals";
+import dynamic from "next/dynamic";
+
+// Import ARMealViewer with dynamic import to avoid SSR issues
+const ARMealViewer = dynamic(() => import("../components/ArMealPreview"), {
+  ssr: false,
+  loading: () => (
+    <div className="aspect-[4/3] bg-gray-100 rounded-lg flex items-center justify-center">
+      <div className="text-gray-500">Loading AR Viewer...</div>
+    </div>
+  ),
+});
 
 interface CuisineDetailContainerProps {
   handleAddToPreOrder: (customizations: any) => void;
@@ -22,6 +33,8 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
   const [addOns, setAddOns] = useState<string[]>([]);
   const [selectedDrink, setSelectedDrink] = useState<string>("Water");
   const [imageError, setImageError] = useState<string | null>(null);
+  const [showAR, setShowAR] = useState(false);
+  const [arModelUrl, setArModelUrl] = useState<string | undefined>(undefined);
 
   const { meal, loading, error, categoryId: resolvedCategoryId } = useMealsById(mealId, restaurantId, categoryIdFromUrl);
 
@@ -36,8 +49,15 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
     } 
   }, [mealId, restaurantId, categoryIdFromUrl, resolvedCategoryId]);
 
-  useEffect(() => {    
-  }, [meal, resolvedCategoryId]);
+  useEffect(() => {
+    // Set AR model URL if available in meal data
+    if (meal?.arModelUrl) {
+      setArModelUrl(meal.arModelUrl);
+    } else {
+      // Default fallback pattern
+      setArModelUrl(`/models/meals/${mealId}.glb`);
+    }
+  }, [meal, mealId]);
 
   if (loading) {
     return <div className="flex justify-center items-center min-h-[400px]">
@@ -58,7 +78,6 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
   }
 
   const getCarouselImages = () => {
-
     let images: string[] = [];
 
     try {
@@ -126,29 +145,56 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
             </div>
           )}
 
-          <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100">
-            {carouselImages.length > 0 && (
-              <>
-                <Image
-                  src={carouselImages[currentImageIndex]}
-                  alt={meal.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  style={{ objectFit: "cover" }}
-                  className="rounded-lg"
-                  priority
-                  onError={() => {
-                    setImageError(`Failed to load image: ${carouselImages[currentImageIndex]}`);
-                  }}
-                />
-                <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 text-xs rounded">
-                  {currentImageIndex + 1}/{carouselImages.length}
-                </div>
-              </>
+          <div className="relative">
+            <div className="mb-2 flex justify-between items-center">
+              <h3 className="font-medium">View this meal:</h3>
+              <div>
+                <button 
+                  onClick={() => setShowAR(false)} 
+                  className={`px-3 py-1 text-sm rounded-l-lg border ${!showAR ? 'bg-red-500 text-white' : 'bg-white text-gray-700'}`}
+                >
+                  Photos
+                </button>
+                <button 
+                  onClick={() => setShowAR(true)} 
+                  className={`px-3 py-1 text-sm rounded-r-lg border ${showAR ? 'bg-red-500 text-white' : 'bg-white text-gray-700'}`}
+                >
+                  3D/AR View
+                </button>
+              </div>
+            </div>
+
+            {showAR ? (
+              <ARMealViewer 
+                mealId={mealId} 
+                modelUrl={arModelUrl}
+              />
+            ) : (
+              <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100">
+                {carouselImages.length > 0 && (
+                  <>
+                    <Image
+                      src={carouselImages[currentImageIndex]}
+                      alt={meal.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      style={{ objectFit: "cover" }}
+                      className="rounded-lg"
+                      priority
+                      onError={() => {
+                        setImageError(`Failed to load image: ${carouselImages[currentImageIndex]}`);
+                      }}
+                    />
+                    <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 text-xs rounded">
+                      {currentImageIndex + 1}/{carouselImages.length}
+                    </div>
+                  </>
+                )}
+              </div>
             )}
           </div>
 
-          {carouselImages.length > 1 && (
+          {!showAR && carouselImages.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
               {carouselImages.map((img, index) => (
                 <div
