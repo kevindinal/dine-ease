@@ -74,21 +74,25 @@ const TableDetails = () => {
         <div className="spinner"></div>
       </div>
     );
-  if (!table) return <div className="error">Table not found</div>;
+  if (!table)
+    return (
+      <div className="error">
+        <div className="spinner"></div>
+      </div>
+    );
 
   return (
-    <div className="container-fluid px-0 pt-3 pb-4">
+    <div className="container-fluid px-0">
       {/* <button className="btn btn-secondary mb-3" onClick={() => router.back()}>
         ← Back
       </button> */}
       <div className="col-12 ">
         <div className="image-slider-space">
-          {!table.imageUrl && <ThreeSixtyViewer imageUrl="/ff.jpg" />}
-          
+          {table && !table.imageUrl && <ThreeSixtyViewer imageUrl="/ff.jpg" />}
         </div>
       </div>
 
-      <div className="table-info-space mt-5">
+      <div className="table-info-space">
         <div className="container mb-5">
           <div className="row">
             <div className="col-12 col-lg-6 mt-4 mt-lg-0">
@@ -131,7 +135,6 @@ const TableDetails = () => {
                     <MdFireplace className="me-2" />
                     {table.location}
                   </p>
-                  
                 </div>
               </div>
             </div>
