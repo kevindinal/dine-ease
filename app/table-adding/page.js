@@ -31,7 +31,6 @@ const SeatingPlanEditor = () => {
   const [editingTableId, setEditingTableId] = useState(null);
   const [imageFile, setImageFile] = useState(null);
 
-  // State for managing modals
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [tableToDelete, setTableToDelete] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -44,7 +43,6 @@ const SeatingPlanEditor = () => {
     setShowDetailsModal(true);
   };
 
-  // Fetch Tables from Firestore
   useEffect(() => {
     let isMounted = true;
 
@@ -55,9 +53,8 @@ const SeatingPlanEditor = () => {
       const tablesData = await Promise.all(
         querySnapshot.docs.map(async (docSnap) => {
           const data = docSnap.data();
-          let imageUrl = data.imageUrl; // If Firestore already has a URL, use it
+          let imageUrl = data.imageUrl; 
 
-          // If only the image path is stored, fetch the download URL
           if (imageUrl && !imageUrl.startsWith("http")) {
             try {
               const storageRef = ref(storage, imageUrl);
@@ -86,7 +83,6 @@ const SeatingPlanEditor = () => {
 
   const formRef = useRef(null);
 
-  // Handle Image Upload
   const uploadImage = async (file) => {
     if (!file) return null;
     const storageRef = ref(storage, `table-images/${file.name}`);
@@ -108,7 +104,6 @@ const SeatingPlanEditor = () => {
     }
 
     if (editingTableId) {
-      // Update existing table
       const tableRef = doc(db, "tables", editingTableId);
       await updateDoc(tableRef, { ...tableData, imageUrl: uploadedImageUrl });
       setTables((prevTables) =>
@@ -120,7 +115,6 @@ const SeatingPlanEditor = () => {
       );
       setEditingTableId(null);
     } else {
-      // Add new table
       const newTableRef = await addDoc(collection(db, "tables"), {
         ...tableData,
         imageUrl: uploadedImageUrl,
@@ -144,13 +138,11 @@ const SeatingPlanEditor = () => {
     setLoading(false);
   };
 
-  // Function to show the delete confirmation modal
   const handleDeleteTable = (tableId) => {
     setTableToDelete(tableId);
     setShowDeleteModal(true);
   };
 
-  // Function to confirm deletion
   const confirmDeleteTable = async () => {
     if (tableToDelete) {
       setLoading(true);
@@ -162,7 +154,6 @@ const SeatingPlanEditor = () => {
     }
   };
 
-  // Handle Edit Modal
   const handleEditTable = (table) => {
     setTableToEdit(table);
     setShowEditModal(true);
@@ -190,7 +181,6 @@ const SeatingPlanEditor = () => {
   return (
     <div className="container pt-3 pb-4">
       <div className="row">
-        {/* Form Section */}
         <div ref={formRef} className="col-lg-4 col-md-5 col-12">
           <div className="form-container mb-2 mb-lg-0">
             <h1>{editingTableId ? "Edit Table" : "Add Your Seating Plan"}</h1>

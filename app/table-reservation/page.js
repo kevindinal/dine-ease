@@ -4,16 +4,16 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useState, useEffect } from "react";
 import { db } from "../../lib/firebase/config";
 import { collection, getDocs } from "firebase/firestore";
-import { useRouter } from "next/navigation"; // ✅ Import useRouter for navigation
-import { ref, getDownloadURL } from "firebase/storage"; // ✅ Import Firebase Storage
-import { storage } from "../../lib/firebase/config"; // ✅ Import storage
+import { useRouter } from "next/navigation"; 
+import { ref, getDownloadURL } from "firebase/storage"; 
+import { storage } from "../../lib/firebase/config"; 
 import "./tableReservation.css";
 import { PiArmchairFill } from "react-icons/pi";
 
 const TableReservation = () => {
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(false);
-  const router = useRouter(); // ✅ Use router for navigation
+  const router = useRouter(); 
 
   // Fetch Tables from Firestore
   useEffect(() => {

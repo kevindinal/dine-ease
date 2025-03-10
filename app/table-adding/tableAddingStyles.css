@@ -1,4 +1,3 @@
-/* Form Container */
 .form-container {
     background: #fff;
     padding: 20px;
@@ -62,7 +61,6 @@
     gap: 20px;
   }
   
-/* Individual Table Item */
 .table-item {
   padding: 15px;
   border-radius: 8px;
@@ -73,8 +71,8 @@
   justify-content: space-between;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
-  box-shadow:  0px 4px 10px rgba(255, 0, 0, 0.2); /* Soft shadow for depth */
-  background-color: #fff; /* Ensures a clean background */
+  box-shadow:  0px 4px 10px rgba(255, 0, 0, 0.2); 
+  background-color: #fff; 
 }
 
   .table-item:hover {
@@ -93,7 +91,6 @@
     color: #83818f;
   }
   
-  /* Buttons */
   .button-group {
     display: flex;
     justify-content: flex-end;
@@ -117,7 +114,6 @@
     background-color: #ff0000;
   }
   
- /* Loading Indicator */
 .loading {
   display: flex;
   flex-direction: column;
@@ -140,12 +136,10 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 0 15px rgba(0, 0, 0, 0.2);
   }
   
-  /* Apply blur to the entire background */
   body.modal-open {
     overflow: hidden; 
   }
   
-  /* Modal backdrop to dim and blur the background */
   .modal-backdrop {
     position: fixed;
     top: 0;
@@ -161,7 +155,6 @@
     z-index: 1050 !important; 
   }
   
-  /* Optional: Smooth transition for the modal */
   .modal-dialog {
     transition: all 0.3s ease;
   }
