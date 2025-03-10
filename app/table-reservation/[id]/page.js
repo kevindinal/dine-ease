@@ -10,7 +10,6 @@ import "./tableInfo.css";
 import { useParams } from "next/navigation";
 
 import { MdFireplace } from "react-icons/md";
-import { FaMoneyCheckDollar } from "react-icons/fa6";
 
 import dynamic from "next/dynamic";
 
@@ -78,35 +77,20 @@ const TableDetails = () => {
   if (!table) return <div className="error">Table not found</div>;
 
   return (
-    <div className="container pt-3 pb-4">
+    <div className="container-fluid px-0 pt-3 pb-4">
       {/* <button className="btn btn-secondary mb-3" onClick={() => router.back()}>
         ← Back
       </button> */}
+      <div className="col-12 ">
+        <div className="image-slider-space">
+          {!table.imageUrl && <ThreeSixtyViewer imageUrl="/ff.jpg" />}
+          
+        </div>
+      </div>
 
       <div className="table-info-space mt-5">
         <div className="container mb-5">
           <div className="row">
-            <div className="col-12 ">
-              <div className="image-slider-space">
-                {table.imageUrl && (
-                  <>
-                    <ThreeSixtyViewer imageUrl="/ff.jpg" />
-                    {/* <img
-                      src={table.imageUrl}
-                      alt={table.name}
-                      className="table-image"
-                      style={{
-                        width: "200px",
-                        height: "200px",
-                        borderRadius: "8px",
-                        objectFit: "cover",
-                        marginRight: "15px",
-                      }}
-                    /> */}
-                  </>
-                )}
-              </div>
-            </div>
             <div className="col-12 col-lg-6 mt-4 mt-lg-0">
               <div className="table-details-space">
                 <div className="col-12">
@@ -147,17 +131,13 @@ const TableDetails = () => {
                     <MdFireplace className="me-2" />
                     {table.location}
                   </p>
-                  {/* <p className="info-tag">
-                    <FaMoneyCheckDollar className="me-2" />
-                    120$
-                  </p> */}
+                  
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
     </div>
   );
 };
