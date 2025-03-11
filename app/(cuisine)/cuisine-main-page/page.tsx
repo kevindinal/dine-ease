@@ -21,7 +21,6 @@ interface MealPreOrderMainProps {
 
 export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) {
   const restaurantId = "h36o6Km7wlFRtuL40p1d";
-  const categoryId = "category_1";
 
   const { restaurant, loading: restaurantLoading, error: restaurantError } = useRestaurant(restaurantId || "");
   const { categories, loading: categoriesLoading, error: categoriesError } = useCategories(restaurantId);
@@ -41,13 +40,13 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
   useEffect(() => {
     if (restaurant && restaurant.mealPageImage) {
       let imageUrl = restaurant.mealPageImage;
-      
+
       if (!imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
         imageUrl = `/${imageUrl}`;
       }
-      
+
       setBackgroundImageUrl(imageUrl);
-      
+
       console.log("Restaurant image URL:", imageUrl);
     }
   }, [restaurant]);
@@ -87,8 +86,8 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
       />
 
       <section className="py-4 mx-4 md:mx-14 z-10 fixed slide-in-from-bottom-28 left-0 right-0 flex justify-center bottom-24">
-        <FloatingButtons 
-          preOrderCount={preOrderCount} 
+        <FloatingButtons
+          preOrderCount={preOrderCount}
           preOrders={preOrders}
           clearPreOrder={clearPreOrder}
           removePreOrderItem={removePreOrderItem}
@@ -96,14 +95,16 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
         />
       </section>
 
-      <section 
-        className="relative bg-cover bg-center bg-no-repeat py-16 sm:py-32 px-4 md:px-14 text-white" 
-        style={{ 
-          backgroundImage: `url("${backgroundImageUrl || fallbackImage}")`, 
-          backgroundAttachment: "scroll" 
-        }}
+      <section
+        className="relative bg-cover bg-center bg-no-repeat py-16 sm:py-32 px-4 md:px-14 text-white"
       >
-        {!backgroundImageUrl && (
+        {backgroundImageUrl || fallbackImage ? (
+          <img
+            src={backgroundImageUrl || fallbackImage}
+            alt={restaurant.name}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
           <div className="absolute top-0 right-0 bg-red-500 text-white px-2 py-1 text-xs">
             Using fallback image
           </div>
@@ -116,6 +117,7 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
           </p>
         </div>
       </section>
+
 
       <section className="py-6 sm:py-8 mx-4 md:mx-14 border-b border-black">
         <h2 className="text-2xl sm:text-3xl font-semibold text-[#121212] mb-4 sm:mb-6 tracking-wide">Cuisine Categories</h2>
@@ -180,8 +182,12 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
                 <h2 className="text-2xl sm:text-3xl font-semibold text-[#121212] mb-4 sm:mb-6 ml-4 sm:ml-8 pt-4 sm:pt-6 tracking-wide">
                   Chef's specials for you
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 sm:p-8">
-                  {chefsSpecials.map((cuisine) => renderFoodCard(cuisine))}
+                <div className="flex gap-4 sm:gap-6 overflow-x-auto p-4 sm:p-8 scrollbar-hide snap-x snap-mandatory">
+                  {chefsSpecials.map((cuisine) => (
+                    <div key={cuisine.id} className="min-w-[250px] sm:min-w-[320px] lg:min-w-[calc(25%-1rem)] flex-none snap-start">
+                      {renderFoodCard(cuisine)}
+                    </div>
+                  ))}
                 </div>
               </div>
             </section>
@@ -193,8 +199,12 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
                 <h2 className="text-2xl sm:text-3xl font-semibold text-[#121212] mb-4 sm:mb-6 ml-4 sm:ml-8 pt-4 sm:pt-6 tracking-wide">
                   Today's specials for you
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 sm:p-8">
-                  {todaysSpecials.map((cuisine) => renderFoodCard(cuisine))}
+                <div className="flex gap-4 sm:gap-6 overflow-x-auto p-4 sm:p-8 scrollbar-hide snap-x snap-mandatory">
+                  {todaysSpecials.map((cuisine) => (
+                    <div key={cuisine.id} className="min-w-[250px] sm:min-w-[320px] lg:min-w-[calc(25%-1rem)] flex-none snap-start">
+                      {renderFoodCard(cuisine)}
+                    </div>
+                  ))}
                 </div>
               </div>
             </section>
