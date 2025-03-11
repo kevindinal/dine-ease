@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { FaCalendar, FaClock, FaUsers } from "react-icons/fa6";
+import { useRouter } from "next/navigation";
+
 
 type BannerSectionProps = {
   restaurant: {
@@ -9,7 +11,12 @@ type BannerSectionProps = {
   };
 };
 
+
+
 export default function BannerSection({ restaurant }: BannerSectionProps) {
+
+  const router = useRouter();
+
   return (
     <div className="text-gray-900">
       <div className="relative h-[500px]">
@@ -39,7 +46,7 @@ export default function BannerSection({ restaurant }: BannerSectionProps) {
               <input type="time" className="p-2 border rounded w-full" defaultValue="18:00" />
             </div>
 
-            <button className="bg-red-500 text-white px-6 py-2 rounded w-full sm:w-auto mt-2 sm:mt-5">
+            <button className="bg-red-500 text-white px-6 py-2 rounded w-full sm:w-auto mt-2 sm:mt-5" onClick={() => router.push('/table-reservation') }>
               Find a Table
             </button>
           </div>
