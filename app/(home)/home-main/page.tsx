@@ -26,8 +26,8 @@ export default function HomePage() {
           />
         </div>
         
-        <div className="container mx-auto flex flex-col md:flex-row items-center justify-between relative z-10 gap-8">
-          <div className="text-center md:text-left md:w-1/2">
+        <div className="container mx-auto flex flex-col items-center justify-center text-center relative z-10 gap-8">
+          <div className="w-full max-w-2xl">
             <h1 className="text-4xl md:text-6xl font-bold text-accent-darkest mb-6 animate-fade-in">
               Revolutionizing Dining with Smart AI & AR
             </h1>
