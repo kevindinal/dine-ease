@@ -41,6 +41,7 @@ const Navbar = () => {
     { title: 'Reservations', href: '/restaurants' },
     { title: 'Contact', href: '#contact' },
   ];
+  }, [])
 
   return (
     <nav
