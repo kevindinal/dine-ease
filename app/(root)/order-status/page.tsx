@@ -54,7 +54,7 @@ const ReservationsPage = () => {
   const handleCancel = async (id: string) => {
     setIsLoading(true);
     try {
-      // Simulated API call
+      // Simulated API call replace with firebase call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       setReservations(prev =>
