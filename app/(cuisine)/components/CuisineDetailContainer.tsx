@@ -5,6 +5,17 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Star } from "lucide-react";
 import { useMealsById } from "../hooks/useMeals";
+import dynamic from "next/dynamic";
+
+// Import ARMealViewer with dynamic import to avoid SSR issues
+const ARMealViewer = dynamic(() => import("../components/ArMealPreview"), {
+  ssr: false,
+  loading: () => (
+    <div className="aspect-[4/3] bg-gray-100 rounded-lg flex items-center justify-center">
+      <div className="text-gray-500">Loading AR Viewer...</div>
+    </div>
+  ),
+});
 
 interface CuisineDetailContainerProps {
   handleAddToPreOrder: (customizations: any) => void;
@@ -22,6 +33,8 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
   const [addOns, setAddOns] = useState<string[]>([]);
   const [selectedDrink, setSelectedDrink] = useState<string>("Water");
   const [imageError, setImageError] = useState<string | null>(null);
+  const [showAR, setShowAR] = useState(false);
+  const [arModelUrl, setArModelUrl] = useState<string | undefined>(undefined);
 
   const { meal, loading, error, categoryId: resolvedCategoryId } = useMealsById(mealId, restaurantId, categoryIdFromUrl);
 
@@ -36,8 +49,15 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
     } 
   }, [mealId, restaurantId, categoryIdFromUrl, resolvedCategoryId]);
 
-  useEffect(() => {    
-  }, [meal, resolvedCategoryId]);
+  useEffect(() => {
+    // Set AR model URL if available in meal data
+    if (meal?.arModelUrl) {
+      setArModelUrl(meal.arModelUrl);
+    } else {
+      // Default fallback pattern
+      setArModelUrl(`/models/meals/${mealId}.glb`);
+    }
+  }, [meal, mealId]);
 
   if (loading) {
     return <div className="flex justify-center items-center min-h-[400px]">
@@ -58,7 +78,6 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
   }
 
   const getCarouselImages = () => {
-
     let images: string[] = [];
 
     try {
@@ -126,29 +145,56 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
             </div>
           )}
 
-          <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100">
-            {carouselImages.length > 0 && (
-              <>
-                <Image
-                  src={carouselImages[currentImageIndex]}
-                  alt={meal.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  style={{ objectFit: "cover" }}
-                  className="rounded-lg"
-                  priority
-                  onError={() => {
-                    setImageError(`Failed to load image: ${carouselImages[currentImageIndex]}`);
-                  }}
-                />
-                <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 text-xs rounded">
-                  {currentImageIndex + 1}/{carouselImages.length}
-                </div>
-              </>
+          <div className="relative">
+            <div className="mb-2 flex justify-between items-center">
+              <h3 className="font-medium">View this meal:</h3>
+              <div>
+                <button 
+                  onClick={() => setShowAR(false)} 
+                  className={`px-3 py-1 text-sm rounded-l-lg border ${!showAR ? 'bg-red-500 text-white' : 'bg-white text-gray-700'}`}
+                >
+                  Photos
+                </button>
+                <button 
+                  onClick={() => setShowAR(true)} 
+                  className={`px-3 py-1 text-sm rounded-r-lg border ${showAR ? 'bg-red-500 text-white' : 'bg-white text-gray-700'}`}
+                >
+                  3D/AR View
+                </button>
+              </div>
+            </div>
+
+            {showAR ? (
+              <ARMealViewer 
+                mealId={mealId} 
+                modelUrl={arModelUrl}
+              />
+            ) : (
+              <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100">
+                {carouselImages.length > 0 && (
+                  <>
+                    <Image
+                      src={carouselImages[currentImageIndex]}
+                      alt={meal.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      style={{ objectFit: "cover" }}
+                      className="rounded-lg"
+                      priority
+                      onError={() => {
+                        setImageError(`Failed to load image: ${carouselImages[currentImageIndex]}`);
+                      }}
+                    />
+                    <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 text-xs rounded">
+                      {currentImageIndex + 1}/{carouselImages.length}
+                    </div>
+                  </>
+                )}
+              </div>
             )}
           </div>
 
-          {carouselImages.length > 1 && (
+          {!showAR && carouselImages.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
               {carouselImages.map((img, index) => (
                 <div
@@ -176,34 +222,12 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
         <div className="space-y-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{meal.name}</h1>
-            <div className="flex items-center gap-2 mt-2">
-              <div className="flex items-center">
-                {[...Array(Math.floor(meal.rating || 0))].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                ))}
-                {(meal.rating || 0) % 1 > 0 && (
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" strokeWidth={1} />
-                )}
-              </div>
-              <span className="text-gray-600">{meal.rating || 0} (245 reviews)</span>
-            </div>
             <div className="text-2xl font-bold text-red-500 mt-2">Rs. {meal.price}</div>
-            {resolvedCategoryId && (
-              <div className="text-sm text-gray-500 mt-1">
-                Category ID: {resolvedCategoryId}
-              </div>
-            )}
           </div>
 
           <div className="space-y-4">
             <h2 className="font-semibold text-gray-900">Description</h2>
             <p className="text-gray-600">{meal.longDescription || meal.description}</p>
-
-            <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-              <div>Serves 1</div>
-              {meal.isTodaysSpecial && <div>Today's Special</div>}
-              {meal.isChefsSpecial && <div>Chef's Special</div>}
-            </div>
           </div>
 
           <div className="space-y-4">
@@ -215,7 +239,7 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
                 {["Regular", "Large (+Rs.400)", "Extra Large (+Rs.700)"].map((size) => (
                   <button
                     key={size}
-                    className={`p-2 border rounded ${selectedSize === size.split(" ")[0] ? "bg-red-500 text-white" : "text-gray-700"
+                    className={`p-2 border rounded-xl ${selectedSize === size.split(" ")[0] ? "bg-red-500 text-white" : "text-gray-700"
                       }`}
                     onClick={() => setSelectedSize(size.split(" ")[0])}
                   >
@@ -231,7 +255,7 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
                 {["Mild", "Medium", "Hot"].map((level) => (
                   <button
                     key={level}
-                    className={`p-2 border rounded ${spiceLevel === level ? "bg-red-500 text-white" : "text-gray-700"
+                    className={`p-2 border rounded-xl ${spiceLevel === level ? "bg-red-500 text-white" : "text-gray-700"
                       }`}
                     onClick={() => setSpiceLevel(level)}
                   >
@@ -243,7 +267,7 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
 
             <div>
               <h3 className="text-sm text-gray-700 mb-2">Add-ons</h3>
-              <div className="grid grid-cols-2 gap-2 text-black">
+              <div className="grid grid-cols-2 gap-2 text-black rounded-xl">
                 {[
                   ["Extra Avocado", "Rs.200"],
                   ["Extra Salmon", "Rs.600"],
@@ -275,7 +299,7 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
                 {["Water", "Lemonade", "Iced Tea", "Soda"].map((drink) => (
                   <button
                     key={drink}
-                    className={`p-2 border rounded ${selectedDrink === drink ? "bg-red-500 text-white" : "text-gray-700"
+                    className={`p-2 border rounded-xl ${selectedDrink === drink ? "bg-red-500 text-white" : "text-gray-700"
                       }`}
                     onClick={() => setSelectedDrink(drink)}
                   >
@@ -289,13 +313,13 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
           <div className="flex gap-4">
             <button
               onClick={handleAddToPreOrderFromCard}
-              className="flex-1 bg-red-500 text-white py-3 rounded-lg font-semibold hover:bg-red-600 transition-colors"
+              className="flex-1 bg-red-500 text-white py-3 rounded-2xl font-semibold hover:bg-red-600 transition-colors"
             >
               Add to Pre-Order
             </button>
             <button
               onClick={() => window.history.back()}
-              className="flex-1 border border-gray-300 py-3 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex-1 border border-gray-300 py-3 rounded-2xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Go Back
             </button>
