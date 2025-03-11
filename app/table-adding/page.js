@@ -18,6 +18,8 @@ import "./tableAddingStyles.css";
 import { PiSeatFill } from "react-icons/pi";
 import { MdOutlineFireplace } from "react-icons/md";
 import { IoMdInformationCircle } from "react-icons/io";
+import { MdDeleteOutline } from "react-icons/md";
+import { FiEdit2 } from "react-icons/fi";
 
 const SeatingPlanEditor = () => {
   const [tables, setTables] = useState([]);
@@ -32,7 +34,7 @@ const SeatingPlanEditor = () => {
   const [loading, setLoading] = useState(false);
   const [editingTableId, setEditingTableId] = useState(null);
   const [imageFile, setImageFile] = useState(null);
-const [showImagePreview, setShowImagePreview] = useState(false);
+  const [showImagePreview, setShowImagePreview] = useState(false);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [tableToDelete, setTableToDelete] = useState(null);
@@ -56,7 +58,7 @@ const [showImagePreview, setShowImagePreview] = useState(false);
       const tablesData = await Promise.all(
         querySnapshot.docs.map(async (docSnap) => {
           const data = docSnap.data();
-          let imageUrl = data.imageUrl; 
+          let imageUrl = data.imageUrl;
 
           if (imageUrl && !imageUrl.startsWith("http")) {
             try {
@@ -185,8 +187,6 @@ const [showImagePreview, setShowImagePreview] = useState(false);
     }, 100);
   };
 
-  
-
   console.log(selectedTable);
   return (
     <div className="container pt-3 pb-4">
@@ -229,21 +229,25 @@ const [showImagePreview, setShowImagePreview] = useState(false);
                 }
               />
 
-<input type="file" accept="image/*" onChange={handleImageChange} />
-    <button
-      type="button"
-      onClick={() => document.getElementById("cameraInput").click()}
-    >
-      Take a Photo
-    </button>
-    <input
-      type="file"
-      id="cameraInput"
-      accept="image/*"
-      capture="environment"
-      style={{ display: "none" }}
-      onChange={handleImageChange}
-    />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+              />
+              <button
+                type="button"
+                onClick={() => document.getElementById("cameraInput").click()}
+              >
+                Take a Photo
+              </button>
+              <input
+                type="file"
+                id="cameraInput"
+                accept="image/*"
+                capture="environment"
+                style={{ display: "none" }}
+                onChange={handleImageChange}
+              />
 
               <button
                 type="button"
@@ -256,14 +260,13 @@ const [showImagePreview, setShowImagePreview] = useState(false);
           </div>
         </div>
 
-
         {/* Tables Section */}
         <div className="col-lg-8 col-md-7 col-12 pt-0 pt-lg-4 pt-md-4">
           <div className="tables-container">
             {loading ? (
-              
               <div className="loading">
-                <div className="spinner"></div></div>
+                <div className="spinner"></div>
+              </div>
             ) : (
               tables.map((table) => (
                 <div
@@ -306,7 +309,7 @@ const [showImagePreview, setShowImagePreview] = useState(false);
                       }}
                       disabled={loading}
                     >
-                      Edit
+                      <FiEdit2/>
                     </button>
                     <button
                       onClick={(e) => {
@@ -315,7 +318,7 @@ const [showImagePreview, setShowImagePreview] = useState(false);
                       }}
                       disabled={loading}
                     >
-                      Delete
+                      <MdDeleteOutline />
                     </button>
                   </div>
                 </div>
@@ -325,32 +328,40 @@ const [showImagePreview, setShowImagePreview] = useState(false);
         </div>
       </div>
 
-
-      <Modal show={showImagePreview} onHide={() => setShowImagePreview(false)} centered>
-      <Modal.Header closeButton>
-      </Modal.Header>
-      <Modal.Body className="text-center px-0 py-0">
-        {imageFile && (
-          <img
-            src={URL.createObjectURL(imageFile)}
-            alt="Preview"
-            style={{
-              width: "100%",
-              maxHeight: "400px",
-              objectFit: "cover",
-            }}
-          />
-        )}
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={() => setShowImagePreview(false)}>
-          Cancel
-        </Button>
-        <Button className="btn-confirm" onClick={() => setShowImagePreview(false)}>
-          Confirm
-        </Button>
-      </Modal.Footer>
-    </Modal>
+      <Modal
+        show={showImagePreview}
+        onHide={() => setShowImagePreview(false)}
+        centered
+      >
+        <Modal.Header closeButton></Modal.Header>
+        <Modal.Body className="text-center px-0 py-0">
+          {imageFile && (
+            <img
+              src={URL.createObjectURL(imageFile)}
+              alt="Preview"
+              style={{
+                width: "100%",
+                maxHeight: "400px",
+                objectFit: "cover",
+              }}
+            />
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowImagePreview(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            className="btn-confirm"
+            onClick={() => setShowImagePreview(false)}
+          >
+            Confirm
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (

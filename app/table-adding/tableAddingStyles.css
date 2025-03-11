@@ -94,24 +94,24 @@
   .button-group {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 2px;
     margin-top: auto;
+
   }
   
   .table-item button {
-    padding: 5px 10px;
-    background-color: #83818f;
-    color: white;
+    padding: 5px 6px;
+    color: #83818f;
     border: none;
     cursor: pointer;
     border-radius: 5px;
-    font-size: 1rem;
+    font-size: 1.05rem;
     transition: background-color 0.2s ease;
   }
   
   .table-item button:hover {
     cursor: pointer !important;
-    background-color: #ff0000;
+    color: #FF0000;
   }
   
 .loading {
