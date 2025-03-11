@@ -21,6 +21,10 @@ import { IoMdInformationCircle } from "react-icons/io";
 import { MdDeleteOutline } from "react-icons/md";
 import { FiEdit2 } from "react-icons/fi";
 
+import { GrLocationPin } from "react-icons/gr";
+import { PiArmchairFill } from "react-icons/pi";
+
+
 const SeatingPlanEditor = () => {
   const [tables, setTables] = useState([]);
   const [tableData, setTableData] = useState({
@@ -275,23 +279,42 @@ const SeatingPlanEditor = () => {
                   onClick={() => handleTableClick(table)}
                 >
                   <h2>{table.name}</h2>
-                  <p>Seats: {table.seats}</p>
-                  <p>Location: {table.location}</p>
-                  <p
-                    style={{
-                      color:
+                  <div className="table-d">
+                    <PiArmchairFill  />
+                    <p>{table.seats}</p>
+                  </div>
+
+                  <div className="table-d">
+                    <GrLocationPin  />
+                    <p>{table.location}</p>
+                  </div>
+                  <div
+                      className={
                         table.status &&
                         table.status.toLowerCase() === "available"
-                          ? "#4bd010"
-                          : "red",
-                    }}
-                    className="status-tag"
-                  >
-                    {table.status
-                      ? table.status.charAt(0).toUpperCase() +
-                        table.status.slice(1)
-                      : "Unknown"}
-                  </p>
+                          ? "status-tag-holder"
+                          : table.status &&
+                            table.status.toLowerCase() === "reserved"
+                          ? "status-tag-holder-r"
+                          : ""
+                      }
+                    >
+                      <p
+                        style={{
+                          color:
+                            table.status &&
+                            table.status.toLowerCase() === "available"
+                              ? "#4bd010"
+                              : "red",
+                        }}
+                        className="status-tag"
+                      >
+                        {table.status
+                          ? table.status.charAt(0).toUpperCase() +
+                            table.status.slice(1)
+                          : "Unknown"}
+                      </p>
+                    </div>
 
                   {/* {table.imgUrl && (
                     <img
@@ -309,7 +332,7 @@ const SeatingPlanEditor = () => {
                       }}
                       disabled={loading}
                     >
-                      <FiEdit2/>
+                      <FiEdit2 />
                     </button>
                     <button
                       onClick={(e) => {
