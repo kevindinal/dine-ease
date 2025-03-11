@@ -1,5 +1,7 @@
 "use client";
 
+import Modal from "react-bootstrap/Modal"; // Import Bootstrap Modal
+import Button from "react-bootstrap/Button"; // Import Bootstrap Button
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useState, useEffect, useRef } from "react";
 import { db, storage } from "../../lib/firebase/config";
@@ -30,6 +32,7 @@ const SeatingPlanEditor = () => {
   const [loading, setLoading] = useState(false);
   const [editingTableId, setEditingTableId] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+const [showImagePreview, setShowImagePreview] = useState(false);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [tableToDelete, setTableToDelete] = useState(null);
@@ -138,6 +141,13 @@ const SeatingPlanEditor = () => {
     setLoading(false);
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setShowImagePreview(true); // Show modal when image is selected
+    }
+  };
   const handleDeleteTable = (tableId) => {
     setTableToDelete(tableId);
     setShowDeleteModal(true);
@@ -219,11 +229,22 @@ const SeatingPlanEditor = () => {
                 }
               />
 
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setImageFile(e.target.files[0])}
-              />
+<input type="file" accept="image/*" onChange={handleImageChange} />
+    <button
+      type="button"
+      onClick={() => document.getElementById("cameraInput").click()}
+    >
+      Take a Photo
+    </button>
+    <input
+      type="file"
+      id="cameraInput"
+      accept="image/*"
+      capture="environment"
+      style={{ display: "none" }}
+      onChange={handleImageChange}
+    />
+
               <button
                 type="button"
                 onClick={handleSaveTable}
@@ -234,6 +255,7 @@ const SeatingPlanEditor = () => {
             </form>
           </div>
         </div>
+
 
         {/* Tables Section */}
         <div className="col-lg-8 col-md-7 col-12 pt-0 pt-lg-4 pt-md-4">
@@ -302,6 +324,33 @@ const SeatingPlanEditor = () => {
           </div>
         </div>
       </div>
+
+
+      <Modal show={showImagePreview} onHide={() => setShowImagePreview(false)} centered>
+      <Modal.Header closeButton>
+      </Modal.Header>
+      <Modal.Body className="text-center px-0 py-0">
+        {imageFile && (
+          <img
+            src={URL.createObjectURL(imageFile)}
+            alt="Preview"
+            style={{
+              width: "100%",
+              maxHeight: "400px",
+              objectFit: "cover",
+            }}
+          />
+        )}
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={() => setShowImagePreview(false)}>
+          Cancel
+        </Button>
+        <Button className="btn-confirm" onClick={() => setShowImagePreview(false)}>
+          Confirm
+        </Button>
+      </Modal.Footer>
+    </Modal>
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (

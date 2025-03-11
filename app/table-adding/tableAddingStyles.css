@@ -170,11 +170,14 @@
   }
   
   .btn-confirm {
+    border: 1px solid #ff0000 !important;
+    border: none;
     color: #fff !important;
     background-color: #ff3535 !important;
   }
   
   .btn-confirm:hover {
+    border: 1px solid #ff0000 !important;
     color: #fff !important;
     background-color: #ff0000 !important;
   }
@@ -234,5 +237,6 @@
     height: auto;
     border-radius: 8px;
   }
+  
   
   
