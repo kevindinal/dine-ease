@@ -18,12 +18,12 @@ import { Loader2 } from "lucide-react";
 
 interface MealPreOrderMainProps {
   hotelImage?: string;
+  restaurantId: string;
 }
 
-export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) {
-  const restaurantId = "h36o6Km7wlFRtuL40p1d";
+export default function MealPreOrderMain({restaurantId, hotelImage}: MealPreOrderMainProps) {
 
-  const { restaurant, loading: restaurantLoading, error: restaurantError } = useRestaurant(restaurantId || "");
+  const { restaurant, loading: restaurantLoading, error: restaurantError } = useRestaurant(restaurantId);
   const { categories, loading: categoriesLoading, error: categoriesError } = useCategories(restaurantId);
   const { meals: todaysSpecials, loading: todaysLoading, error: todaysSpecialsError } = useTodaysSpecials(restaurantId);
   const { meals: chefsSpecials, loading: chefsLoading, error: chefsError } = useChefsSpecials(restaurantId);
