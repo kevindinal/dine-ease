@@ -10,9 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Calendar, Clock, Users, Loader2, XCircle, PencilLine } from "lucide-react";
+import { toast } from 'sonner';
+
 
 interface Reservation {
   id: string;
@@ -49,7 +50,6 @@ const mockReservations: Reservation[] = [
 const ReservationsPage = () => {
   const [reservations, setReservations] = useState<Reservation[]>(mockReservations);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
 
   const handleCancel = async (id: string) => {
     setIsLoading(true);
@@ -63,16 +63,19 @@ const ReservationsPage = () => {
         )
       );
       
-      toast({
-        title: "Reservation cancelled",
-        description: "Your reservation has been cancelled successfully.",
-      });
+      // toast({
+      //   title: "Reservation cancelled",
+      //   description: "Your reservation has been cancelled successfully.",
+      // });
+      toast.success("Your reservation has been cancelled successfully.");
+
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to cancel reservation. Please try again.",
-      });
+      // toast({
+      //   variant: "destructive",
+      //   title: "Error",
+      //   description: "Failed to cancel reservation. Please try again.",
+      // });
+      toast.error("Failed to cancel reservation. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -90,16 +93,18 @@ const ReservationsPage = () => {
         )
       );
       
-      toast({
-        title: "Status updated",
-        description: "Reservation status has been updated successfully.",
-      });
+      // toast({
+      //   title: "Status updated",
+      //   description: "Reservation status has been updated successfully.",
+      // });
+      toast.success("Reservation status has been updated successfully.");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update status. Please try again.",
-      });
+      // toast({
+      //   variant: "destructive",
+      //   title: "Error",
+      //   description: "Failed to update status. Please try again.",
+      // });
+      toast.error("Failed to update status. Please try again.");
     } finally {
       setIsLoading(false);
     }
