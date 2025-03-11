@@ -28,7 +28,7 @@ const FloatingButtons: FC<FloatingButtonsProps> = ({
 
   const handleCheckout = () => {
     // Since (payments) is a route group, it doesn't appear in the URL path
-    router.push("/payment-page/summaryPage");
+    router.push("/payment-page");
   };
 
   return (
