@@ -189,7 +189,7 @@ const ReservationsPage = () => {
                   <div className="flex space-x-2 w-full md:w-auto">
                     {reservation.status !== "cancelled" && (
                       <>
-                        <Button
+                        {/* <Button
                           variant="outline"
                           size="sm"
                           className="flex-1 md:flex-none"
@@ -197,7 +197,7 @@ const ReservationsPage = () => {
                         >
                           <PencilLine className="w-4 h-4 mr-2" />
                           Modify
-                        </Button>
+                        </Button> */}
                         <Button
                           variant="destructive"
                           size="sm"
@@ -208,7 +208,7 @@ const ReservationsPage = () => {
                           {isLoading ? (
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                           ) : (
-                            <XCircle className="w-4 h-4 mr-2" />
+                            <XCircle className="w-4 h-4 mr-0" />
                           )}
                           Cancel
                         </Button>
