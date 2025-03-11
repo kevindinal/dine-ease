@@ -14,19 +14,21 @@ interface NavLink {
 
 const navLinks: NavLink[] = [
   { title: "Home", href: "/home-main" },
-  { title: "Restaurants", href: "#restaurants" },
+  { title: "Restaurants", href: "/restaurants" },
   { title: "Contact", href: "#contact" },
 ]
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  // Add user state - in a real app, this would come from your auth system
+
+  // Mock user state
   const [user, setUser] = useState({
     name: "Lucy",
     image: "/placeholder.svg?height=32&width=32",
   })
 
+  // Handle scrolling effect
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0)
@@ -34,19 +36,20 @@ const Navbar = () => {
 
     window.addEventListener("scroll", handleScroll)
 
-  const navLinks = [
-    { title: 'Home', href: '/home-main' },
-    // { title: 'Features', href: '#features' },
-    // { title: 'Restaurants', href: '#restaurants' },
-    { title: 'Reservations', href: '/restaurants' },
-    { title: 'Contact', href: '#contact' },
-  ];
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+    }
+  }, [])
+
+  // Toggle mobile menu
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen((prev) => !prev)
+  }
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full py-4 ${
-        isScrolled ? "bg-red-600 shadow-md" : "bg-red-600/90"
-      } z-50 transition-colors duration-300`}
+      className={`fixed top-0 left-0 w-full py-4 ${isScrolled ? "bg-red-600 shadow-md" : "bg-red-600/90"
+        } z-50 transition-colors duration-300`}
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
@@ -162,7 +165,6 @@ export default Navbar
 
 
 
-
 // this has the sign in button instead of profile pic & name
 // "use client";
 
@@ -262,4 +264,4 @@ export default Navbar
 //   );
 // };
 
-// export default Navbar;
+// export default Navbar
