@@ -1,14 +1,53 @@
+// import { NextApiRequest, NextApiResponse } from "next";
+// import { db } from "@/lib/firebase"; // Import Firebase instance
+// import { collection, addDoc } from "firebase/firestore";
+
+// export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+//   if (req.method === "POST") {
+//     try {
+//       const { date, time, guests, table, userId } = req.body;
+
+//       const docRef = await addDoc(collection(db, "reservations"), {
+//         userId,
+//         date,
+//         time,
+//         guests,
+//         table,
+//         createdAt: new Date(),
+//       });
+
+//       res.status(200).json({ success: true, id: docRef.id });
+//     } catch (error) {
+//       // Type casting the error to a known type (Error)
+//       const err = error as Error;
+//       res.status(500).json({ success: false, error: err.message });
+//     }
+//   } else {
+//     res.status(405).json({ message: "Method Not Allowed" });
+//   }
+// }
+
 import { NextApiRequest, NextApiResponse } from "next";
-import { db } from "@/lib/firebase"; // Import Firebase instance
-import { collection, addDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase"; // Firebase instance
+import { doc, collection, addDoc } from "firebase/firestore";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     try {
-      const { date, time, guests, table, userId } = req.body;
+      const { date, time, guests, table, uid } = req.body; // Use 'uid' instead of 'userId'
 
-      const docRef = await addDoc(collection(db, "reservations"), {
-        userId,
+      if (!uid) {
+        return res.status(400).json({ success: false, error: "User ID (uid) is required" });
+      }
+
+      // Reference to the specific user's document
+      const userRef = doc(db, "users", uid); 
+      
+      // Create an "orders" subcollection inside the user's document
+      const orderRef = collection(userRef, "orders");
+
+      // Save order data inside the user's "orders" subcollection
+      const docRef = await addDoc(orderRef, {
         date,
         time,
         guests,
@@ -16,9 +55,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         createdAt: new Date(),
       });
 
-      res.status(200).json({ success: true, id: docRef.id });
+      res.status(200).json({ success: true, orderId: docRef.id });
     } catch (error) {
-      // Type casting the error to a known type (Error)
       const err = error as Error;
       res.status(500).json({ success: false, error: err.message });
     }

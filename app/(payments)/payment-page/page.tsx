@@ -289,4 +289,12 @@ const DetailRow = ({ label, value }: { label: string; value: string }) => (
   </div>
 );
 
+<<<<<<< HEAD
 export default SummaryPage;
+=======
+  
+  
+
+export default SummaryPage;
+
+>>>>>>> payment-process
