@@ -140,7 +140,7 @@ const ReservationsPage = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Current Reservations</CardTitle>
+            <CardTitle>All Reservations</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
