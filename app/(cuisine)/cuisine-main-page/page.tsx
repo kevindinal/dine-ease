@@ -14,6 +14,7 @@ import { useChefsSpecials } from "../hooks/useChefsSpecials";
 import { useTodaysSpecials } from "../hooks/useTodaysSpecials";
 import { useMeals } from "../hooks/useMeals";
 import { Category } from "../types/category";
+import { Loader2 } from "lucide-react";
 
 interface MealPreOrderMainProps {
   hotelImage?: string;
@@ -69,7 +70,9 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
     </div>
   );
 
-  if (restaurantLoading) return <div>Loading...</div>;
+  if (restaurantLoading) return <div className="w-full h-screen flex justify-center items-center animate-spin overflow-hidden">
+  <Loader2 />
+</div>
   if (restaurantError) return <div>Error: {restaurantError} </div>;
   if (categoriesError) return <div>Error loading categories: {categoriesError}</div>
   if (!restaurant) return <div>Restaurant not found</div>;
