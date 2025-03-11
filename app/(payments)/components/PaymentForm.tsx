@@ -2,7 +2,7 @@
 
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
-import CheckoutPage from "./CheckoutPage"; // Ensure this file handles Stripe checkout
+import CheckoutPage from "../checkout-page/page"; // Ensure this file handles Stripe checkout
 import convertToSubcurrency from "@/lib/convertToSubcurrency";
 
 // Ensure Stripe public key is set

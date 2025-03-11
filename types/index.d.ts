@@ -1,5 +1,5 @@
 declare type UserProp = {
-    userId: string;
+    uid: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -10,7 +10,7 @@ declare type UserProp = {
 }
 
 export interface UserProp {
-    userId: string;
+    uid: string;
     firstName: string;
     lastName: string;
     email: string;

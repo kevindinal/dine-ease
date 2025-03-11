@@ -38,6 +38,7 @@ const usePreOrder = () => {
           item.portionSize === newItem.portionSize &&
           item.spiceLevel === newItem.spiceLevel &&
           item.drinkPairing === newItem.drinkPairing &&
+          item.image === newItem.image &&
           JSON.stringify(item.addOns) === JSON.stringify(newItem.addOns)
       );
 
