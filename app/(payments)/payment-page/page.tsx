@@ -216,3 +216,4 @@ const DetailRow = ({ label, value }: { label: string; value: string }) => (
   
 
 export default SummaryPage;
+
