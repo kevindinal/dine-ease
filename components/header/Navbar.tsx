@@ -200,20 +200,9 @@ const Navbar = () => {
     };
   }, []);
 
-<<<<<<< HEAD
-  const navLinks = [
-    { title: 'Home', href: '/home-main' },
-    // { title: 'Features', href: '#features' },
-    // { title: 'Restaurants', href: '#restaurants' },
-    { title: 'Reservations', href: '/restaurants' },
-    { title: 'Contact', href: '#contact' },
-  ];
-  }, [])
-=======
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen((prev) => !prev);
   };
->>>>>>> payment-process
 
   return (
     <nav className={`fixed top-0 left-0 w-full py-4 ${isScrolled ? "bg-red-600 shadow-md" : "bg-red-600/90"} z-50 transition-colors duration-300`}>
