@@ -1,11 +1,10 @@
-"use client";  // ✅ Add this to make it a Client Component if needed
-
-import RestaurantBooking from "./(restaurants)/restaurants/page";
+import SummaryPage from "./(payments)/payment-page/page";
 
 export default function HomePage() {
   return (
+
     <div>
-      <RestaurantBooking />
+      <SummaryPage/>
     </div>
     
   );
