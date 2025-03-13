@@ -32,8 +32,14 @@ export default function TableReservation() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
+
   const router = useRouter()
+  
+
   const isMobile = useMediaQuery("(max-width: 768px)")
+
+  const restaurantName = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "").get("name") || "Table Reservation";
+
 
   // Fetch Tables from Firestore
   useEffect(() => {
@@ -94,10 +100,11 @@ export default function TableReservation() {
     router.push(`/table-reservation/${tableId}`)
   }
 
+
   return (
     <div className="container mx-auto px-4 py-6 sm:py-8 max-w-7xl">
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 text-gray-800">Table Reservation</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 text-gray-800">{restaurantName}</h1>
         <p className="text-sm sm:text-base text-gray-600">Select a table to make your reservation</p>
       </div>
 
