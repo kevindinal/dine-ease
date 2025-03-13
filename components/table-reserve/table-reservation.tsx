@@ -102,12 +102,21 @@ export default function TableReservation() {
   }, [])
 
   // Filter tables based on search term and status
+  // const filteredTables = tables.filter((table) => {
+  //   const matchesSearch =
+  //     table.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     table.location.toLowerCase().includes(searchTerm.toLowerCase())
+  //   const matchesStatus = selectedStatus ? table.status.toLowerCase() === selectedStatus.toLowerCase() : true
+  //   return matchesSearch && matchesStatus
+  // })
+
   const filteredTables = tables.filter((table) => {
+    const matchesRestaurant = table.restaurantId === restaurantId
     const matchesSearch =
       table.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       table.location.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = selectedStatus ? table.status.toLowerCase() === selectedStatus.toLowerCase() : true
-    return matchesSearch && matchesStatus
+    return matchesRestaurant && matchesSearch && matchesStatus
   })
 
   const handleTableClick = (tableId: string) => {
