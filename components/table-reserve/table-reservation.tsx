@@ -38,8 +38,14 @@ export default function TableReservation() {
 
   const isMobile = useMediaQuery("(max-width: 768px)")
 
-  const restaurantName = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "").get("name") || "Table Reservation";
+  const [restaurantName, setRestaurantName] = useState("Table Reservation");
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const name = new URLSearchParams(window.location.search).get("name");
+      if (name) setRestaurantName(name);
+    }
+  }, []);
 
   // Fetch Tables from Firestore
   useEffect(() => {
