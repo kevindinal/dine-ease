@@ -13,6 +13,7 @@ type BannerSectionProps = {
 
 export default function BannerSection({ restaurant }: BannerSectionProps) {
   const router = useRouter();
+  const [guestCount, setGuestCount] = useState(1); 
 
   return (
     <div className="text-gray-900">
@@ -30,7 +31,8 @@ export default function BannerSection({ restaurant }: BannerSectionProps) {
           <div className="bg-white p-6 rounded-lg shadow-lg mt-6 flex flex-col sm:flex-row gap-4 items-center text-black w-[90%] sm:w-auto">
             <div className="flex flex-col">
               <label className="text-sm font-semibold">Guests</label>
-              <select className="p-2 border rounded w-full">
+              <select className="p-2 border rounded w-full" value={guestCount}
+                onChange={(e) => setGuestCount(Number(e.target.value))}>
                 {[...Array(10)].map((_, i) => (
                   <option key={i + 1}>{i + 1}</option>
                 ))}
@@ -57,7 +59,9 @@ export default function BannerSection({ restaurant }: BannerSectionProps) {
                 router.push(
                   `/table-reservation?name=${encodeURIComponent(
                     restaurant.name
-                  )}&id=${encodeURIComponent(restaurant.id)}`
+                  )}&id=${encodeURIComponent(
+                    restaurant.id
+                  )}&guests=${guestCount}`
                 )
               }
             >
