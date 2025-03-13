@@ -102,14 +102,6 @@ export default function TableReservation() {
   }, [])
 
   // Filter tables based on search term and status
-  // const filteredTables = tables.filter((table) => {
-  //   const matchesSearch =
-  //     table.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     table.location.toLowerCase().includes(searchTerm.toLowerCase())
-  //   const matchesStatus = selectedStatus ? table.status.toLowerCase() === selectedStatus.toLowerCase() : true
-  //   return matchesSearch && matchesStatus
-  // })
-
   const filteredTables = tables.filter((table) => {
     const matchesRestaurant = table.restaurantId === restaurantId
     const matchesSearch =
@@ -344,7 +336,6 @@ function TableCard({ table, onClick }: TableCardProps) {
       <div className="flex justify-between items-start mb-3 sm:mb-4">
         <div>
           <h3 className="text-lg sm:text-xl font-bold text-gray-800">{table.name}</h3>
-          <h3 className="text-lg sm:text-xl font-bold text-gray-800">{table.restaurantId}</h3>
           <div className="flex items-center mt-1 text-gray-600">
             <MapPin size={12} className="mr-1" />
             <span className="text-xs sm:text-sm">{table.location}</span>
