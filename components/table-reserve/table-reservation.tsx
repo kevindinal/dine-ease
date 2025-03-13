@@ -23,6 +23,7 @@ interface Table {
   name: string
   location: string
   status: string
+  restaurantId: string
   seats: number
   imageUrl?: string
 }
@@ -335,7 +336,7 @@ function TableCard({ table, onClick, restaurantId }: TableCardProps) {
       <div className="flex justify-between items-start mb-3 sm:mb-4">
         <div>
           <h3 className="text-lg sm:text-xl font-bold text-gray-800">{table.name}</h3>
-          <h3 className="text-lg sm:text-xl font-bold text-gray-800">{restaurantId}</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800">{table.restaurantId}</h3>
           <div className="flex items-center mt-1 text-gray-600">
             <MapPin size={12} className="mr-1" />
             <span className="text-xs sm:text-sm">{table.location}</span>
