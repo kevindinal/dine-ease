@@ -7,15 +7,11 @@ import { Star } from "lucide-react";
 import { useMealsById } from "../hooks/useMeals";
 import dynamic from "next/dynamic";
 
-// Import ARMealViewer with dynamic import to avoid SSR issues
-const ARMealViewer = dynamic(() => import("../components/ArMealPreview"), {
-  ssr: false,
-  loading: () => (
-    <div className="aspect-[4/3] bg-gray-100 rounded-lg flex items-center justify-center">
-      <div className="text-gray-500">Loading AR Viewer...</div>
-    </div>
-  ),
-});
+// Dynamically import the model viewer to avoid SSR issues
+const MealModelViewer = dynamic(
+  () => import("../components/MealModelViewer"),
+  { ssr: false }
+);
 
 interface CuisineDetailContainerProps {
   handleAddToPreOrder: (customizations: any) => void;
@@ -34,13 +30,15 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
   const [selectedDrink, setSelectedDrink] = useState<string>("Water");
   const [imageError, setImageError] = useState<string | null>(null);
   const [showAR, setShowAR] = useState(false);
-  const [arModelUrl, setArModelUrl] = useState<string | undefined>(undefined);
+  const [modelViewerLoading, setModelViewerLoading] = useState(false);
 
   const { meal, loading, error, categoryId: resolvedCategoryId } = useMealsById(mealId, restaurantId, categoryIdFromUrl);
 
   useEffect(() => {
     setCurrentImageIndex(0);
     setImageError(null);
+    // Reset AR view when meal changes
+    setShowAR(false);
   }, [meal]);
 
   useEffect(() => {
@@ -49,15 +47,17 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
     } 
   }, [mealId, restaurantId, categoryIdFromUrl, resolvedCategoryId]);
 
+  // Handle model viewer loading state
   useEffect(() => {
-    // Set AR model URL if available in meal data
-    if (meal?.arModelUrl) {
-      setArModelUrl(meal.arModelUrl);
-    } else {
-      // Default fallback pattern
-      setArModelUrl(`/models/meals/${mealId}.glb`);
+    if (showAR) {
+      setModelViewerLoading(true);
+      // Simulate loading completion after components are mounted
+      const timer = setTimeout(() => {
+        setModelViewerLoading(false);
+      }, 1000);
+      return () => clearTimeout(timer);
     }
-  }, [meal, mealId]);
+  }, [showAR]);
 
   if (loading) {
     return <div className="flex justify-center items-center min-h-[400px]">
@@ -157,7 +157,8 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
                 </button>
                 <button 
                   onClick={() => setShowAR(true)} 
-                  className={`px-3 py-1 text-sm rounded-r-lg border ${showAR ? 'bg-red-500 text-white' : 'bg-white text-gray-700'}`}
+                  className={`px-3 py-1 text-sm rounded-r-lg border ${showAR ? 'bg-red-500 text-white' : 'bg-white text-gray-700'} ${!meal.arModelUrl ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={!meal.arModelUrl}
                 >
                   3D/AR View
                 </button>
@@ -165,10 +166,19 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
             </div>
 
             {showAR ? (
-              <ARMealViewer 
-                mealId={mealId} 
-                modelUrl={arModelUrl}
-              />
+              meal.arModelUrl ? (
+                modelViewerLoading ? (
+                  <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                    <div className="text-gray-500">Loading 3D model...</div>
+                  </div>
+                ) : (
+                  <MealModelViewer arModelUrl={meal.arModelUrl} />
+                )
+              ) : (
+                <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                  <div className="text-gray-500">3D model not available for this meal</div>
+                </div>
+              )
             ) : (
               <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100">
                 {carouselImages.length > 0 && (
