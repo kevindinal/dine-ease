@@ -39,11 +39,18 @@ export default function TableReservation() {
   const isMobile = useMediaQuery("(max-width: 768px)")
 
   const [restaurantName, setRestaurantName] = useState("Table Reservation");
+  const [restaurantId, setRestaurantId] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const name = new URLSearchParams(window.location.search).get("name");
-      if (name) setRestaurantName(name);
+      const id = new URLSearchParams(window.location.search).get("id");
+      if (name && id) {
+        setRestaurantName(name);
+        setRestaurantId(id);
+
+      }
+
     }
   }, []);
 
@@ -221,7 +228,7 @@ export default function TableReservation() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredTables.map((table) => (
-              <TableCard key={table.id} table={table} onClick={() => handleTableClick(table.id)} />
+              <TableCard key={table.id} table={table} restaurantId={restaurantId} onClick={() => handleTableClick(table.id)} />
             ))}
           </div>
         </>
@@ -233,9 +240,10 @@ export default function TableReservation() {
 interface TableCardProps {
   table: Table
   onClick: () => void
+  restaurantId: string
 }
 
-function TableCard({ table, onClick }: TableCardProps) {
+function TableCard({ table, onClick, restaurantId }: TableCardProps) {
   const isAvailable = table.status && table.status.toLowerCase() === "available"
   const seats = table.seats || 0
   const isMobile = useMediaQuery("(max-width: 640px)")
@@ -327,6 +335,7 @@ function TableCard({ table, onClick }: TableCardProps) {
       <div className="flex justify-between items-start mb-3 sm:mb-4">
         <div>
           <h3 className="text-lg sm:text-xl font-bold text-gray-800">{table.name}</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800">{restaurantId}</h3>
           <div className="flex items-center mt-1 text-gray-600">
             <MapPin size={12} className="mr-1" />
             <span className="text-xs sm:text-sm">{table.location}</span>

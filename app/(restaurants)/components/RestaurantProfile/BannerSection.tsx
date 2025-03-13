@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 
 type BannerSectionProps = {
   restaurant: {
+    id: string,
     name: string;
     bannerImage: string;
     description: string;
@@ -56,7 +57,7 @@ export default function BannerSection({ restaurant }: BannerSectionProps) {
                 router.push(
                   `/table-reservation?name=${encodeURIComponent(
                     restaurant.name
-                  )}`
+                  )}&id=${encodeURIComponent(restaurant.id)}`
                 )
               }
             >
