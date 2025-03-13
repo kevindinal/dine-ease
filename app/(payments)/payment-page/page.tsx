@@ -184,18 +184,19 @@ const SummaryPage = () => {
   };
 
   return (
-    <Card className="p-6 shadow-lg rounded-xl border bg-[#FFECEB] w-full max-w-4xl mx-auto">
-      <div className="flex justify-between items-center border-b border-[#FC8C84] pb-4 mb-6">
-        <h2 className="text-2xl font-bold text-[#FA4032]">Order Summary</h2>
-        <Button variant="ghost" size="sm" className="text-[#FA4032] hover:text-[#FB665B]">
-          Edit
-        </Button>
-      </div>
+    <div className="flex items-center justify-center min-h-screen">
+      <Card className="p-6 shadow-lg rounded-xl border bg-[#FFECEB] w-full max-w-4xl mx-auto">
+        <div className="flex justify-between items-center border-b border-[#FC8C84] pb-4 mb-6">
+          <h2 className="text-2xl font-bold text-[#FA4032]">Order Summary</h2>
+          <Button variant="ghost" size="sm" className="text-[#FA4032] hover:text-[#FB665B]">
+            Edit
+          </Button>
+        </div>
 
-      <div className="flex justify-between items-center mb-4">
-        <span className="text-lg font-medium text-gray-800">Available Points:</span>
-        <span className="text-lg font-bold text-[#FA4032]">{points}</span>
-      </div>
+        <div className="flex justify-between items-center mb-4">
+          <span className="text-lg font-medium text-gray-800">Available Points:</span>
+          <span className="text-lg font-bold text-[#FA4032]">{points}</span>
+        </div>
 
       <div className="space-y-4 mb-6 text-gray-700">
         {reservation ? (
@@ -215,7 +216,6 @@ const SummaryPage = () => {
         <div className="space-y-4">
           {renderItems()}
         </div>
-      </div>
 
       <div className="border-t border-[#FC8C84] pt-6 mt-6">
         <div className="flex justify-between items-center mb-4">
