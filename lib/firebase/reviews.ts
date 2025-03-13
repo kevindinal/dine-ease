@@ -13,7 +13,7 @@ import {
     serverTimestamp,
     Timestamp 
   } from 'firebase/firestore';
-  import { db } from './config';
+  import { db } from '../firebase';
   import { Review } from '@/app/(restaurants)/types/firebase';
   
   const REVIEWS_COLLECTION = 'reviews';

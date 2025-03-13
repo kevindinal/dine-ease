@@ -1,5 +1,5 @@
 // /app/lib/firebase/search.ts
-import { db } from './config';
+import { db } from '../firebase';
 import { 
   collection, 
   getDocs, 
