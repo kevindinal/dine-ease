@@ -385,11 +385,8 @@ function TableCard({ table, onClick }: TableCardProps) {
         </div>
       </div>
 
-      <div className="mt-2 border-t pt-3 flex justify-center">
-        <Badge variant="outline" className="px-2 sm:px-3 py-1 text-xs sm:text-sm font-normal">
-          <PiArmchairFill className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
-          Total Seats: {table.seats}
-        </Badge>
+      <div>
+        <p className="text-sm text-gray-600 mb-2">Total Seats: {table.seats}</p>
       </div>
     </motion.div>
   )
