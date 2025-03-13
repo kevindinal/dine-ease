@@ -13,13 +13,10 @@ import { UserProp } from '@/types';
 export default function Home() {
   const router = useRouter();
   const [user, loading] = useAuthState(auth);
-  const [userData, setUserData] = useState<UserProp | null>(null);
+  const [userData, setUserData] = useState<UserProp>();
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!loading && !user) {
-        router.push('/sign-in');
-      }
       try {
         setUserData(await getUserData());
       } catch (error) {
@@ -29,8 +26,6 @@ export default function Home() {
 
     fetchData();
   }, [user, loading, router]);
-
-  // console.log(userData?.city)
 
   if (loading) {
     return <div>Loading...</div>;
@@ -52,7 +47,10 @@ export default function Home() {
       <h1 className='font-black'>Welcome! This is a Temporary Home Page</h1>
       {user && (
         <div>
-          <p>Current User: {user.uid}</p>
+
+          {/* REFER THIS SECTION ON HOW TO GET ACTIVE USER DATA */}
+
+          <p>Current User: {userData?.uid}</p>
           <p>First Name: {userData?.firstName} </p>
           <p>Last Name: {userData?.lastName} </p>
           <p>Email: {userData?.email} </p>

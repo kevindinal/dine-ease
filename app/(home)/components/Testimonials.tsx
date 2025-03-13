@@ -1,7 +1,7 @@
 
 "use client";
 
-//import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import { useState } from "react";
 
@@ -48,14 +48,14 @@ const Testimonials =() => {
                 </h2>
                 <div className="relative max-w-4xl mx-auto">
                     <div className="flex items-center justify-center">
-                        {/* <Button
+                        <Button
                             variant="ghost"
                             size="icon"
                             className="absolute left-0 z-10 bg-white shadow-lg rounded-full"
                             onClick={prevTestimonial}
                         >
                             <ChevronLeft className="h-6 w-6" />
-                        </Button> */}
+                        </Button>
 
                         <div className="overflow-hidden">
                             <div
@@ -91,14 +91,14 @@ const Testimonials =() => {
                             </div>
                         </div>
 
-                        {/* <Button
+                        <Button
                             variant="ghost"
                             size="icon"
                             className="absolute right-0 z-10 bg-white shadow-lg rounded-full"
                             onClick={nextTestimonial}
                         >
                             <ChevronRight className="h-6 w-6" />
-                        </Button> */}
+                        </Button>
                     </div>
                 </div>
             </div>
