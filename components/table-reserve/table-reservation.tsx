@@ -229,7 +229,7 @@ export default function TableReservation() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredTables.map((table) => (
-              <TableCard key={table.id} table={table} restaurantId={restaurantId} onClick={() => handleTableClick(table.id)} />
+              <TableCard key={table.id} table={table} onClick={() => handleTableClick(table.id)} />
             ))}
           </div>
         </>
@@ -241,10 +241,9 @@ export default function TableReservation() {
 interface TableCardProps {
   table: Table
   onClick: () => void
-  restaurantId: string
 }
 
-function TableCard({ table, onClick, restaurantId }: TableCardProps) {
+function TableCard({ table, onClick }: TableCardProps) {
   const isAvailable = table.status && table.status.toLowerCase() === "available"
   const seats = table.seats || 0
   const isMobile = useMediaQuery("(max-width: 640px)")
