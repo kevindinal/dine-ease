@@ -91,3 +91,22 @@ body {
   transition: all 0.2s ease-in-out;
 }
 
+/* Animation for loading spinner */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Custom styles for the 360 viewer */
+.panolens-container {
+  @apply rounded-xl overflow-hidden;
+}
+
+.panolens-canvas {
+  @apply w-full h-full;
+}
+

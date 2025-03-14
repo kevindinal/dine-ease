@@ -109,47 +109,23 @@ export default function TableReservation() {
     };
   }, []);
 
-  // Filter tables based on search term and status
-  // const filteredTables = tables.filter((table) => {
-  //   const matchesRestaurant = table.restaurantId === restaurantId;
-  //   const matchesSearch =
-  //     table.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     table.location.toLowerCase().includes(searchTerm.toLowerCase());
-  //   const matchesStatus = selectedStatus
-  //     ? table.status.toLowerCase() === selectedStatus.toLowerCase()
-  //     : true;
-  //   return matchesRestaurant && matchesSearch && matchesStatus;
-  // });
-
-  // const filteredTables = tables.filter((table) => {
-  //   const matchesRestaurant = table.restaurantId === restaurantId;
-  //   const matchesSearch =
-  //     table.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     table.location.toLowerCase().includes(searchTerm.toLowerCase());
-  //   const matchesStatus = selectedStatus
-  //     ? table.status.toLowerCase() === selectedStatus.toLowerCase()
-  //     : true;
-  //   const matchesGuestCount = guestCount >= table.seats;
-
-  //   return matchesRestaurant && matchesSearch && matchesStatus && matchesGuestCount;
-  // });
-
   // Filter tables based on search term, status, and guest count
-const filteredTables = tables.filter((table) => {
-  const matchesRestaurant = table.restaurantId === restaurantId;
-  const matchesSearch =
-    table.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    table.location.toLowerCase().includes(searchTerm.toLowerCase());
-  const matchesStatus = selectedStatus
-    ? table.status.toLowerCase() === selectedStatus.toLowerCase()
-    : true;
+  const filteredTables = tables.filter((table) => {
+    const matchesRestaurant = table.restaurantId === restaurantId;
+    const matchesSearch =
+      table.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      table.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = selectedStatus
+      ? table.status.toLowerCase() === selectedStatus.toLowerCase()
+      : true;
     const matchesGuestCount =
-    !guestCount || (!isNaN(Number(guestCount)) && Number(guestCount) <= table.seats);
-  
+      !guestCount ||
+      (!isNaN(Number(guestCount)) && Number(guestCount) <= table.seats);
 
-  return matchesRestaurant && matchesSearch && matchesStatus && matchesGuestCount;
-});
-
+    return (
+      matchesRestaurant && matchesSearch && matchesStatus && matchesGuestCount
+    );
+  });
 
   const handleTableClick = (tableId: string) => {
     router.push(`/table-reservation/${tableId}`);
