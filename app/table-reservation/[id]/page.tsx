@@ -328,31 +328,13 @@ export default function TableDetailsPage() {
             {table.threeSixtyImageUrl && (
               <TabsContent value="360" className="mt-0">
                 <div className="rounded-xl overflow-hidden bg-gray-100 h-[400px]">
-                  {process.env.NODE_ENV === "development" ? (
+                  {process.env.NODE_ENV === "production" ? (
                     <Fallback360Viewer imageUrl={table.threeSixtyImageUrl} />
                   ) : (
-                    <ThreeSixtyViewer imageUrl={table.threeSixtyImageUrl} />
+                    <ThreeSixtyViewer imageUrl={'/ff.jpg'} />
                   )}
                 </div>
-                <div className="mt-2 text-center">
-                  <p className="text-sm text-gray-500">
-                    {process.env.NODE_ENV === "development"
-                      ? "Using basic viewer due to CORS restrictions in development mode"
-                      : "Click and drag to explore the 360° view of this table"}
-                  </p>
-                  {process.env.NODE_ENV === "development" && (
-                    <p className="text-xs text-gray-400 mt-1">
-                      <a
-                        href="https://firebase.google.com/docs/storage/web/download-files#cors_configuration"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline"
-                      >
-                        Learn how to configure CORS for Firebase Storage
-                      </a>
-                    </p>
-                  )}
-                </div>
+               
               </TabsContent>
             )}
           </Tabs>
