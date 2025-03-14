@@ -14,7 +14,7 @@ import {
     Timestamp,
     serverTimestamp
   } from 'firebase/firestore';
-  import { db } from './config';
+  import { db } from '../firebase';
   import { Restaurant } from '@/app/(restaurants)/types/firebase';
   
   const RESTAURANTS_COLLECTION = 'restaurants';

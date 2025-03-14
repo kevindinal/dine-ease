@@ -63,6 +63,23 @@ body {
   }
 }
 
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+
+
+
+
+
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -71,23 +88,3 @@ body {
     @apply bg-background text-foreground;
   }
 }
-
-/* Table visualization styles */
-.table-visualization {
-  @apply relative flex justify-center items-center;
-}
-
-.table-container {
-  @apply relative w-full mx-auto;
-  min-height: 100px;
-}
-
-.table-shape {
-  @apply absolute rounded-lg flex items-center justify-center border-2;
-}
-
-.chair-icon {
-  @apply absolute flex items-center justify-center;
-  transition: all 0.2s ease-in-out;
-}
-
