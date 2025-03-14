@@ -6,7 +6,10 @@ import Script from 'next/script';
 
 // Create a custom component that renders the model-viewer as a div with dangerouslySetInnerHTML
 // This avoids TypeScript JSX issues with custom elements
-const ModelViewerRaw = ({ arModelUrl }: { arModelUrl: string }) => {
+const ModelViewerRaw = () => {
+  // Hardcoded path to sample.glb in the public folder
+  const arModelUrl = '/sample.glb';
+  
   const modelViewerHtml = `
     <model-viewer
       src="${arModelUrl}"
@@ -40,14 +43,17 @@ const ModelViewerRaw = ({ arModelUrl }: { arModelUrl: string }) => {
 };
 
 // Dynamic import for Three.js (3D view on desktop)
-const ThreeViewerComponent = ({ arModelUrl }: { arModelUrl: string }) => {
+const ThreeViewerComponent = () => {
   const [ThreeViewer, setThreeViewer] = useState<any>(null);
+  
+  // Hardcoded path to sample.glb in the public folder
+  const arModelUrl = '/sample.glb';
 
   useEffect(() => {
     // Dynamically import Three.js components
     import('@react-three/fiber').then(() => {
       import('@react-three/drei').then(() => {
-        const ThreeViewerImpl = ({ arModelUrl }: { arModelUrl: string }) => {
+        const ThreeViewerImpl = () => {
           const { Canvas } = require('@react-three/fiber');
           const { OrbitControls, useGLTF, Stage } = require('@react-three/drei');
           
@@ -79,14 +85,10 @@ const ThreeViewerComponent = ({ arModelUrl }: { arModelUrl: string }) => {
     );
   }
 
-  return <ThreeViewer arModelUrl={arModelUrl} />;
+  return <ThreeViewer />;
 };
 
-interface MealModelViewerProps {
-  arModelUrl: string;
-}
-
-const MealModelViewer: React.FC<MealModelViewerProps> = ({ arModelUrl }) => {
+const MealModelViewer: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
   
   useEffect(() => {
@@ -119,7 +121,7 @@ const MealModelViewer: React.FC<MealModelViewerProps> = ({ arModelUrl }) => {
 
   return (
     <div className="w-full h-full aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
-      <ViewerComponent arModelUrl={arModelUrl} />
+      <ViewerComponent />
     </div>
   );
 };
