@@ -35,19 +35,19 @@ const SummaryPage = () => {
       try {
         // Get preOrder data from localStorage
         const savedItems = localStorage.getItem("preOrder");
-        
+
         if (savedItems) {
           const parsedData = JSON.parse(savedItems);
-          
+
           // If parsedData is an array, use it directly
           if (Array.isArray(parsedData)) {
             setItems(parsedData);
-          } 
+          }
           // If parsedData is an object (not null), convert it to an array with one item
           else if (parsedData && typeof parsedData === 'object') {
             console.log("Converting object to array:", parsedData);
             setItems([parsedData]);
-          } 
+          }
           else {
             console.error("preOrder data is not valid:", parsedData);
             setItems([]);
@@ -108,7 +108,7 @@ const SummaryPage = () => {
     if (Array.isArray(items)) {
       const updatedItems = items.filter((item) => item.id !== id);
       setItems(updatedItems);
-      
+
       // Also update localStorage when item is removed
       if (typeof window !== "undefined") {
         if (updatedItems.length === 0) {
@@ -197,87 +197,87 @@ const SummaryPage = () => {
         <span className="text-lg font-bold text-[#FA4032]">{points}</span>
       </div>
 
-      <div className="space-y-4 mb-6 text-gray-700">
-        {reservation ? (
-          <>
-            <DetailRow label="Date" value={reservation.date} />
-            <DetailRow label="Time" value={reservation.time} />
-            <DetailRow label="Guests" value={reservation.guests} />
-            <DetailRow label="Table" value={reservation.table} />
-          </>
-        ) : (
-          <p className="text-gray-600">Loading reservation details...</p>
-        )}
-      </div>
-
-      <div className="border-t border-[#FC8C84] pt-6">
-        <h3 className="text-lg font-semibold mb-4 text-[#FA4032]">Pre-ordered Meals</h3>
-        <div className="space-y-4">
-          {renderItems()}
+        <div className="space-y-4 mb-6 text-gray-700">
+          {reservation ? (
+            <>
+              <DetailRow label="Date" value={reservation.date} />
+              <DetailRow label="Time" value={reservation.time} />
+              <DetailRow label="Guests" value={reservation.guests} />
+              <DetailRow label="Table" value={reservation.table} />
+            </>
+          ) : (
+            <p className="text-gray-600">Loading reservation details...</p>
+          )}
         </div>
       </div>
 
-      <div className="border-t border-[#FC8C84] pt-6 mt-6">
-        <div className="flex justify-between items-center mb-4">
-          <span className="text-xl font-semibold text-gray-800">Total:</span>
-          <span className="text-xl font-bold text-[#FA4032]">Rs.{totalPrice.toFixed(2)}</span>
-        </div>
-
-        <Button
-          className={`w-full h-14 bg-blue-500 text-white hover:bg-blue-600 rounded-lg ${
-            discountApplied && "opacity-50 cursor-not-allowed"
-          }`}
-          onClick={applyPointsDiscount}
-          disabled={discountApplied}
-        >
-          Reduce from Total
-        </Button>
-
-        <div className="flex flex-col md:flex-row gap-4 mt-4">
-          <Button className="w-full md:w-1/2 h-14 bg-gray-700 text-white hover:bg-gray-800 rounded-lg">
-            Pay at Restaurant
-          </Button>
-          <Button
-            className="w-full md:w-1/2 h-14 bg-[#FA4032] text-white hover:bg-[#FB665B] rounded-lg"
-            onClick={() => setIsOpen(true)}
-          >
-            Pay Now
-          </Button>
-        </div>
-      </div>
-
-      {/* Payment Form Modal */}
-      <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={() => setIsOpen(false)}>
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <Dialog.Panel className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
-              <h3 className="text-xl font-bold mb-4">Payment Summary</h3>
-              
-              {/* Display pre-ordered meals in payment summary */}
-              <div className="mb-4">
-                <h4 className="font-medium mb-2">Pre-ordered Meals:</h4>
-                {renderPaymentSummaryItems()}
-                <div className="border-t border-gray-300 mt-2 pt-2 flex justify-between font-medium">
-                  <span>Subtotal:</span>
-                  <span>Rs.{totalPrice.toFixed(2)}</span>
-                </div>
-                {discountApplied && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Points Discount:</span>
-                    <span>-Rs.{Math.min(points, totalPrice).toFixed(2)}</span>
-                  </div>
-                )}
-              </div>
-              
-              <PaymentForm amount={totalPrice} />
-              <Button className="mt-4 w-full bg-gray-500 text-white" onClick={() => setIsOpen(false)}>
-                Close
-              </Button>
-            </Dialog.Panel>
+        <div className="border-t border-[#FC8C84] pt-6">
+          <h3 className="text-lg font-semibold mb-4 text-[#FA4032]">Pre-ordered Meals</h3>
+          <div className="space-y-4">
+            {renderItems()}
           </div>
-        </Dialog>
-      </Transition>
-    </Card>
+        </div>
+        <div className="border-t border-[#FC8C84] pt-6 mt-6">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-xl font-semibold text-gray-800">Total:</span>
+            <span className="text-xl font-bold text-[#FA4032]">Rs.{totalPrice.toFixed(2)}</span>
+          </div>
+
+          <Button
+            className={`w-full h-14 bg-blue-500 text-white hover:bg-blue-600 rounded-lg ${discountApplied && "opacity-50 cursor-not-allowed"
+              }`}
+            onClick={applyPointsDiscount}
+            disabled={discountApplied}
+          >
+            Reduce from Total
+          </Button>
+
+          <div className="flex flex-col md:flex-row gap-4 mt-4">
+            <Button className="w-full md:w-1/2 h-14 bg-gray-700 text-white hover:bg-gray-800 rounded-lg">
+              Pay at Restaurant
+            </Button>
+            <Button
+              className="w-full md:w-1/2 h-14 bg-[#FA4032] text-white hover:bg-[#FB665B] rounded-lg"
+              onClick={() => setIsOpen(true)}
+            >
+              Pay Now
+            </Button>
+          </div>
+        </div>
+
+        {/* Payment Form Modal */}
+        <Transition appear show={isOpen} as={Fragment}>
+          <Dialog as="div" className="relative z-10" onClose={() => setIsOpen(false)}>
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+              <Dialog.Panel className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+                <h3 className="text-xl font-bold mb-4">Payment Summary</h3>
+
+                {/* Display pre-ordered meals in payment summary */}
+                <div className="mb-4">
+                  <h4 className="font-medium mb-2">Pre-ordered Meals:</h4>
+                  {renderPaymentSummaryItems()}
+                  <div className="border-t border-gray-300 mt-2 pt-2 flex justify-between font-medium">
+                    <span>Subtotal:</span>
+                    <span>Rs.{totalPrice.toFixed(2)}</span>
+                  </div>
+                  {discountApplied && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Points Discount:</span>
+                      <span>-Rs.{Math.min(points, totalPrice).toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
+
+                <PaymentForm amount={totalPrice} />
+                <Button className="mt-4 w-full bg-gray-500 text-white" onClick={() => setIsOpen(false)}>
+                  Close
+                </Button>
+              </Dialog.Panel>
+            </div>
+          </Dialog>
+        </Transition>
+      </Card>
+    </div>
   );
 };
 
