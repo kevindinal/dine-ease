@@ -88,7 +88,7 @@ const TableDetails = () => {
       </button> */}
       <div className="col-12 ">
         <div className="image-slider-space">
-          {table && !table.imageUrl && <ThreeSixtyViewer imageUrl="/ff.jpg" />}
+          {table && !table.imageUrl && <ThreeSixtyViewer imageUrl="/hh.jpg" />}
         </div>
       </div>
 

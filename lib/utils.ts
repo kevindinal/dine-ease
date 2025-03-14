@@ -28,7 +28,7 @@ import {
   doc,
   serverTimestamp
 } from 'firebase/firestore';
-import { db } from '../lib/firebase/config';
+import { db } from '../lib/firebase';
 import { restaurants } from '@/data/restaurrants';
 
 // Seed the database with initial restaurant data

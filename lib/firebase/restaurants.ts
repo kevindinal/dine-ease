@@ -14,8 +14,8 @@ import {
     Timestamp,
     serverTimestamp
   } from 'firebase/firestore';
-  import { db } from './config';
-  import { Restaurant } from '@/app/(restaurants)/types/firebase.';
+  import { db } from '../firebase';
+  import { Restaurant } from '@/app/(restaurants)/types/firebase';
   
   const RESTAURANTS_COLLECTION = 'restaurants';
   
@@ -147,20 +147,20 @@ import {
 //   };
   
   // Add a new restaurant (admin function)
-  export const addRestaurant = async (restaurantData: Omit<Restaurant, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
-    try {
-      const docRef = await addDoc(collection(db, RESTAURANTS_COLLECTION), {
-        ...restaurantData,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
+//   export const addRestaurant = async (restaurantData: Omit<Restaurant, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+//     try {
+//       const docRef = await addDoc(collection(db, RESTAURANTS_COLLECTION), {
+//         ...restaurantData,
+//         createdAt: serverTimestamp(),
+//         updatedAt: serverTimestamp(),
+//       });
       
-      return docRef.id;
-    } catch (error) {
-      console.error('Error adding restaurant:', error);
-      throw error;
-    }
-  };
+//       return docRef.id;
+//     } catch (error) {
+//       console.error('Error adding restaurant:', error);
+//       throw error;
+//     }
+//   };
   
   // Update a restaurant (admin function)
 //   export const updateRestaurant = async (id: string, restaurantData: Partial<Restaurant>): Promise<void> => {
