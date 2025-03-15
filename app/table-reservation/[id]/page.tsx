@@ -7,41 +7,55 @@ import { ref, getDownloadURL } from "firebase/storage"
 import { db, storage } from "@/lib/firebase/config"
 import {
   ArrowLeft,
-  MapPin,
-  Users,
-  Calendar,
-  Clock,
   AlertCircle,
   ChevronLeft,
   ChevronRight,
   Maximize,
   Minimize,
   Star,
-  Utensils,
-  Coffee,
   CheckCircle,
   XCircle,
-  Info,
   Heart,
   Share2,
-  DollarSign,
   ImageIcon,
   RotateCw,
+  Menu,
+  MessageSquare,
+  Copy,
+  Mail,
+  Facebook,
+  Twitter,
+  Bell,
+  MapPin,
+  Users,
+  DollarSign,
+  Info,
+  Phone,
+  Instagram,
+  Clock8,
+  Wifi,
+  Utensils,
+  CreditCard,
+  Gift,
+  Percent,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { DatePicker } from "@/components/ui/date-picker"
 import { cn } from "@/lib/utils"
 import ThreeSixtyViewer from "@/app/table-reservation/thresixty"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import Fallback360Viewer from "@/app/table-reservation/fall-back-360"
-import { motion } from "framer-motion"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { motion, AnimatePresence } from "framer-motion"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+// Import our new components
+import ReviewSection from "@/app/table-reservation/components/review-section"
+import ReservationForm from "@/app/table-reservation/components/reservation-form"
+import SpecialOffers from "@/app/table-reservation/components/special-offers"
+import FeaturesSection from "@/app/table-reservation/components/features-section"
 
 interface Table {
   id: string
@@ -54,6 +68,27 @@ interface Table {
   imageUrl?: string
   threeSixtyImageUrl?: string
   additionalImages?: string[]
+  reviews?: Review[]
+  rating?: number
+  features?: string[]
+}
+
+interface Review {
+  id: string
+  userName: string
+  userAvatar?: string
+  rating: number
+  comment: string
+  date: string
+}
+
+interface SpecialOffer {
+  id: string
+  title: string
+  description: string
+  discount: string
+  code: string
+  validUntil: string
 }
 
 export default function TableDetailsPage() {
@@ -62,18 +97,73 @@ export default function TableDetailsPage() {
   const [table, setTable] = useState<Table | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [guestCount, setGuestCount] = useState("1")
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
-  const [selectedTime, setSelectedTime] = useState("18:00")
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isFavorite, setIsFavorite] = useState(false)
-  const isMobile = useMediaQuery("(max-width: 768px)")
-  // Add a state to track the active view (gallery or 360)
   const [activeView, setActiveView] = useState<"gallery" | "360">("gallery")
+  const [showShareOptions, setShowShareOptions] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [reservationSuccess, setReservationSuccess] = useState(false)
+  const [showNotification, setShowNotification] = useState(false)
+  const [isReminderSet, setIsReminderSet] = useState(false)
+  const [promoDiscount, setPromoDiscount] = useState(0)
+  const isMobile = useMediaQuery("(max-width: 768px)")
 
-  // Generate a random rating between 4.0 and 5.0 for demo purposes
-  const rating = (4 + Math.random()).toFixed(1)
+  // Mock data for special offers
+  const specialOffers: SpecialOffer[] = [
+    {
+      id: "offer1",
+      title: "Early Bird Special",
+      description: "Book before 3PM and get 15% off your reservation",
+      discount: "15%",
+      code: "EARLY15",
+      validUntil: "2025-06-30",
+    },
+    {
+      id: "offer2",
+      title: "Weekend Brunch",
+      description: "Special weekend brunch menu with complimentary mimosa",
+      discount: "Free Drink",
+      code: "BRUNCH",
+      validUntil: "2025-12-31",
+    },
+    {
+      id: "offer3",
+      title: "Anniversary Special",
+      description: "Celebrating an anniversary? Get a free dessert with your meal",
+      discount: "Free Dessert",
+      code: "CELEBRATE",
+      validUntil: "2025-12-31",
+    },
+  ]
+
+  // Mock reviews data
+  const mockReviews: Review[] = [
+    {
+      id: "rev1",
+      userName: "Sarah Johnson",
+      userAvatar: "/placeholder.svg?height=40&width=40",
+      rating: 5,
+      comment: "Absolutely loved this table! The window view was spectacular and service was impeccable.",
+      date: "2025-02-15",
+    },
+    {
+      id: "rev2",
+      userName: "Michael Chen",
+      userAvatar: "/placeholder.svg?height=40&width=40",
+      rating: 4,
+      comment: "Great location, comfortable seating. Perfect for our business lunch.",
+      date: "2025-02-10",
+    },
+    {
+      id: "rev3",
+      userName: "Jessica Williams",
+      userAvatar: "/placeholder.svg?height=40&width=40",
+      rating: 5,
+      comment: "The ambiance was perfect for our anniversary dinner. Highly recommend!",
+      date: "2025-01-28",
+    },
+  ]
 
   useEffect(() => {
     const fetchTable = async () => {
@@ -127,12 +217,27 @@ export default function TableDetailsPage() {
           }),
         )
 
+        // Add mock reviews if none exist
+        const reviews = tableData.reviews || mockReviews
+
+        // Add mock features if none exist
+        const features = tableData.features || [
+          "Window View",
+          "Premium Service",
+          "Charging Outlets",
+          "Ambient Lighting",
+          "Privacy",
+          "Air Conditioning",
+        ]
+
         setTable({
           id: tableDoc.id,
           ...tableData,
           imageUrl,
           threeSixtyImageUrl,
           additionalImages: processedAdditionalImages.filter(Boolean) as string[],
+          reviews,
+          features,
         })
 
         setLoading(false)
@@ -153,8 +258,62 @@ export default function TableDetailsPage() {
   }
 
   const handleReservation = () => {
-    // Implement reservation logic here
-    alert(`Table reserved for ${guestCount} guests on ${selectedDate?.toLocaleDateString()} at ${selectedTime}`)
+    setReservationSuccess(true)
+    setShowNotification(true)
+    setTimeout(() => setShowNotification(false), 5000)
+  }
+
+  const handleToggleFavorite = () => {
+    setIsFavorite(!isFavorite)
+    // Show notification when adding to favorites
+    if (!isFavorite) {
+      setShowNotification(true)
+      setTimeout(() => setShowNotification(false), 3000)
+    }
+  }
+
+  const handleApplyPromoCode = (code: string) => {
+    // Check if promo code matches any special offers
+    const offer = specialOffers.find((offer) => offer.code === code.toUpperCase())
+    if (offer) {
+      // Apply discount
+      if (offer.discount.includes("%")) {
+        const percentage = Number.parseInt(offer.discount)
+        setPromoDiscount(percentage)
+      } else {
+        // For non-percentage discounts, just show success
+        setPromoDiscount(10) // Default to 10% for demo
+      }
+      // Show success notification
+      setShowNotification(true)
+      setTimeout(() => setShowNotification(false), 3000)
+    } else {
+      // Show error for invalid code
+      alert("Invalid promo code. Please try again.")
+    }
+  }
+
+  const handleSubmitReview = (rating: number, comment: string) => {
+    // Add the new review to the table's reviews
+    if (table && comment.trim()) {
+      const newReview: Review = {
+        id: `rev${Date.now()}`,
+        userName: "You",
+        userAvatar: "/placeholder.svg?height=40&width=40",
+        rating,
+        comment,
+        date: new Date().toISOString().split("T")[0],
+      }
+
+      setTable({
+        ...table,
+        reviews: [...(table.reviews || []), newReview],
+      })
+
+      // Show success notification
+      setShowNotification(true)
+      setTimeout(() => setShowNotification(false), 3000)
+    }
   }
 
   const nextImage = () => {
@@ -185,10 +344,31 @@ export default function TableDetailsPage() {
     setIsFullscreen(!isFullscreen)
   }
 
-  // Check if guest count is valid for this table
-  const isValidGuestCount = !table?.seats
-    ? false
-    : !isNaN(Number(guestCount)) && Number(guestCount) <= table.seats && Number(guestCount) > 0
+  const shareTable = (platform: string) => {
+    const url = window.location.href
+    const title = `Check out this amazing table: ${table?.name}`
+
+    switch (platform) {
+      case "copy":
+        navigator.clipboard.writeText(url)
+        alert("Link copied to clipboard!")
+        break
+      case "facebook":
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, "_blank")
+        break
+      case "twitter":
+        window.open(
+          `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`,
+          "_blank",
+        )
+        break
+      case "email":
+        window.open(`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`, "_blank")
+        break
+    }
+
+    setShowShareOptions(false)
+  }
 
   if (loading) {
     return (
@@ -247,16 +427,10 @@ export default function TableDetailsPage() {
     return null
   }
 
-  const isAvailable = table.status && table.status.toLowerCase() === "available"
+  const isAvailable = Boolean(table?.status?.toLowerCase() === "available")
+  console.log("Table status:", table?.status, "isAvailable:", isAvailable)
   const allImages = [table.imageUrl, ...(table.additionalImages || [])].filter(Boolean) as string[]
-
-  // Get appropriate seat arrangement description
-  const getSeatArrangement = (seats: number) => {
-    if (seats <= 2) return "Intimate setting for couples"
-    if (seats <= 4) return "Perfect for small groups"
-    if (seats <= 6) return "Great for medium-sized groups"
-    return "Ideal for large gatherings"
-  }
+  const rating = table?.rating || (4 + Math.random()).toFixed(1)
 
   return (
     <div className="bg-white min-h-screen">
@@ -271,15 +445,147 @@ export default function TableDetailsPage() {
           </div>
 
           <div className="flex gap-2">
-            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setIsFavorite(!isFavorite)}>
-              <Heart className={cn("h-5 w-5", isFavorite ? "fill-red-500 text-red-500" : "")} />
-            </Button>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Share2 className="h-5 w-5" />
-            </Button>
+            {isMobile ? (
+              <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setShowMobileMenu(true)}>
+                <Menu className="h-5 w-5" />
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("rounded-full", isFavorite ? "text-red-500" : "")}
+                  onClick={handleToggleFavorite}
+                >
+                  <Heart className={cn("h-5 w-5", isFavorite ? "fill-red-500" : "")} />
+                </Button>
+                <Popover open={showShareOptions} onOpenChange={setShowShareOptions}>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                      <Share2 className="h-5 w-5" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-0" align="end">
+                    <div className="p-2">
+                      <p className="text-sm font-medium px-2 py-1.5">Share this table</p>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sm px-2 py-1.5 h-9"
+                        onClick={() => shareTable("copy")}
+                      >
+                        <Copy className="h-4 w-4 mr-2" /> Copy link
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sm px-2 py-1.5 h-9"
+                        onClick={() => shareTable("facebook")}
+                      >
+                        <Facebook className="h-4 w-4 mr-2" /> Facebook
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sm px-2 py-1.5 h-9"
+                        onClick={() => shareTable("twitter")}
+                      >
+                        <Twitter className="h-4 w-4 mr-2" /> Twitter
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sm px-2 py-1.5 h-9"
+                        onClick={() => shareTable("email")}
+                      >
+                        <Mail className="h-4 w-4 mr-2" /> Email
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("rounded-full", isReminderSet ? "text-amber-500" : "")}
+                  onClick={() => setIsReminderSet(!isReminderSet)}
+                >
+                  <Bell className={cn("h-5 w-5", isReminderSet ? "fill-amber-500" : "")} />
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu Sheet */}
+      <Sheet open={showMobileMenu} onOpenChange={setShowMobileMenu}>
+        <SheetContent side="right">
+          <SheetHeader className="mb-4">
+            <SheetTitle>Menu</SheetTitle>
+          </SheetHeader>
+          <div className="grid gap-3">
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => {
+                handleToggleFavorite()
+                setShowMobileMenu(false)
+              }}
+            >
+              <Heart className={cn("h-5 w-5 mr-2", isFavorite ? "fill-red-500 text-red-500" : "")} />
+              {isFavorite ? "Saved to favorites" : "Save to favorites"}
+            </Button>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => {
+                setShowShareOptions(true)
+                setShowMobileMenu(false)
+              }}
+            >
+              <Share2 className="h-5 w-5 mr-2" />
+              Share this table
+            </Button>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => {
+                setIsReminderSet(!isReminderSet)
+                setShowMobileMenu(false)
+              }}
+            >
+              <Bell className={cn("h-5 w-5 mr-2", isReminderSet ? "fill-amber-500 text-amber-500" : "")} />
+              {isReminderSet ? "Cancel reminder" : "Set reminder"}
+            </Button>
+            <Button variant="ghost" className="justify-start" onClick={() => setShowMobileMenu(false)}>
+              <MessageSquare className="h-5 w-5 mr-2" />
+              Write a review
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Success Notification */}
+      <AnimatePresence>
+        {showNotification && (
+          <motion.div
+            className="fixed top-20 right-4 z-50 bg-green-50 border border-green-200 text-green-800 rounded-lg shadow-lg p-4 max-w-xs"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            <div className="flex items-start">
+              <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-sm">Success!</h4>
+                <p className="text-xs text-green-700 mt-1">
+                  {reservationSuccess
+                    ? "Your reservation has been confirmed."
+                    : isFavorite
+                      ? "Table saved to your favorites."
+                      : "Your action was completed successfully."}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-4">
@@ -287,8 +593,8 @@ export default function TableDetailsPage() {
           {/* Left Column - Images and Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Status and Rating */}
-            <div className="flex justify-between items-center mb-2">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <Badge
                   className={cn(
                     "px-3 py-1.5 text-sm font-medium",
@@ -309,7 +615,7 @@ export default function TableDetailsPage() {
                 </Badge>
 
                 {table.threeSixtyImageUrl && (
-                  <div className="flex bg-gray-100 rounded-full p-0.5">
+                  <div className="flex bg-gray-200 rounded-full p-1 shadow-sm">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -319,7 +625,7 @@ export default function TableDetailsPage() {
                       )}
                       onClick={() => setActiveView("gallery")}
                     >
-                      <ImageIcon className="h-3.5 w-3.5 mr-1" /> Gallery
+                      <ImageIcon className="h-3.5 w-3.5 mr-1.5" /> Gallery
                     </Button>
                     <Button
                       variant="ghost"
@@ -330,15 +636,20 @@ export default function TableDetailsPage() {
                       )}
                       onClick={() => setActiveView("360")}
                     >
-                      <RotateCw className="h-3.5 w-3.5 mr-1" /> 360° View
+                      <RotateCw className="h-3.5 w-3.5 mr-1.5" /> 360° View
                     </Button>
                   </div>
                 )}
               </div>
 
-              <div className="flex items-center text-amber-500">
-                <Star size={18} className="fill-amber-500 mr-1" />
-                <span className="font-medium">{rating}</span>
+              <div className="flex items-center">
+                <div className="flex items-center text-amber-500 mr-2">
+                  <Star size={18} className="fill-amber-500 mr-1" />
+                  <span className="font-medium">{rating}</span>
+                </div>
+                <Button variant="ghost" size="sm" className="text-xs h-8 px-2">
+                  {table.reviews?.length || 0} {table.reviews?.length === 1 ? "review" : "reviews"}
+                </Button>
               </div>
             </div>
 
@@ -396,6 +707,7 @@ export default function TableDetailsPage() {
                   ) : (
                     <ThreeSixtyViewer imageUrl={"/ff.jpg"} />
                   )}
+
                   <div className="absolute bottom-2 left-2">
                     <span className="bg-black/50 text-white text-xs px-2 py-1 rounded-md">
                       360° View - Click and drag to explore
@@ -405,7 +717,7 @@ export default function TableDetailsPage() {
               )}
             </div>
 
-            {/* Thumbnails */}
+            {/* Thumbnails - only show in gallery view */}
             {activeView === "gallery" && allImages.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 {allImages.map((img, idx) => (
@@ -426,6 +738,9 @@ export default function TableDetailsPage() {
                 ))}
               </div>
             )}
+
+            {/* Special Offers */}
+            <SpecialOffers offers={specialOffers} onApplyCode={handleApplyPromoCode} />
 
             {/* Table Information */}
             <div className="space-y-4">
@@ -449,50 +764,6 @@ export default function TableDetailsPage() {
                   )}
                 </div>
               </div>
-
-              {/* Features Section */}
-              <div className="flex flex-wrap gap-2 pt-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Badge variant="secondary" className="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100">
-                        <Users size={14} className="mr-1.5" />
-                        {getSeatArrangement(table.seats)}
-                      </Badge>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Table for {table.seats} people</p>
-                    </TooltipContent>
-                  </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Badge
-                        variant="secondary"
-                        className="px-3 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100"
-                      >
-                        <Coffee size={14} className="mr-1.5" />
-                        Window View
-                      </Badge>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Enjoy a beautiful view while dining</p>
-                    </TooltipContent>
-                  </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Badge variant="secondary" className="px-3 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100">
-                        <Utensils size={14} className="mr-1.5" />
-                        Premium Service
-                      </Badge>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Enhanced dining experience with premium service</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
             </div>
 
             {/* Description */}
@@ -503,39 +774,48 @@ export default function TableDetailsPage() {
               </div>
             )}
 
+            {/* Features and Amenities */}
+            <FeaturesSection features={table.features || []} seats={table.seats} />
+
+            {/* Reviews Section */}
+            <ReviewSection
+              reviews={table.reviews || []}
+              rating={rating.toString()}
+              onSubmitReview={handleSubmitReview}
+            />
 
             {/* Additional Information */}
             <div className="pt-4">
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="amenities">
                   <AccordionTrigger className="text-lg font-semibold text-gray-800">
-                    Amenities & Features
+                    Dining Information
                   </AccordionTrigger>
                   <AccordionContent>
-                    <ul className="grid grid-cols-2 gap-2 text-gray-600">
+                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-600">
                       <li className="flex items-center">
-                        <CheckCircle size={16} className="mr-2 text-green-500" />
-                        Air Conditioning
+                        <Clock8 size={16} className="mr-2 text-gray-500" />
+                        Average dining time: 1.5 hours
                       </li>
                       <li className="flex items-center">
-                        <CheckCircle size={16} className="mr-2 text-green-500" />
-                        Comfortable Seating
+                        <Wifi size={16} className="mr-2 text-gray-500" />
+                        Free Wi-Fi available
                       </li>
                       <li className="flex items-center">
-                        <CheckCircle size={16} className="mr-2 text-green-500" />
-                        Ambient Lighting
+                        <Utensils size={16} className="mr-2 text-gray-500" />
+                        Full menu available
                       </li>
                       <li className="flex items-center">
-                        <CheckCircle size={16} className="mr-2 text-green-500" />
-                        Privacy
+                        <CreditCard size={16} className="mr-2 text-gray-500" />
+                        All major credit cards accepted
                       </li>
                       <li className="flex items-center">
-                        <CheckCircle size={16} className="mr-2 text-green-500" />
-                        Charging Outlets
+                        <Gift size={16} className="mr-2 text-gray-500" />
+                        Gift cards available
                       </li>
                       <li className="flex items-center">
-                        <CheckCircle size={16} className="mr-2 text-green-500" />
-                        Table Service
+                        <Percent size={16} className="mr-2 text-gray-500" />
+                        Special offers available
                       </li>
                     </ul>
                   </AccordionContent>
@@ -559,6 +839,36 @@ export default function TableDetailsPage() {
                         <Info size={16} className="mr-2 mt-0.5 text-blue-500" />
                         Late arrivals may result in table being given to other guests
                       </li>
+                      <li className="flex items-start">
+                        <Info size={16} className="mr-2 mt-0.5 text-blue-500" />A credit card is required to hold your
+                        reservation
+                      </li>
+                    </ul>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="contact">
+                  <AccordionTrigger className="text-lg font-semibold text-gray-800">
+                    Contact Information
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <ul className="space-y-3 text-gray-600">
+                      <li className="flex items-center">
+                        <Phone size={16} className="mr-2 text-gray-500" />
+                        <span>(555) 123-4567</span>
+                      </li>
+                      <li className="flex items-center">
+                        <Mail size={16} className="mr-2 text-gray-500" />
+                        <span>reservations@restaurant.com</span>
+                      </li>
+                      <li className="flex items-center">
+                        <Instagram size={16} className="mr-2 text-gray-500" />
+                        <span>@restaurantname</span>
+                      </li>
+                      <li className="flex items-center">
+                        <Facebook size={16} className="mr-2 text-gray-500" />
+                        <span>facebook.com/restaurantname</span>
+                      </li>
                     </ul>
                   </AccordionContent>
                 </AccordionItem>
@@ -568,109 +878,14 @@ export default function TableDetailsPage() {
 
           {/* Right Column - Reservation Form */}
           <div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 sticky top-20"
-            >
-              <h3 className="text-xl font-bold mb-6 text-gray-800">Make a Reservation</h3>
-
-              <div className="space-y-5">
-                <div>
-                  <Label htmlFor="guest-count" className="text-gray-700 font-medium">
-                    Number of Guests
-                  </Label>
-                  <div className="relative mt-1.5">
-                    <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                    <Input
-                      id="guest-count"
-                      type="number"
-                      min="1"
-                      max={table.seats}
-                      className="pl-10"
-                      value={guestCount}
-                      onChange={(e) => setGuestCount(e.target.value)}
-                    />
-                  </div>
-                  {!isValidGuestCount && (
-                    <p className="text-red-500 text-sm mt-1.5">
-                      Please enter a valid number of guests (1-{table.seats})
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="date" className="text-gray-700 font-medium">
-                    Date
-                  </Label>
-                  <div className="relative mt-1.5">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                    <DatePicker date={selectedDate} setDate={setSelectedDate} className="pl-10 w-full" />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="time" className="text-gray-700 font-medium">
-                    Time
-                  </Label>
-                  <div className="relative mt-1.5">
-                    <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                    <Select defaultValue={selectedTime} onValueChange={setSelectedTime}>
-                      <SelectTrigger className="w-full pl-10">
-                        <SelectValue placeholder="Select time" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 13 }).map((_, i) => {
-                          const hour = i + 10 // Start from 10 AM
-                          const time = `${hour}:00`
-                          const display = hour > 12 ? `${hour - 12}:00 PM` : `${hour}:00 AM`
-                          return (
-                            <SelectItem key={time} value={time}>
-                              {display}
-                            </SelectItem>
-                          )
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {table.price && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex justify-between items-center text-gray-700">
-                      <span>Reservation fee</span>
-                      <span className="font-medium">${table.price.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-gray-700 mt-2">
-                      <span>Service fee</span>
-                      <span className="font-medium">${(table.price * 0.1).toFixed(2)}</span>
-                    </div>
-                    <div className="border-t border-gray-200 my-2 pt-2 flex justify-between items-center font-bold">
-                      <span>Total</span>
-                      <span>${(table.price * 1.1).toFixed(2)}</span>
-                    </div>
-                  </div>
-                )}
-
-                <Button
-                  className={cn(
-                    "w-full py-6 text-base font-medium transition-all",
-                    isAvailable && isValidGuestCount
-                      ? "bg-primary hover:bg-primary/90"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed",
-                  )}
-                  onClick={handleReservation}
-                  disabled={!isAvailable || !isValidGuestCount}
-                >
-                  {isAvailable ? "Reserve Now" : "Not Available"}
-                </Button>
-
-                <p className="text-xs text-gray-500 text-center">
-                  By clicking "Reserve Now", you agree to our reservation policies
-                </p>
-              </div>
-            </motion.div>
+            <ReservationForm
+              tablePrice={table.price || 0}
+              tableSeats={table.seats}
+              isAvailable={isAvailable}
+              onReservation={handleReservation}
+              promoDiscount={promoDiscount}
+              onApplyPromoCode={handleApplyPromoCode}
+            />
           </div>
         </div>
       </div>
