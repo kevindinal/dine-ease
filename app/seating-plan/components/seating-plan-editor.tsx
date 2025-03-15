@@ -26,6 +26,8 @@ import {
   LayoutList,
   Clock,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 import { useMediaQuery } from "@/hooks/use-media-query"
 
@@ -121,6 +123,9 @@ const SeatingPlanEditor = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+
+  const [currentPage, setCurrentPage] = useState(1)
+  const tablesPerPage = 6
 
   const isMobile = useMediaQuery("(max-width: 768px)")
   const isSmallScreen = useMediaQuery("(max-width: 1024px)")
@@ -316,6 +321,31 @@ const SeatingPlanEditor = () => {
 
     return matchesSearch && matchesStatus
   })
+
+  const totalPages = Math.ceil(filteredTables.length / tablesPerPage)
+  const paginatedTables = filteredTables.slice((currentPage - 1) * tablesPerPage, currentPage * tablesPerPage)
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1)
+    }
+  }
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1)
+    }
+  }
+
+  const goToPage = (pageNumber: number) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber)
+    }
+  }
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, statusFilter])
 
   // Reset form
   const resetForm = () => {
@@ -755,7 +785,7 @@ const SeatingPlanEditor = () => {
             <>
               {viewMode === "grid" ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {filteredTables.map((table) => (
+                  {paginatedTables.map((table) => (
                     <TableCard
                       key={table.id}
                       table={table}
@@ -767,7 +797,7 @@ const SeatingPlanEditor = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {filteredTables.map((table) => (
+                  {paginatedTables.map((table) => (
                     <TableRow
                       key={table.id}
                       table={table}
@@ -779,6 +809,88 @@ const SeatingPlanEditor = () => {
                 </div>
               )}
             </>
+          )}
+
+          {/* Pagination Controls */}
+          {filteredTables.length > tablesPerPage && (
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-sm text-gray-600">
+                Showing {paginatedTables.length} of {filteredTables.length} tables (Page {currentPage} of {totalPages})
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={goToPreviousPage} disabled={currentPage === 1}>
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    // Show first page, last page, current page, and pages around current
+                    let pageToShow: number | null = null
+
+                    if (totalPages <= 5) {
+                      // If 5 or fewer pages, show all page numbers
+                      pageToShow = i + 1
+                    } else if (i === 0) {
+                      // First button is always page 1
+                      pageToShow = 1
+                    } else if (i === 4) {
+                      // Last button is always the last page
+                      pageToShow = totalPages
+                    } else if (currentPage <= 2) {
+                      // Near the start
+                      pageToShow = i + 1
+                    } else if (currentPage >= totalPages - 1) {
+                      // Near the end
+                      pageToShow = totalPages - 4 + i
+                    } else {
+                      // In the middle
+                      pageToShow = currentPage - 1 + i
+                    }
+
+                    // Show ellipsis instead of page numbers in certain cases
+                    if (totalPages > 5) {
+                      if (i === 1 && currentPage > 3) {
+                        return (
+                          <span key="ellipsis-start" className="px-2 py-1 text-gray-400">
+                            ...
+                          </span>
+                        )
+                      }
+                      if (i === 3 && currentPage < totalPages - 2) {
+                        return (
+                          <span key="ellipsis-end" className="px-2 py-1 text-gray-400">
+                            ...
+                          </span>
+                        )
+                      }
+                    }
+
+                    if (pageToShow !== null) {
+                      return (
+                        <Button
+                          key={pageToShow}
+                          variant={currentPage === pageToShow ? "default" : "outline"}
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => goToPage(pageToShow!)}
+                        >
+                          {pageToShow}
+                        </Button>
+                      )
+                    }
+
+                    return null
+                  })}
+                </div>
+
+                <Button variant="outline" size="sm" onClick={goToNextPage} disabled={currentPage === totalPages}>
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
           )}
         </div>
       </div>
