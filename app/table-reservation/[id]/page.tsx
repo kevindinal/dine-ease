@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { doc, getDoc } from "firebase/firestore"
 import { ref, getDownloadURL } from "firebase/storage"
@@ -57,6 +57,7 @@ import ReservationForm from "@/app/table-reservation/components/reservation-form
 import SpecialOffers from "@/app/table-reservation/components/special-offers"
 import FeaturesSection from "@/app/table-reservation/components/features-section"
 
+
 interface Table {
   id: string
   name: string
@@ -108,6 +109,7 @@ export default function TableDetailsPage() {
   const [isReminderSet, setIsReminderSet] = useState(false)
   const [promoDiscount, setPromoDiscount] = useState(0)
   const isMobile = useMediaQuery("(max-width: 768px)")
+  const imageContainerRef = useRef<HTMLDivElement>(null)
 
   // Mock data for special offers
   const specialOffers: SpecialOffer[] = [
@@ -253,6 +255,19 @@ export default function TableDetailsPage() {
     }
   }, [id])
 
+  // Listen for fullscreen change events
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange)
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange)
+    }
+  }, [])
+
   const handleGoBack = () => {
     router.back()
   }
@@ -329,19 +344,29 @@ export default function TableDetailsPage() {
   }
 
   const toggleFullscreen = () => {
-    const element = document.documentElement
+    if (!imageContainerRef.current) return
 
     if (!isFullscreen) {
-      if (element.requestFullscreen) {
-        element.requestFullscreen()
+      if (imageContainerRef.current.requestFullscreen) {
+        imageContainerRef.current.requestFullscreen()
+      } else if ((imageContainerRef.current as any).webkitRequestFullscreen) {
+        // Safari
+        ;(imageContainerRef.current as any).webkitRequestFullscreen()
+      } else if ((imageContainerRef.current as any).msRequestFullscreen) {
+        // IE11
+        ;(imageContainerRef.current as any).msRequestFullscreen()
       }
     } else {
       if (document.exitFullscreen) {
         document.exitFullscreen()
+      } else if ((document as any).webkitExitFullscreen) {
+        // Safari
+        ;(document as any).webkitExitFullscreen()
+      } else if ((document as any).msExitFullscreen) {
+        // IE11
+        ;(document as any).msExitFullscreen()
       }
     }
-
-    setIsFullscreen(!isFullscreen)
   }
 
   const shareTable = (platform: string) => {
@@ -654,7 +679,10 @@ export default function TableDetailsPage() {
             </div>
 
             {/* Main Image Gallery */}
-            <div className="relative rounded-xl overflow-hidden bg-gray-100 aspect-[16/9] shadow-md">
+            <div
+              ref={imageContainerRef}
+              className="relative rounded-xl overflow-hidden bg-gray-100 aspect-[16/9] shadow-md"
+            >
               {activeView === "gallery" ? (
                 <>
                   <img
