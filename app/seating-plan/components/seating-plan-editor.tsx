@@ -24,6 +24,8 @@ import {
   ImageIcon,
   LayoutGrid,
   LayoutList,
+  Clock,
+  Calendar,
 } from "lucide-react"
 import { useMediaQuery } from "@/hooks/use-media-query"
 
@@ -48,6 +50,23 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { Separator } from "@/components/ui/separator"
+
+interface AvailableTime {
+  from: string
+  to: string
+}
+
+interface AvailabilitySchedule {
+  monday: boolean
+  tuesday: boolean
+  wednesday: boolean
+  thursday: boolean
+  friday: boolean
+  saturday: boolean
+  sunday: boolean
+  timeRanges: AvailableTime[]
+}
 
 interface Table {
   id: string
@@ -58,6 +77,28 @@ interface Table {
   description?: string
   status?: string
   createdAt?: Date
+  availability?: AvailabilitySchedule
+}
+
+const DAYS_OF_WEEK = [
+  { key: "monday", label: "Mon" },
+  { key: "tuesday", label: "Tue" },
+  { key: "wednesday", label: "Wed" },
+  { key: "thursday", label: "Thu" },
+  { key: "friday", label: "Fri" },
+  { key: "saturday", label: "Sat" },
+  { key: "sunday", label: "Sun" },
+]
+
+const DEFAULT_AVAILABILITY: AvailabilitySchedule = {
+  monday: true,
+  tuesday: true,
+  wednesday: true,
+  thursday: true,
+  friday: true,
+  saturday: true,
+  sunday: true,
+  timeRanges: [{ from: "09:00", to: "22:00" }],
 }
 
 const SeatingPlanEditor = () => {
@@ -69,6 +110,7 @@ const SeatingPlanEditor = () => {
     imageUrl: "",
     description: "",
     status: "available",
+    availability: DEFAULT_AVAILABILITY,
   })
   const [formError, setFormError] = useState("")
   const [loading, setLoading] = useState(false)
@@ -203,6 +245,7 @@ const SeatingPlanEditor = () => {
         imageUrl: "",
         description: "",
         status: "available",
+        availability: DEFAULT_AVAILABILITY,
       })
       setImageFile(null)
       setImagePreview(null)
@@ -246,6 +289,7 @@ const SeatingPlanEditor = () => {
       imageUrl: table.imageUrl || "",
       description: table.description || "",
       status: table.status || "available",
+      availability: table.availability || DEFAULT_AVAILABILITY,
     })
     setEditingTableId(table.id)
 
@@ -282,11 +326,65 @@ const SeatingPlanEditor = () => {
       imageUrl: "",
       description: "",
       status: "available",
+      availability: DEFAULT_AVAILABILITY,
     })
     setEditingTableId(null)
     setImageFile(null)
     setImagePreview(null)
     setFormError("")
+  }
+
+  // Handle day selection
+  const handleDayToggle = (day: keyof Omit<AvailabilitySchedule, "timeRanges">) => {
+    setTableData({
+      ...tableData,
+      availability: {
+        ...tableData.availability!,
+        [day]: !tableData.availability![day],
+      },
+    })
+  }
+
+  // Handle time range changes
+  const handleTimeRangeChange = (index: number, field: "from" | "to", value: string) => {
+    const updatedTimeRanges = [...tableData.availability!.timeRanges]
+    updatedTimeRanges[index] = {
+      ...updatedTimeRanges[index],
+      [field]: value,
+    }
+
+    setTableData({
+      ...tableData,
+      availability: {
+        ...tableData.availability!,
+        timeRanges: updatedTimeRanges,
+      },
+    })
+  }
+
+  // Add a new time range
+  const addTimeRange = () => {
+    setTableData({
+      ...tableData,
+      availability: {
+        ...tableData.availability!,
+        timeRanges: [...tableData.availability!.timeRanges, { from: "09:00", to: "22:00" }],
+      },
+    })
+  }
+
+  // Remove a time range
+  const removeTimeRange = (index: number) => {
+    const updatedTimeRanges = [...tableData.availability!.timeRanges]
+    updatedTimeRanges.splice(index, 1)
+
+    setTableData({
+      ...tableData,
+      availability: {
+        ...tableData.availability!,
+        timeRanges: updatedTimeRanges,
+      },
+    })
   }
 
   return (
@@ -354,6 +452,92 @@ const SeatingPlanEditor = () => {
                     onChange={(e) => setTableData({ ...tableData, description: e.target.value })}
                     rows={3}
                   />
+                </div>
+
+                {/* Availability Section */}
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-center">
+                    <Calendar className="h-5 w-5 mr-2 text-primary" />
+                    <Label className="text-base font-medium">Table Availability</Label>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label className="text-sm">Available Days</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {DAYS_OF_WEEK.map((day) => (
+                        <button
+                          key={day.key}
+                          type="button"
+                          className={cn(
+                            "h-10 w-10 rounded-md flex items-center justify-center text-sm font-medium transition-colors",
+                            tableData.availability![day.key as keyof Omit<AvailabilitySchedule, "timeRanges">]
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted hover:bg-muted/80",
+                          )}
+                          onClick={() => handleDayToggle(day.key as keyof Omit<AvailabilitySchedule, "timeRanges">)}
+                        >
+                          {day.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm flex items-center">
+                        <Clock className="h-4 w-4 mr-1" />
+                        Available Time Periods
+                      </Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addTimeRange}
+                        disabled={tableData.availability!.timeRanges.length >= 3}
+                      >
+                        <Plus className="h-3.5 w-3.5 mr-1" />
+                        Add Time
+                      </Button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {tableData.availability!.timeRanges.map((timeRange, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <div className="flex-1">
+                            <Label className="text-xs mb-1 block">From</Label>
+                            <Input
+                              type="time"
+                              value={timeRange.from}
+                              onChange={(e) => handleTimeRangeChange(index, "from", e.target.value)}
+                              className="h-9"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <Label className="text-xs mb-1 block">To</Label>
+                            <Input
+                              type="time"
+                              value={timeRange.to}
+                              onChange={(e) => handleTimeRangeChange(index, "to", e.target.value)}
+                              className="h-9"
+                            />
+                          </div>
+                          {tableData.availability!.timeRanges.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 mt-5"
+                              onClick={() => removeTimeRange(index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -649,6 +833,43 @@ const SeatingPlanEditor = () => {
                       <p className="text-sm text-muted-foreground">{selectedTable.description}</p>
                     </div>
                   )}
+
+                  {selectedTable.availability && (
+                    <div className="pt-2">
+                      <h4 className="text-sm font-medium mb-1 flex items-center gap-1">
+                        <Calendar className="h-3 w-3" /> Availability
+                      </h4>
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {DAYS_OF_WEEK.map((day) => (
+                          <Badge
+                            key={day.key}
+                            variant={
+                              selectedTable.availability![day.key as keyof Omit<AvailabilitySchedule, "timeRanges">]
+                                ? "default"
+                                : "outline"
+                            }
+                            className={
+                              selectedTable.availability![day.key as keyof Omit<AvailabilitySchedule, "timeRanges">]
+                                ? "bg-primary"
+                                : "text-muted-foreground"
+                            }
+                          >
+                            {day.label}
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1 mb-1">
+                          <Clock className="h-3 w-3" /> Hours:
+                        </div>
+                        {selectedTable.availability.timeRanges.map((time, i) => (
+                          <div key={i} className="ml-4">
+                            {formatTime(time.from)} - {formatTime(time.to)}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -699,6 +920,19 @@ const SeatingPlanEditor = () => {
       </Dialog>
     </div>
   )
+}
+
+// Helper function to format time for display
+const formatTime = (time: string): string => {
+  try {
+    const [hours, minutes] = time.split(":")
+    const hour = Number.parseInt(hours, 10)
+    const ampm = hour >= 12 ? "PM" : "AM"
+    const formattedHour = hour % 12 || 12
+    return `${formattedHour}:${minutes} ${ampm}`
+  } catch (e) {
+    return time
+  }
 }
 
 // Table Card Component for Grid View
@@ -756,6 +990,20 @@ const TableCard = ({
             <MapPin className="h-4 w-4 mr-2" />
             <span className="text-sm truncate">{table.location}</span>
           </div>
+
+          {table.availability && (
+            <div className="flex items-center text-muted-foreground">
+              <Calendar className="h-4 w-4 mr-2" />
+              <span className="text-sm">
+                {
+                  DAYS_OF_WEEK.filter(
+                    (day) => table.availability![day.key as keyof Omit<AvailabilitySchedule, "timeRanges">],
+                  ).length
+                }{" "}
+                days available
+              </span>
+            </div>
+          )}
         </div>
       </CardContent>
 
@@ -853,6 +1101,17 @@ const TableRow = ({
               <MapPin className="h-4 w-4 mr-1" />
               <span>{table.location}</span>
             </div>
+
+            {table.availability && (
+              <div className="flex items-center">
+                <Calendar className="h-4 w-4 mr-1" />
+                <span>
+                  {table.availability.timeRanges.length > 0
+                    ? `${formatTime(table.availability.timeRanges[0].from)} - ${formatTime(table.availability.timeRanges[0].to)}`
+                    : "No hours set"}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
