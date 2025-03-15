@@ -291,9 +291,9 @@ const SeatingPlanEditor = () => {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-8 min-h-[calc(100vh-2rem)]">
         {/* Form Section */}
-        <div ref={formRef} className="w-full lg:w-1/3">
+        <div ref={formRef} className="w-full lg:w-1/3 lg:sticky lg:top-4 self-start">
           <Card className="shadow-lg border-0">
             <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-t-lg">
               <CardTitle className="text-2xl">{editingTableId ? "Edit Table" : "Add New Table"}</CardTitle>
