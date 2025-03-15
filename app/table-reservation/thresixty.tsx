@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react"
 import { Loader2 } from "lucide-react"
 
-// Add a type declaration for panolens at the top of the file
 // Use a more explicit approach for dynamic imports
 type PanolensDynamicImport = {
   ImagePanorama: new (
