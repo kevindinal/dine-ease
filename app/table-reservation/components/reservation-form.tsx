@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { TimePicker } from "@/app/table-reservation/components/time-picker"
 
 interface ReservationFormProps {
   tablePrice: number
@@ -140,10 +141,9 @@ export default function ReservationForm({
     }
   }
 
-  // Remove this function
-  // const handleTimeChange = (newTime: string) => {
-  //   setTime(newTime)
-  // }
+  const handleTimeChange = (newTime: string) => {
+    setTime(newTime)
+  }
 
   return (
     <Card className="sticky top-20">
@@ -197,19 +197,13 @@ export default function ReservationForm({
             )}
           </div>
 
-          {/* Time Selection */}
+          {/* Time Selection with Time Picker */}
           <div className="space-y-2">
             <Label htmlFor="time" className="flex items-center">
               <Clock className="h-4 w-4 mr-2 text-gray-500" />
               Time
             </Label>
-            <Input
-              id="time"
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              className={cn(timeError ? "border-red-500" : "")}
-            />
+            <TimePicker value={time} onChange={handleTimeChange} error={!!timeError} />
             {timeError && (
               <Alert variant="destructive" className="py-2 mt-1">
                 <AlertCircle className="h-4 w-4" />
