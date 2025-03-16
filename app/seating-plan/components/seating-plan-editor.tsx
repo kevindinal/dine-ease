@@ -53,6 +53,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
+import { Cigarette, CigaretteOff, Wifi, Award, Sparkles, Zap, Coffee, Users, Wind, CheckCircle } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface AvailableTime {
   from: string
@@ -79,7 +81,32 @@ interface Table {
   description?: string
   status?: string
   createdAt?: Date
+  features?: string[]
   availability?: AvailabilitySchedule
+}
+
+// Add this constant at the top of the file, after the existing interfaces
+const AVAILABLE_FEATURES = [
+  { id: "window-view", label: "Window View", icon: <Coffee className="h-4 w-4 mr-2" /> },
+  { id: "premium-service", label: "Premium Service", icon: <Award className="h-4 w-4 mr-2" /> },
+  { id: "charging-outlets", label: "Charging Outlets", icon: <Zap className="h-4 w-4 mr-2" /> },
+  { id: "ambient-lighting", label: "Ambient Lighting", icon: <Sparkles className="h-4 w-4 mr-2" /> },
+  { id: "privacy", label: "Privacy", icon: <Users className="h-4 w-4 mr-2" /> },
+  { id: "air-conditioning", label: "Air Conditioning", icon: <Wind className="h-4 w-4 mr-2" /> },
+  { id: "smoking-allowed", label: "Smoking Allowed", icon: <Cigarette className="h-4 w-4 mr-2" /> },
+  { id: "non-smoking", label: "Non-Smoking", icon: <CigaretteOff className="h-4 w-4 mr-2" /> },
+  { id: "wifi", label: "Free WiFi", icon: <Wifi className="h-4 w-4 mr-2" /> },
+]
+
+// Helper function to convert feature IDs to display names
+const getFeatureDisplayName = (featureId: string): string => {
+  const feature = AVAILABLE_FEATURES.find((f) => f.id === featureId)
+  return feature
+    ? feature.label
+    : featureId
+        .split("-")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ")
 }
 
 const DAYS_OF_WEEK = [
@@ -103,6 +130,19 @@ const DEFAULT_AVAILABILITY: AvailabilitySchedule = {
   timeRanges: [{ from: "09:00", to: "22:00" }],
 }
 
+// Helper function to format time for display
+const formatTime = (time: string): string => {
+  try {
+    const [hours, minutes] = time.split(":")
+    const hour = Number.parseInt(hours, 10)
+    const ampm = hour >= 12 ? "PM" : "AM"
+    const formattedHour = hour % 12 || 12
+    return `${formattedHour}:${minutes} ${ampm}`
+  } catch (e) {
+    return time
+  }
+}
+
 const SeatingPlanEditor = () => {
   const [tables, setTables] = useState<Table[]>([])
   const [tableData, setTableData] = useState<Omit<Table, "id">>({
@@ -112,6 +152,7 @@ const SeatingPlanEditor = () => {
     imageUrl: "",
     description: "",
     status: "available",
+    features: [],
     availability: DEFAULT_AVAILABILITY,
   })
   const [formError, setFormError] = useState("")
@@ -250,6 +291,7 @@ const SeatingPlanEditor = () => {
         imageUrl: "",
         description: "",
         status: "available",
+        features: [],
         availability: DEFAULT_AVAILABILITY,
       })
       setImageFile(null)
@@ -294,6 +336,7 @@ const SeatingPlanEditor = () => {
       imageUrl: table.imageUrl || "",
       description: table.description || "",
       status: table.status || "available",
+      features: table.features || [],
       availability: table.availability || DEFAULT_AVAILABILITY,
     })
     setEditingTableId(table.id)
@@ -356,6 +399,7 @@ const SeatingPlanEditor = () => {
       imageUrl: "",
       description: "",
       status: "available",
+      features: [],
       availability: DEFAULT_AVAILABILITY,
     })
     setEditingTableId(null)
@@ -414,6 +458,17 @@ const SeatingPlanEditor = () => {
         ...tableData.availability!,
         timeRanges: updatedTimeRanges,
       },
+    })
+  }
+
+  // Add this function inside the SeatingPlanEditor component
+  const toggleFeature = (featureId: string) => {
+    setTableData((prev) => {
+      const features = prev.features || []
+      return {
+        ...prev,
+        features: features.includes(featureId) ? features.filter((id) => id !== featureId) : [...features, featureId],
+      }
     })
   }
 
@@ -483,6 +538,32 @@ const SeatingPlanEditor = () => {
                     rows={3}
                   />
                 </div>
+
+                {/* Features Section - Add this new section */}
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-center">
+                    <CheckCircle className="h-5 w-5 mr-2 text-primary" />
+                    <Label className="text-base font-medium">Table Features</Label>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    {AVAILABLE_FEATURES.map((feature) => (
+                      <div key={feature.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`feature-${feature.id}`}
+                          checked={(tableData.features || []).includes(feature.id)}
+                          onCheckedChange={() => toggleFeature(feature.id)}
+                        />
+                        <Label htmlFor={`feature-${feature.id}`} className="flex items-center text-sm cursor-pointer">
+                          {feature.icon}
+                          {feature.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Availability Section */}
 
                 {/* Availability Section */}
                 <div className="space-y-4 pt-2">
@@ -946,6 +1027,26 @@ const SeatingPlanEditor = () => {
                     </div>
                   )}
 
+                  {/* Add this new section to display features */}
+                  {selectedTable.features && selectedTable.features.length > 0 && (
+                    <div className="pt-2">
+                      <h4 className="text-sm font-medium mb-1 flex items-center gap-1">
+                        <CheckCircle className="h-3 w-3" /> Features
+                      </h4>
+                      <div className="flex flex-wrap gap-1">
+                        {selectedTable.features.map((featureId) => {
+                          const feature = AVAILABLE_FEATURES.find((f) => f.id === featureId)
+                          return (
+                            <Badge key={featureId} variant="outline" className="flex items-center gap-1 bg-primary/5">
+                              {feature?.icon && <span className="scale-75">{feature.icon}</span>}
+                              {getFeatureDisplayName(featureId)}
+                            </Badge>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   {selectedTable.availability && (
                     <div className="pt-2">
                       <h4 className="text-sm font-medium mb-1 flex items-center gap-1">
@@ -1034,19 +1135,6 @@ const SeatingPlanEditor = () => {
   )
 }
 
-// Helper function to format time for display
-const formatTime = (time: string): string => {
-  try {
-    const [hours, minutes] = time.split(":")
-    const hour = Number.parseInt(hours, 10)
-    const ampm = hour >= 12 ? "PM" : "AM"
-    const formattedHour = hour % 12 || 12
-    return `${formattedHour}:${minutes} ${ampm}`
-  } catch (e) {
-    return time
-  }
-}
-
 // Table Card Component for Grid View
 const TableCard = ({
   table,
@@ -1114,6 +1202,22 @@ const TableCard = ({
                 }{" "}
                 days available
               </span>
+            </div>
+          )}
+
+          {/* Add this new section to display features */}
+          {table.features && table.features.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {table.features.slice(0, 2).map((featureId) => (
+                <Badge key={featureId} variant="outline" className="bg-primary/5 text-xs">
+                  {getFeatureDisplayName(featureId)}
+                </Badge>
+              ))}
+              {table.features.length > 2 && (
+                <Badge variant="outline" className="bg-gray-100 text-xs">
+                  +{table.features.length - 2} more
+                </Badge>
+              )}
             </div>
           )}
         </div>
@@ -1225,6 +1329,22 @@ const TableRow = ({
               </div>
             )}
           </div>
+
+          {/* Add this new section to display features */}
+          {table.features && table.features.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {table.features.slice(0, 3).map((featureId) => (
+                <Badge key={featureId} variant="outline" className="bg-primary/5 text-xs">
+                  {getFeatureDisplayName(featureId)}
+                </Badge>
+              ))}
+              {table.features.length > 3 && (
+                <Badge variant="outline" className="bg-gray-100 text-xs">
+                  +{table.features.length - 3} more
+                </Badge>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex gap-2 mt-2 sm:mt-0">
