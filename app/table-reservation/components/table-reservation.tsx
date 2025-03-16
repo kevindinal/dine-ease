@@ -870,11 +870,17 @@ export default function TableReservation() {
               <Input id="reservation-time" type="time" value={newTime} onChange={(e) => setNewTime(e.target.value)} />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDateTimeDialog(false)}>
+          <DialogFooter className="flex flex-col sm:flex-row gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowDateTimeDialog(false)}
+              className="sm:order-first order-last"
+            >
               Cancel
             </Button>
-            <Button onClick={handleDateTimeChange}>Update Reservation</Button>
+            <Button onClick={handleDateTimeChange} className="w-full sm:w-auto">
+              Update Reservation
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
