@@ -16,18 +16,35 @@ import {
   CheckCircle,
   XCircle,
   Coffee,
-  Utensils,
   Star,
   Info,
+  DollarSign,
+  Wifi,
+  Wind,
+  Zap,
+  Sparkles,
+  Award,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Slider } from "@/components/ui/slider"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Separator } from "@/components/ui/separator"
 
 interface Table {
   id: string
@@ -37,6 +54,8 @@ interface Table {
   restaurantId: string
   seats: number
   imageUrl?: string
+  price?: number
+  features?: string[]
   availability?: {
     monday: boolean
     tuesday: boolean
@@ -51,6 +70,16 @@ interface Table {
     }>
   }
 }
+
+// Define available features for filtering
+const AVAILABLE_FEATURES = [
+  { id: "window-view", label: "Window View", icon: <Coffee className="h-4 w-4 mr-2" /> },
+  { id: "premium-service", label: "Premium Service", icon: <Award className="h-4 w-4 mr-2" /> },
+  { id: "charging-outlets", label: "Charging Outlets", icon: <Zap className="h-4 w-4 mr-2" /> },
+  { id: "ambient-lighting", label: "Ambient Lighting", icon: <Sparkles className="h-4 w-4 mr-2" /> },
+  { id: "wifi", label: "Free WiFi", icon: <Wifi className="h-4 w-4 mr-2" /> },
+  { id: "air-conditioning", label: "Air Conditioning", icon: <Wind className="h-4 w-4 mr-2" /> },
+]
 
 export default function TableReservation() {
   const [tables, setTables] = useState<Table[]>([])
@@ -68,6 +97,58 @@ export default function TableReservation() {
   const [reservationDate, setReservationDate] = useState("")
   const [reservationTime, setReservationTime] = useState("")
 
+  // Date/time dialog state
+  const [showDateTimeDialog, setShowDateTimeDialog] = useState(false)
+  const [newDate, setNewDate] = useState(reservationDate)
+  const [newTime, setNewTime] = useState(reservationTime)
+
+  // Additional filters state
+  const [showFiltersPopover, setShowFiltersPopover] = useState(false)
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100])
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
+  const [sortOption, setSortOption] = useState<string | null>(null)
+  const [minSeats, setMinSeats] = useState(0)
+  const [maxSeats, setMaxSeats] = useState(20)
+
+  // Function to handle date/time changes
+  const handleDateTimeChange = () => {
+    if (newDate && newTime) {
+      // Update the URL with new parameters
+      const currentUrl = new URL(window.location.href)
+      currentUrl.searchParams.set("date", newDate)
+      currentUrl.searchParams.set("time", newTime)
+
+      // Navigate to the updated URL
+      router.push(currentUrl.toString())
+
+      // Update local state
+      setReservationDate(newDate)
+      setReservationTime(newTime)
+      setShowDateTimeDialog(false)
+    }
+  }
+
+  // Function to apply filters
+  const applyFilters = () => {
+    setShowFiltersPopover(false)
+  }
+
+  // Function to reset filters
+  const resetFilters = () => {
+    setPriceRange([0, 100])
+    setSelectedFeatures([])
+    setSortOption(null)
+    setMinSeats(0)
+    setMaxSeats(20)
+  }
+
+  // Toggle feature selection
+  const toggleFeature = (featureId: string) => {
+    setSelectedFeatures((prev) =>
+      prev.includes(featureId) ? prev.filter((id) => id !== featureId) : [...prev, featureId],
+    )
+  }
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const name = new URLSearchParams(window.location.search).get("name")
@@ -82,6 +163,8 @@ export default function TableReservation() {
         setGuestCount(Number.parseInt(guestCount, 10))
         setReservationDate(reservationDate)
         setReservationTime(reservationTime)
+        setNewDate(reservationDate)
+        setNewTime(reservationTime)
       }
     }
   }, [])
@@ -132,7 +215,7 @@ export default function TableReservation() {
     }
   }, [])
 
-  // Filter tables based on search term, status, guest count, and date/time
+  // Filter tables based on all criteria
   const filteredTables = tables.filter((table) => {
     const matchesRestaurant = table.restaurantId === restaurantId
     const matchesSearch =
@@ -140,6 +223,19 @@ export default function TableReservation() {
       table.location.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = selectedStatus ? table.status.toLowerCase() === selectedStatus.toLowerCase() : true
     const matchesGuestCount = !guestCount || (!isNaN(Number(guestCount)) && Number(guestCount) <= table.seats)
+
+    // Price range filter
+    const matchesPrice = !table.price || (table.price >= priceRange[0] && table.price <= priceRange[1])
+
+    // Seats range filter
+    const matchesSeats = table.seats >= minSeats && table.seats <= maxSeats
+
+    // Features filter
+    const matchesFeatures =
+      selectedFeatures.length === 0 ||
+      selectedFeatures.every((feature) =>
+        table.features?.some((tableFeature) => tableFeature.toLowerCase().replace(/\s+/g, "-") === feature),
+      )
 
     // Check if the table is available on the selected date and time
     let matchesDateTime = true
@@ -187,7 +283,30 @@ export default function TableReservation() {
       matchesDateTime = isAvailableOnDay && isAvailableAtTime
     }
 
-    return matchesRestaurant && matchesSearch && matchesStatus && matchesGuestCount && matchesDateTime
+    return (
+      matchesRestaurant &&
+      matchesSearch &&
+      matchesStatus &&
+      matchesGuestCount &&
+      matchesDateTime &&
+      matchesPrice &&
+      matchesSeats &&
+      matchesFeatures
+    )
+  })
+
+  // Sort tables based on selected sort option
+  const sortedTables = [...filteredTables].sort((a, b) => {
+    if (sortOption === "price-low-high") {
+      return (a.price || 0) - (b.price || 0)
+    } else if (sortOption === "price-high-low") {
+      return (b.price || 0) - (a.price || 0)
+    } else if (sortOption === "seats-most") {
+      return b.seats - a.seats
+    } else if (sortOption === "seats-least") {
+      return a.seats - b.seats
+    }
+    return 0
   })
 
   const handleTableClick = (tableId: string) => {
@@ -207,12 +326,78 @@ export default function TableReservation() {
     }
   }
 
+  // Helper function to format date
+  function formatDate(dateString: string): string {
+    try {
+      const date = new Date(dateString)
+      return date.toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    } catch (e) {
+      return dateString
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 py-6 sm:py-8 max-w-7xl">
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 text-gray-800">{restaurantName}</h1>
         <p className="text-sm sm:text-base text-gray-600">Select a table to make your reservation</p>
       </div>
+
+      {/* Enhanced Date & Time Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl mb-8 overflow-hidden shadow-md"
+      >
+        <div className="p-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col gap-1">
+              <h3 className="text-lg font-semibold text-gray-800">Your Reservation</h3>
+              <p className="text-sm text-gray-600">Selected date and time for your dining experience</p>
+            </div>
+
+            <Button
+              size={isMobile ? "sm" : "default"}
+              className="bg-primary hover:bg-primary/90"
+              onClick={() => setShowDateTimeDialog(true)}
+            >
+              <Calendar className="mr-2 h-4 w-4" />
+              Change Date & Time
+            </Button>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white rounded-lg p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+              <div className="bg-primary/10 p-3 rounded-full">
+                <Calendar className="text-primary h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 font-medium">Date</p>
+                <p className="text-lg font-semibold text-gray-800">
+                  {reservationDate ? formatDate(reservationDate) : "Select a date"}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+              <div className="bg-primary/10 p-3 rounded-full">
+                <Clock className="text-primary h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 font-medium">Time</p>
+                <p className="text-lg font-semibold text-gray-800">
+                  {reservationTime ? formatTime(reservationTime) : "Select a time"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
 
       <div className="flex flex-col gap-4 mb-6 sm:mb-8">
         <div className="relative w-full">
@@ -250,20 +435,139 @@ export default function TableReservation() {
               </Button>
             </div>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            <Popover open={showFiltersPopover} onOpenChange={setShowFiltersPopover}>
+              <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-1 px-2">
                   <Filter size={14} />
                   <span className="sr-only sm:not-sr-only sm:inline-block">Filters</span>
+                  {(selectedFeatures.length > 0 ||
+                    sortOption ||
+                    priceRange[0] > 0 ||
+                    priceRange[1] < 100 ||
+                    minSeats > 0 ||
+                    maxSeats < 20) && (
+                    <Badge className="ml-1 h-5 w-5 p-0 flex items-center justify-center">
+                      {selectedFeatures.length +
+                        (sortOption ? 1 : 0) +
+                        (priceRange[0] > 0 || priceRange[1] < 100 ? 1 : 0) +
+                        (minSeats > 0 || maxSeats < 20 ? 1 : 0)}
+                    </Badge>
+                  )}
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem>Price: Low to High</DropdownMenuItem>
-                <DropdownMenuItem>Price: High to Low</DropdownMenuItem>
-                <DropdownMenuItem>Seats: Most to Least</DropdownMenuItem>
-                <DropdownMenuItem>Seats: Least to Most</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </PopoverTrigger>
+              <PopoverContent className="w-80" align="end">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2 flex items-center">
+                      <DollarSign className="h-4 w-4 mr-1" /> Price Range
+                    </h4>
+                    <div className="px-2">
+                      <Slider
+                        defaultValue={priceRange}
+                        min={0}
+                        max={100}
+                        step={5}
+                        value={priceRange}
+                        onValueChange={(value) => setPriceRange(value as [number, number])}
+                        className="mb-2"
+                      />
+                      <div className="flex justify-between text-sm text-gray-500">
+                        <span>${priceRange[0]}</span>
+                        <span>${priceRange[1]}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-2 flex items-center">
+                      <Users className="h-4 w-4 mr-1" /> Seats
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label htmlFor="min-seats" className="text-xs">
+                          Min Seats
+                        </Label>
+                        <Input
+                          id="min-seats"
+                          type="number"
+                          min={0}
+                          max={maxSeats}
+                          value={minSeats}
+                          onChange={(e) => setMinSeats(Number(e.target.value))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="max-seats" className="text-xs">
+                          Max Seats
+                        </Label>
+                        <Input
+                          id="max-seats"
+                          type="number"
+                          min={minSeats}
+                          max={20}
+                          value={maxSeats}
+                          onChange={(e) => setMaxSeats(Number(e.target.value))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-2">Features</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {AVAILABLE_FEATURES.map((feature) => (
+                        <div key={feature.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={feature.id}
+                            checked={selectedFeatures.includes(feature.id)}
+                            onCheckedChange={() => toggleFeature(feature.id)}
+                          />
+                          <Label htmlFor={feature.id} className="flex items-center text-sm cursor-pointer">
+                            {feature.icon}
+                            {feature.label}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-2">Sort By</h4>
+                    <div className="space-y-1">
+                      {[
+                        { id: "price-low-high", label: "Price: Low to High" },
+                        { id: "price-high-low", label: "Price: High to Low" },
+                        { id: "seats-most", label: "Seats: Most to Least" },
+                        { id: "seats-least", label: "Seats: Least to Most" },
+                      ].map((option) => (
+                        <div key={option.id} className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            id={option.id}
+                            name="sort-option"
+                            checked={sortOption === option.id}
+                            onChange={() => setSortOption(option.id)}
+                            className="text-primary"
+                          />
+                          <Label htmlFor={option.id} className="text-sm cursor-pointer">
+                            {option.label}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between pt-2 border-t">
+                    <Button variant="outline" size="sm" onClick={resetFilters}>
+                      Reset Filters
+                    </Button>
+                    <Button size="sm" onClick={applyFilters}>
+                      Apply Filters
+                    </Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         ) : (
           <div className="flex justify-between">
@@ -283,39 +587,212 @@ export default function TableReservation() {
                 Reserved
               </Button>
             </div>
-            <Button variant="outline" className="gap-2">
-              <Filter size={16} /> More Filters
-            </Button>
+
+            <Popover open={showFiltersPopover} onOpenChange={setShowFiltersPopover}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <Filter size={16} />
+                  More Filters
+                  {(selectedFeatures.length > 0 ||
+                    sortOption ||
+                    priceRange[0] > 0 ||
+                    priceRange[1] < 100 ||
+                    minSeats > 0 ||
+                    maxSeats < 20) && (
+                    <Badge className="ml-1 h-5 w-5 p-0 flex items-center justify-center">
+                      {selectedFeatures.length +
+                        (sortOption ? 1 : 0) +
+                        (priceRange[0] > 0 || priceRange[1] < 100 ? 1 : 0) +
+                        (minSeats > 0 || maxSeats < 20 ? 1 : 0)}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-96" align="end">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2 flex items-center">
+                      <DollarSign className="h-4 w-4 mr-1" /> Price Range
+                    </h4>
+                    <div className="px-2">
+                      <Slider
+                        defaultValue={priceRange}
+                        min={0}
+                        max={100}
+                        step={5}
+                        value={priceRange}
+                        onValueChange={(value) => setPriceRange(value as [number, number])}
+                        className="mb-2"
+                      />
+                      <div className="flex justify-between text-sm text-gray-500">
+                        <span>${priceRange[0]}</span>
+                        <span>${priceRange[1]}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-2 flex items-center">
+                      <Users className="h-4 w-4 mr-1" /> Seats
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="min-seats" className="text-xs">
+                          Min Seats
+                        </Label>
+                        <Input
+                          id="min-seats"
+                          type="number"
+                          min={0}
+                          max={maxSeats}
+                          value={minSeats}
+                          onChange={(e) => setMinSeats(Number(e.target.value))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="max-seats" className="text-xs">
+                          Max Seats
+                        </Label>
+                        <Input
+                          id="max-seats"
+                          type="number"
+                          min={minSeats}
+                          max={20}
+                          value={maxSeats}
+                          onChange={(e) => setMaxSeats(Number(e.target.value))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium mb-2">Features</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {AVAILABLE_FEATURES.map((feature) => (
+                        <div key={feature.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={feature.id}
+                            checked={selectedFeatures.includes(feature.id)}
+                            onCheckedChange={() => toggleFeature(feature.id)}
+                          />
+                          <Label htmlFor={feature.id} className="flex items-center text-sm cursor-pointer">
+                            {feature.icon}
+                            {feature.label}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h4 className="font-medium mb-2">Sort By</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { id: "price-low-high", label: "Price: Low to High" },
+                        { id: "price-high-low", label: "Price: High to Low" },
+                        { id: "seats-most", label: "Seats: Most to Least" },
+                        { id: "seats-least", label: "Seats: Least to Most" },
+                      ].map((option) => (
+                        <div key={option.id} className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            id={option.id}
+                            name="sort-option"
+                            checked={sortOption === option.id}
+                            onChange={() => setSortOption(option.id)}
+                            className="text-primary"
+                          />
+                          <Label htmlFor={option.id} className="text-sm cursor-pointer">
+                            {option.label}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between pt-2 border-t">
+                    <Button variant="outline" size="sm" onClick={resetFilters}>
+                      Reset Filters
+                    </Button>
+                    <Button size="sm" onClick={applyFilters}>
+                      Apply Filters
+                    </Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         )}
       </div>
 
-      <div className="bg-gray-50 p-4 sm:p-6 rounded-xl mb-6 sm:mb-8">
-        <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 sm:justify-between sm:items-center">
-          <div className="flex items-center gap-2">
-            <Calendar className="text-gray-500" size={isMobile ? 16 : 20} />
-            <span className="text-sm sm:text-base text-gray-700 font-medium">
-              {reservationDate
-                ? new Date(reservationDate).toLocaleDateString("en-US", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })
-                : "Select a date"}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Clock className="text-gray-500" size={isMobile ? 16 : 20} />
-            <span className="text-sm sm:text-base text-gray-700 font-medium">
-              {reservationTime ? formatTime(reservationTime) : "Select a time"}
-            </span>
-          </div>
-          <Button size={isMobile ? "sm" : "default"} className="bg-primary hover:bg-primary/90 mt-2 sm:mt-0">
-            Change Date & Time
+      {/* Active Filters Display */}
+      {(selectedFeatures.length > 0 ||
+        sortOption ||
+        priceRange[0] > 0 ||
+        priceRange[1] < 100 ||
+        minSeats > 0 ||
+        maxSeats < 20) && (
+        <div className="mb-4 flex flex-wrap gap-2 items-center">
+          <span className="text-sm text-gray-500">Active filters:</span>
+
+          {priceRange[0] > 0 || priceRange[1] < 100 ? (
+            <Badge variant="secondary" className="bg-gray-100">
+              Price: ${priceRange[0]} - ${priceRange[1]}
+              <button className="ml-1 hover:text-red-500" onClick={() => setPriceRange([0, 100])}>
+                ×
+              </button>
+            </Badge>
+          ) : null}
+
+          {minSeats > 0 || maxSeats < 20 ? (
+            <Badge variant="secondary" className="bg-gray-100">
+              Seats: {minSeats} - {maxSeats}
+              <button
+                className="ml-1 hover:text-red-500"
+                onClick={() => {
+                  setMinSeats(0)
+                  setMaxSeats(20)
+                }}
+              >
+                ×
+              </button>
+            </Badge>
+          ) : null}
+
+          {selectedFeatures.map((feature) => {
+            const featureObj = AVAILABLE_FEATURES.find((f) => f.id === feature)
+            return (
+              <Badge key={feature} variant="secondary" className="bg-gray-100">
+                {featureObj?.label || feature}
+                <button className="ml-1 hover:text-red-500" onClick={() => toggleFeature(feature)}>
+                  ×
+                </button>
+              </Badge>
+            )
+          })}
+
+          {sortOption && (
+            <Badge variant="secondary" className="bg-gray-100">
+              {sortOption === "price-low-high"
+                ? "Price: Low to High"
+                : sortOption === "price-high-low"
+                  ? "Price: High to Low"
+                  : sortOption === "seats-most"
+                    ? "Seats: Most to Least"
+                    : "Seats: Least to Most"}
+              <button className="ml-1 hover:text-red-500" onClick={() => setSortOption(null)}>
+                ×
+              </button>
+            </Badge>
+          )}
+
+          <Button variant="ghost" size="sm" className="text-xs h-7 px-2 text-gray-500" onClick={resetFilters}>
+            Clear all
           </Button>
         </div>
-      </div>
+      )}
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -329,12 +806,12 @@ export default function TableReservation() {
         <>
           <div className="mb-4">
             <p className="text-sm sm:text-base text-gray-600">
-              {filteredTables.length} tables found for {reservationDate && formatTime(reservationTime)}
+              {sortedTables.length} tables found for {reservationDate && formatTime(reservationTime)}
             </p>
           </div>
-          {filteredTables.length > 0 ? (
+          {sortedTables.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {filteredTables.map((table) => (
+              {sortedTables.map((table) => (
                 <TableCard key={table.id} table={table} onClick={() => handleTableClick(table.id)} />
               ))}
             </div>
@@ -345,13 +822,57 @@ export default function TableReservation() {
               </div>
               <h3 className="text-lg font-semibold mb-2 text-amber-800">No Tables Available</h3>
               <p className="text-amber-700 mb-4">
-                There are no tables available at this time. Please try a different time or date.
+                There are no tables available with your current filters. Please try different filters or change your
+                reservation time.
               </p>
-              <Button className="bg-amber-600 hover:bg-amber-700">Change Reservation Time</Button>
+              <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                <Button className="bg-amber-600 hover:bg-amber-700" onClick={() => setShowDateTimeDialog(true)}>
+                  Change Reservation Time
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-amber-600 text-amber-700 hover:bg-amber-50"
+                  onClick={resetFilters}
+                >
+                  Reset All Filters
+                </Button>
+              </div>
             </div>
           )}
         </>
       )}
+
+      {/* Date & Time Selection Dialog */}
+      <Dialog open={showDateTimeDialog} onOpenChange={setShowDateTimeDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Change Reservation Date & Time</DialogTitle>
+            <DialogDescription>Select a new date and time for your table reservation.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="reservation-date">Date</Label>
+              <Input
+                id="reservation-date"
+                type="date"
+                value={newDate}
+                onChange={(e) => setNewDate(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="reservation-time">Time</Label>
+              <Input id="reservation-time" type="time" value={newTime} onChange={(e) => setNewTime(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDateTimeDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleDateTimeChange}>Update Reservation</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
@@ -434,6 +955,16 @@ function TableCard({ table, onClick }: TableCardProps) {
               </TooltipContent>
             </Tooltip>
           </div>
+
+          {/* Price Badge (if available) */}
+          {table.price && (
+            <div className="absolute bottom-0 right-0 m-3">
+              <Badge variant="secondary" className="bg-primary text-white px-3 py-1">
+                <DollarSign size={14} className="mr-1" />
+                {table.price.toFixed(2)}
+              </Badge>
+            </div>
+          )}
         </div>
 
         {/* Content Section */}
@@ -453,29 +984,47 @@ function TableCard({ table, onClick }: TableCardProps) {
 
           {/* Features Section */}
           <div className="flex flex-wrap gap-2 mb-3">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
-                  <Coffee size={12} className="mr-1" />
-                  Window View
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Enjoy a beautiful view while dining</p>
-              </TooltipContent>
-            </Tooltip>
+            {table.features?.includes("Window View") && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
+                    <Coffee size={12} className="mr-1" />
+                    Window View
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Enjoy a beautiful view while dining</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="inline-flex items-center rounded-full bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700">
-                  <Utensils size={12} className="mr-1" />
-                  Premium
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Premium table with enhanced service</p>
-              </TooltipContent>
-            </Tooltip>
+            {table.features?.includes("Premium Service") && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex items-center rounded-full bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700">
+                    <Award size={12} className="mr-1" />
+                    Premium
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Premium table with enhanced service</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {table.features?.includes("Charging Outlets") && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
+                    <Zap size={12} className="mr-1" />
+                    Charging
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Power outlets available at this table</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
 
           {/* Action Button */}
