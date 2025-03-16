@@ -3,6 +3,7 @@
 import Image from "next/image";
 import React, { FC, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Star, ShoppingBag, Info, ChevronRight } from "lucide-react";
 
 interface FoodCardProps {
   id: string;
@@ -37,8 +38,11 @@ const FoodCard: FC<FoodCardProps> = ({
   const [spiceLevel, setSpiceLevel] = useState("Mild");
   const [addOns, setAddOns] = useState("");
   const [drinkPairing, setDrinkPairing] = useState("No pairing");
+  const [showTags, setShowTags] = useState(true);
 
-  const handleAddToPreOrder = () => {
+  const handleAddToPreOrder = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
     const customizations = {
       id: `${name}-${Math.random().toString(36).substring(7)}`,
       name,
@@ -53,57 +57,87 @@ const FoodCard: FC<FoodCardProps> = ({
     };
 
     console.log("Added to pre-order:", customizations);
-
     localStorage.setItem("preOrder", JSON.stringify(customizations));
-
     onAddToPreOrder(customizations);
   };
 
   const handleCardClick = () => {
     const url = `/cuisine-details-page?id=${id}&restaurantId=${restaurantId}`;
-    
     const fullUrl = categoryId ? `${url}&categoryId=${categoryId}` : url;
     
     console.log("Card clicked:", id, restaurantId, categoryId);
     console.log("Navigating to:", fullUrl);
     
     router.push(fullUrl);
-  };  
+  };
+  
+  // Format price with commas for thousands
+  const formatPrice = (price: number) => {
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
 
   return (
     <div className="flex items-center justify-center px-2">
       <div
-        className="cursor-pointer w-full sm:w-[400px] h-auto sm:h-[480px] bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 transition-all hover:scale-105 hover:delay-200"
+        className="cursor-pointer w-full sm:w-[400px] h-auto bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 transition-all hover:shadow-lg relative group"
         onClick={handleCardClick}
       >
-        <div className="relative w-full h-40 sm:h-56 ">
+        <div className="relative w-full h-48 sm:h-56 overflow-hidden">
           <Image
             src={image}
             alt={name}
             layout="fill"
             objectFit="cover"
-            className="rounded-t-3xl"
+            className="group-hover:scale-105 transition-transform duration-500"
             priority={true}
           />
+          
+          {showTags && (
+            <div className="absolute bottom-3 left-3 flex flex-wrap gap-1">
+              <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-medium">Popular</span>
+              {portionSize === "Regular" && (
+                <span className="bg-green-100 text-green-600 text-xs px-2 py-1 rounded-full font-medium">Chef's Pick</span>
+              )}
+            </div>
+          )}
+          
+          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/60 to-transparent" />
         </div>
 
-        <div className="p-3 sm:p-6">
-          <p className="font-bold text-gray-700 text-lg sm:text-[22px] leading-6 sm:leading-7 mb-1">
-            {name}
-          </p>
-          <p className="text-gray-500 text-xs sm:text-[15px] mt-4 sm:mt-6 line-clamp-2 font-bold ">
+        <div className="p-4">
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="font-bold text-gray-800 text-lg leading-tight line-clamp-1 flex-1">
+              {name}
+            </h3>
+            <span className="text-lg font-bold text-red-500 ml-2">Rs. {formatPrice(price)}</span>
+          </div>
+          
+          <p className="text-gray-600 text-sm mt-1 line-clamp-2 mb-3 min-h-[40px]">
             {description}
           </p>
-          <div className="flex flex-row mt-3 sm:mt-4 justify-between items-center">
-            <p className="text-sm sm:text-[17px] font-bold text-[#FB665B]">Rs. {price}</p>
-            <button
+          
+          <div className="flex justify-between items-center mt-2">
+            <div className="flex items-center">
+              <button
+                onClick={handleAddToPreOrder}
+                className="flex items-center justify-center px-3 py-2 text-white text-sm font-medium bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
+              >
+                <ShoppingBag size={16} className="mr-1" />
+                <span>Add</span>
+              </button>
+            </div>
+            
+            <button 
+              className="flex items-center text-sm font-medium text-red-500 hover:text-red-600"
               onClick={(e) => {
                 e.stopPropagation();
-                handleAddToPreOrder();
+                const url = `/cuisine-details-page?id=${id}&restaurantId=${restaurantId}`;
+                const fullUrl = categoryId ? `${url}&categoryId=${categoryId}` : url;
+                router.push(fullUrl);
               }}
-              className="px-2 py-1 sm:py-2 text-white text-xs sm:text-base font-medium tracking-wide text-center capitalize transition-colors duration-300 transform rounded-[14px] bg-[#FB665B] hover:bg-[#FA4032] focus:ring-[#FB665B] focus:outline-none focus:ring-opacity-80 "
             >
-              Add to Pre-order
+              <span>Details</span>
+              <ChevronRight size={16} className="ml-1" />
             </button>
           </div>
         </div>

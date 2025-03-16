@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import usePreOrder from "../hooks/usePreOrder";
 import FoodCategory from "../components/FoodCategory";
-import { Readex_Pro } from "next/font/google";
 import FoodCard from "../components/FoodCard";
 import FloatingButtons from "../components/FloatingButtons";
 import { recommendedForYou } from "../data/data";
@@ -14,7 +13,7 @@ import { useChefsSpecials } from "../hooks/useChefsSpecials";
 import { useTodaysSpecials } from "../hooks/useTodaysSpecials";
 import { useMeals } from "../hooks/useMeals";
 import { Category } from "../types/category";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft, ChevronUp } from "lucide-react";
 
 interface MealPreOrderMainProps {
   hotelImage?: string;
@@ -33,10 +32,12 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [backgroundImageUrl, setBackgroundImageUrl] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const { meals, loading: mealsLoading, error: mealsError } = useMeals(restaurantId, selectedCategory as string);
 
   const categoriesRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (restaurant && restaurant.mealPageImage) {
@@ -47,10 +48,17 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
       }
 
       setBackgroundImageUrl(imageUrl);
-
-      console.log("Restaurant image URL:", imageUrl);
     }
   }, [restaurant]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 100);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleCategoryClick = (category: Category | string | null) => {
     if (typeof category === 'string') {
@@ -60,27 +68,53 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
     } else {
       setSelectedCategory(null);
     }
+    
+    // Scroll to top when changing categories
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   const renderFoodCard = (cuisine: any) => (
     <div key={cuisine.id}>
-      <div className="h-full mb-8">
+      <div className="h-full mb-4">
         <FoodCard {...cuisine} restaurantId={restaurantId} onAddToPreOrder={addItemToPreOrder} />
       </div>
     </div>
   );
 
-  if (restaurantLoading) return <div className="w-full h-screen flex justify-center items-center animate-spin overflow-hidden">
-  <Loader2 />
-</div>
-  if (restaurantError) return <div>Error: {restaurantError} </div>;
-  if (categoriesError) return <div>Error loading categories: {categoriesError}</div>
-  if (!restaurant) return <div>Restaurant not found</div>;
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
+  if (restaurantLoading) return (
+    <div className="w-full h-screen flex justify-center items-center overflow-hidden">
+      <Loader2 className="w-10 h-10 text-primary animate-spin" />
+    </div>
+  );
+  
+  if (restaurantError) return <div className="p-8 text-center text-red-500">Error: {restaurantError}</div>;
+  if (categoriesError) return <div className="p-8 text-center text-red-500">Error loading categories: {categoriesError}</div>;
+  if (!restaurant) return <div className="p-8 text-center">Restaurant not found</div>;
 
   const fallbackImage = hotelImage || "/default-restaurant-banner.jpg";
 
   return (
-    <div className={` bg-fixed min-h-screen bg-[#F5F5F5]`}>
+    <div className="bg-[#F8F9FA] min-h-screen">
+      {/* Fixed Header on Scroll */}
+      <div 
+        ref={headerRef}
+        className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${
+          isScrolled ? "bg-white shadow-md py-3" : "bg-transparent py-4"
+        }`}
+      >
+        
+      </div>
+
       <PreOrderModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -88,7 +122,185 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
         removeItem={removePreOrderItem}
       />
 
-      <section className="py-4 mx-4 md:mx-14 z-10 fixed slide-in-from-bottom-28 left-0 right-0 flex justify-center bottom-24">
+      <section
+        className="relative bg-cover bg-center bg-no-repeat pt-24 pb-16 px-4 md:px-14 text-white"
+      >
+        {backgroundImageUrl || fallbackImage ? (
+          <img
+            src={backgroundImageUrl || fallbackImage}
+            alt={restaurant.name}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : null}
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/30"></div>
+
+        <div className="relative bg-black/40 backdrop-blur-sm p-6 sm:p-12 rounded-xl max-w-3xl mx-auto">
+          <h2 className="text-3xl sm:text-5xl font-semibold mb-4 sm:mb-6 tracking-wide">{restaurant.name}</h2>
+          <p className="text-base sm:text-lg leading-relaxed font-light">
+            {restaurant.mealPageDesc}
+          </p>
+        </div>
+      </section>
+
+      <div className="container mx-auto px-4 -mt-8 relative z-10">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+          <h2 className="text-xl sm:text-2xl font-medium text-gray-800 mb-4">Cuisine Categories</h2>
+          <div
+            ref={categoriesRef}
+            className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory py-2 gap-6 items-center"
+          >
+            <div
+              className={`cursor-pointer flex-none snap-start flex flex-col items-center transition-all hover:scale-105 ${!selectedCategory ? 'scale-105' : ''}`}
+              onClick={() => handleCategoryClick(null)}
+            >
+              <FoodCategory 
+                imageSrc="/cate-all.jpg" 
+                foodType="All" 
+                
+              />
+            </div>
+            {categoriesLoading ? (
+              <div className="flex justify-center p-4 w-full">
+                <Loader2 className="w-6 h-6 text-primary animate-spin" />
+              </div>
+            ) : (
+              categories.map((category) => (
+                <div
+                  key={category.id}
+                  className={`cursor-pointer flex-none snap-start flex flex-col items-center transition-all hover:scale-105 ${selectedCategory === category.id ? 'scale-105' : ''}`}
+                  onClick={() => handleCategoryClick(category)}
+                >
+                  <FoodCategory 
+                    imageSrc={category.categoryImage} 
+                    foodType={category.name} 
+                  />
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 mt-8">
+        {selectedCategory ? (
+          <section className="pb-24">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+              {categories.find((category) => category.id === selectedCategory)?.name || 'Unknown Category'}
+            </h2>
+            {mealsLoading ? (
+              <div className="flex justify-center p-12">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              </div>
+            ) : mealsError ? (
+              <div className="text-center p-8 bg-red-50 rounded-lg text-red-500">
+                Error loading meals: {mealsError}
+              </div>
+            ) : meals && meals.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {meals.map(renderFoodCard)}
+              </div>
+            ) : (
+              <div className="text-center p-12 bg-gray-50 rounded-lg">
+                <p className="text-gray-500">No meals found in this category.</p>
+              </div>
+            )}
+          </section>
+        ) : (
+          <div className="pb-24">
+            <section className="mb-8">
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <h2 className="text-2xl font-semibold text-gray-800 p-6 border-b">
+                  Recommended for you
+                </h2>
+                <div className="flex gap-6 overflow-x-auto p-6 scrollbar-hide snap-x snap-mandatory">
+                  {recommendedForYou.map((cuisine) => (
+                    <div key={cuisine.id} className="min-w-[280px] flex-none snap-start">
+                      {renderFoodCard(cuisine)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {chefsLoading ? (
+              <section className="mb-8">
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                  <h2 className="text-2xl font-semibold text-gray-800 p-6 border-b">
+                    Chef's specials
+                  </h2>
+                  <div className="flex justify-center p-12">
+                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                  </div>
+                </div>
+              </section>
+            ) : chefsError ? (
+              <div className="text-center p-6 mb-8 bg-red-50 rounded-lg text-red-500">
+                Error loading chef's specials: {chefsError}
+              </div>
+            ) : chefsSpecials && chefsSpecials.length > 0 ? (
+              <section className="mb-8">
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                  <h2 className="text-2xl font-semibold text-gray-800 p-6 border-b">
+                    Chef's specials
+                  </h2>
+                  <div className="flex gap-6 overflow-x-auto p-6 scrollbar-hide snap-x snap-mandatory">
+                    {chefsSpecials.map((cuisine) => (
+                      <div key={cuisine.id} className="min-w-[280px] flex-none snap-start">
+                        {renderFoodCard(cuisine)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            ) : null}
+
+            {todaysLoading ? (
+              <section className="mb-8">
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                  <h2 className="text-2xl font-semibold text-gray-800 p-6 border-b">
+                    Today's specials
+                  </h2>
+                  <div className="flex justify-center p-12">
+                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                  </div>
+                </div>
+              </section>
+            ) : todaysSpecialsError ? (
+              <div className="text-center p-6 mb-8 bg-red-50 rounded-lg text-red-500">
+                Error loading today's specials: {todaysSpecialsError}
+              </div>
+            ) : todaysSpecials && todaysSpecials.length > 0 ? (
+              <section className="mb-8">
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                  <h2 className="text-2xl font-semibold text-gray-800 p-6 border-b">
+                    Today's specials
+                  </h2>
+                  <div className="flex gap-6 overflow-x-auto p-6 scrollbar-hide snap-x snap-mandatory">
+                    {todaysSpecials.map((cuisine) => (
+                      <div key={cuisine.id} className="min-w-[280px] flex-none snap-start">
+                        {renderFoodCard(cuisine)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            ) : null}
+          </div>
+        )}
+      </div>
+
+      <button
+        onClick={scrollToTop}
+        className={`fixed right-6 bottom-28 bg-primary text-white p-3 rounded-full shadow-lg transition-opacity duration-300 z-30 ${
+          isScrolled ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        aria-label="Scroll to top"
+      >
+        <ChevronUp className="w-5 h-5" />
+      </button>
+
+      <section className="py-4 mx-4 fixed z-20 slide-in-from-bottom-4 left-0 right-0 flex justify-center bottom-6">
         <FloatingButtons
           preOrderCount={preOrderCount}
           preOrders={preOrders}
@@ -97,123 +309,6 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
           onPreOrderCountClick={() => setIsModalOpen(true)}
         />
       </section>
-
-      <section
-        className="relative bg-cover bg-center bg-no-repeat py-16 sm:py-32 px-4 md:px-14 text-white"
-      >
-        {backgroundImageUrl || fallbackImage ? (
-          <img
-            src={backgroundImageUrl || fallbackImage}
-            alt={restaurant.name}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        ) : (
-          <div className="absolute top-0 right-0 bg-red-500 text-white px-2 py-1 text-xs">
-            Using fallback image
-          </div>
-        )}
-
-        <div className="bg-[#121212] bg-opacity-70 backdrop-blur-sm p-6 sm:p-16">
-          <h2 className="text-3xl sm:text-5xl font-semibold mb-4 sm:mb-6 tracking-wide">{restaurant.name}</h2>
-          <p className="text-base sm:text-lg leading-relaxed font-light">
-            {restaurant.mealPageDesc}
-          </p>
-        </div>
-      </section>
-
-
-      <section className="py-6 sm:py-8 mx-4 md:mx-14 border-b border-black">
-        <h2 className="text-2xl sm:text-3xl font-semibold text-[#121212] mb-4 sm:mb-6 tracking-wide">Cuisine Categories</h2>
-        <div
-          ref={categoriesRef}
-          className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory p-4 sm:p-8 rounded-2xl gap-4 sm:gap-6 justify-center md:justify-center items-center"
-        >
-          <div
-            className="cursor-pointer flex-none snap-start flex flex-col items-center transition-all hover:scale-110"
-            onClick={() => handleCategoryClick(null)}
-          >
-            <FoodCategory imageSrc="/cate-all.jpg" foodType="All Categories" />
-          </div>
-          {categories.map((category) => (
-            <div
-              key={category.id}
-              className="cursor-pointer flex-none snap-start flex flex-col items-center transition-all hover:scale-110"
-              onClick={() => handleCategoryClick(category)}
-            >
-              <FoodCategory imageSrc={category.categoryImage} foodType={category.name} />
-            </div>
-          ))}
-        </div>
-      </section>
-
-
-      {selectedCategory ? (
-        <section className="py-6 sm:py-8 mx-4 md:mx-14">
-          <h2 className="text-2xl sm:text-3xl font-semibold text-[#121212] mb-4 sm:mb-6 tracking-wide">
-            {categories.find((category) => category.id === selectedCategory)?.name || 'Unknown Category'}
-          </h2>
-          {mealsLoading ? (
-            <div>Loading...</div>
-          ) : meals && meals.length > 0 ? (
-            <div className="flex flex-wrap -mx-2 sm:-mx-4">
-              {meals.map(renderFoodCard)}
-            </div>
-          ) : (
-            <div>No meals found in this category.</div>
-          )}
-        </section>
-      ) : (
-        <>
-          <section className="py-6 sm:py-8 mx-4 md:mx-14 relative mt-8 sm:mt-12">
-            <div className="rounded-2xl shadow-sm">
-              <h2 className="text-2xl sm:text-3xl font-semibold text-[#121212] mb-4 sm:mb-6 ml-4 sm:ml-8 pt-4 sm:pt-6 tracking-wide">
-                Recommended for you
-              </h2>
-              <div className="flex gap-4 sm:gap-6 overflow-x-auto p-4 sm:p-8 scrollbar-hide snap-x snap-mandatory">
-                {recommendedForYou.map((cuisine) => (
-                  <div key={cuisine.id} className="min-w-[250px] sm:min-w-[320px] lg:min-w-[calc(25%-1rem)] flex-none snap-start">
-                    {renderFoodCard(cuisine)}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {chefsSpecials && chefsSpecials.length > 0 && (
-            <section className="py-6 sm:py-8 mx-4 md:mx-14 relative mt-8 sm:mt-12">
-              <div className="rounded-2xl shadow-sm">
-                <h2 className="text-2xl sm:text-3xl font-semibold text-[#121212] mb-4 sm:mb-6 ml-4 sm:ml-8 pt-4 sm:pt-6 tracking-wide">
-                  Chef's specials for you
-                </h2>
-                <div className="flex gap-4 sm:gap-6 overflow-x-auto p-4 sm:p-8 scrollbar-hide snap-x snap-mandatory">
-                  {chefsSpecials.map((cuisine) => (
-                    <div key={cuisine.id} className="min-w-[250px] sm:min-w-[320px] lg:min-w-[calc(25%-1rem)] flex-none snap-start">
-                      {renderFoodCard(cuisine)}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
-
-          {todaysSpecials && todaysSpecials.length > 0 && (
-            <section className="py-6 sm:py-8 mx-4 md:mx-14 relative mt-8 sm:mt-12">
-              <div className="rounded-2xl shadow-sm">
-                <h2 className="text-2xl sm:text-3xl font-semibold text-[#121212] mb-4 sm:mb-6 ml-4 sm:ml-8 pt-4 sm:pt-6 tracking-wide">
-                  Today's specials for you
-                </h2>
-                <div className="flex gap-4 sm:gap-6 overflow-x-auto p-4 sm:p-8 scrollbar-hide snap-x snap-mandatory">
-                  {todaysSpecials.map((cuisine) => (
-                    <div key={cuisine.id} className="min-w-[250px] sm:min-w-[320px] lg:min-w-[calc(25%-1rem)] flex-none snap-start">
-                      {renderFoodCard(cuisine)}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
-        </>
-      )}
     </div>
   );
 }
