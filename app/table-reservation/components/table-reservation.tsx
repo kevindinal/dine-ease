@@ -24,6 +24,8 @@ import {
   Zap,
   Sparkles,
   Award,
+  Cigarette,
+  CigaretteOff,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -984,46 +986,180 @@ function TableCard({ table, onClick }: TableCardProps) {
 
           {/* Features Section */}
           <div className="flex flex-wrap gap-2 mb-3">
-            {table.features?.includes("Window View") && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
-                    <Coffee size={12} className="mr-1" />
-                    Window View
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Enjoy a beautiful view while dining</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
+            {table.features && table.features.length > 0 ? (
+              <>
+                {/* Display first 2 features with colorful badges */}
+                {table.features.slice(0, 2).map((feature, index) => {
+                  if (feature === "window-view") {
+                    return (
+                      <Tooltip key={index}>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center rounded-full bg-purple-100 px-2 py-1 text-xs font-medium text-purple-600 border border-purple-200">
+                            <Coffee size={12} className="mr-1 text-purple-600" />
+                            Window View
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Enjoy a beautiful view while dining</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                  } else if (feature === "premium-service") {
+                    return (
+                      <Tooltip key={index}>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-600 border border-amber-200">
+                            <Award size={12} className="mr-1 text-amber-600" />
+                            Premium
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Premium table with enhanced service</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                  } else if (feature === "charging-outlets") {
+                    return (
+                      <Tooltip key={index}>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-600 border border-blue-200">
+                            <Zap size={12} className="mr-1 text-blue-600" />
+                            Charging
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Power outlets available at this table</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                  } else if (feature === "smoking-allowed") {
+                    return (
+                      <Tooltip key={index}>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center rounded-full bg-orange-100 px-2 py-1 text-xs font-medium text-orange-600 border border-orange-200">
+                            <Cigarette size={12} className="mr-1 text-orange-600" />
+                            Smoking
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Smoking is permitted in this area</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                  } else if (feature === "non-smoking") {
+                    return (
+                      <Tooltip key={index}>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center rounded-full bg-teal-100 px-2 py-1 text-xs font-medium text-teal-600 border border-teal-200">
+                            <CigaretteOff size={12} className="mr-1 text-teal-600" />
+                            Non-Smoking
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Smoking is not permitted in this area</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                  } else if (feature === "ambient-lighting") {
+                    return (
+                      <Tooltip key={index}>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center rounded-full bg-pink-100 px-2 py-1 text-xs font-medium text-pink-600 border border-pink-200">
+                            <Sparkles size={12} className="mr-1 text-pink-600" />
+                            Ambient
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Special lighting for a pleasant atmosphere</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                  } else if (feature === "free-wifi" || feature === "wifi") {
+                    return (
+                      <Tooltip key={index}>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center rounded-full bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-600 border border-indigo-200">
+                            <Wifi size={12} className="mr-1 text-indigo-600" />
+                            WiFi
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Free wireless internet access</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                  } else if (feature === "air-conditioning") {
+                    return (
+                      <Tooltip key={index}>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center rounded-full bg-cyan-100 px-2 py-1 text-xs font-medium text-cyan-600 border border-cyan-200">
+                            <Wind size={12} className="mr-1 text-cyan-600" />
+                            Air Conditioning
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Climate controlled environment</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                    
+                  } else if (feature === "privacy") {
+                    return (
+                      <Tooltip key={index}>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-600 border border-green-200">
+                            <Users size={12} className="mr-1  text-green-500" />
+                            Privacy
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Offers good privacy</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                    
+                  } 
+                  else {
+                    // Default badge for other features
+                    return (
+                      <Tooltip key={index}>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 border border-gray-200">
+                            <CheckCircle size={12} className="mr-1 text-gray-600" />
+                            {feature}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>This table offers {feature}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                  }
+                })}
 
-            {table.features?.includes("Premium Service") && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="inline-flex items-center rounded-full bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700">
-                    <Award size={12} className="mr-1" />
-                    Premium
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Premium table with enhanced service</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-
-            {table.features?.includes("Charging Outlets") && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
-                    <Zap size={12} className="mr-1" />
-                    Charging
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Power outlets available at this table</p>
-                </TooltipContent>
-              </Tooltip>
+                {/* Show "+X more" badge if there are more than 2 features */}
+                {table.features.length > 2 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 border border-gray-200">
+                        +{table.features.length - 2} more
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="space-y-1">
+                        <p className="font-medium">Additional features:</p>
+                        <ul className="text-xs">
+                          {table.features.slice(2).map((feature, i) => (
+                            <li key={i}>• {feature}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </>
+            ) : (
+              <span className="text-xs text-gray-500">No special features</span>
             )}
           </div>
 
