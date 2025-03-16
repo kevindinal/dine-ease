@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { db, storage } from "@/lib/firebase/config"
+import { db, storage } from "@/lib/firebase/tables"
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { PiArmchairFill, PiSeatFill } from "react-icons/pi"
