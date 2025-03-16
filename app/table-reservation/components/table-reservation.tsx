@@ -348,57 +348,6 @@ export default function TableReservation() {
         <p className="text-sm sm:text-base text-gray-600">Select a table to make your reservation</p>
       </div>
 
-      {/* Enhanced Date & Time Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl mb-8 overflow-hidden shadow-md"
-      >
-        <div className="p-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div className="flex flex-col gap-1">
-              <h3 className="text-lg font-semibold text-gray-800">Your Reservation</h3>
-              <p className="text-sm text-gray-600">Selected date and time for your dining experience</p>
-            </div>
-
-            <Button
-              size={isMobile ? "sm" : "default"}
-              className="bg-primary hover:bg-primary/90"
-              onClick={() => setShowDateTimeDialog(true)}
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              Change Date & Time
-            </Button>
-          </div>
-
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white rounded-lg p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-              <div className="bg-primary/10 p-3 rounded-full">
-                <Calendar className="text-primary h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 font-medium">Date</p>
-                <p className="text-lg font-semibold text-gray-800">
-                  {reservationDate ? formatDate(reservationDate) : "Select a date"}
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
-              <div className="bg-primary/10 p-3 rounded-full">
-                <Clock className="text-primary h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 font-medium">Time</p>
-                <p className="text-lg font-semibold text-gray-800">
-                  {reservationTime ? formatTime(reservationTime) : "Select a time"}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
       <div className="flex flex-col gap-4 mb-6 sm:mb-8">
         <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -793,6 +742,57 @@ export default function TableReservation() {
           </Button>
         </div>
       )}
+
+      {/* Enhanced Date & Time Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl mb-8 overflow-hidden shadow-md"
+      >
+        <div className="p-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col gap-1">
+              <h3 className="text-lg font-semibold text-gray-800">Your Reservation</h3>
+              <p className="text-sm text-gray-600">Selected date and time for your dining experience</p>
+            </div>
+
+            <Button
+              size={isMobile ? "sm" : "default"}
+              className="bg-primary hover:bg-primary/90"
+              onClick={() => setShowDateTimeDialog(true)}
+            >
+              <Calendar className="mr-2 h-4 w-4" />
+              Change Date & Time
+            </Button>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white rounded-lg p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+              <div className="bg-primary/10 p-3 rounded-full">
+                <Calendar className="text-primary h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 font-medium">Date</p>
+                <p className="text-lg font-semibold text-gray-800">
+                  {reservationDate ? formatDate(reservationDate) : "Select a date"}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
+              <div className="bg-primary/10 p-3 rounded-full">
+                <Clock className="text-primary h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 font-medium">Time</p>
+                <p className="text-lg font-semibold text-gray-800">
+                  {reservationTime ? formatTime(reservationTime) : "Select a time"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
