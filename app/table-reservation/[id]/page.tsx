@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { doc, getDoc } from "firebase/firestore"
 import { ref, getDownloadURL } from "firebase/storage"
-import { db, storage } from "@/lib/firebase/config"
+import { db, storage } from "@/lib/firebase/tables"
 import {
   ArrowLeft,
   AlertCircle,
