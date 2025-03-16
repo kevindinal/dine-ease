@@ -37,6 +37,19 @@ interface Table {
   restaurantId: string
   seats: number
   imageUrl?: string
+  availability?: {
+    monday: boolean
+    tuesday: boolean
+    wednesday: boolean
+    thursday: boolean
+    friday: boolean
+    saturday: boolean
+    sunday: boolean
+    timeRanges: Array<{
+      from: string
+      to: string
+    }>
+  }
 }
 
 export default function TableReservation() {
@@ -52,17 +65,23 @@ export default function TableReservation() {
   const [restaurantName, setRestaurantName] = useState("Table Reservation")
   const [restaurantId, setRestaurantId] = useState("")
   const [guestCount, setGuestCount] = useState<number>(0)
+  const [reservationDate, setReservationDate] = useState("")
+  const [reservationTime, setReservationTime] = useState("")
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const name = new URLSearchParams(window.location.search).get("name")
       const id = new URLSearchParams(window.location.search).get("id")
       const guestCount = new URLSearchParams(window.location.search).get("guests")
+      const reservationDate = new URLSearchParams(window.location.search).get("date")
+      const reservationTime = new URLSearchParams(window.location.search).get("time")
 
-      if (name && id && guestCount) {
+      if (name && id && guestCount && reservationDate && reservationTime) {
         setRestaurantName(name)
         setRestaurantId(id)
         setGuestCount(Number.parseInt(guestCount, 10))
+        setReservationDate(reservationDate)
+        setReservationTime(reservationTime)
       }
     }
   }, [])
@@ -113,7 +132,7 @@ export default function TableReservation() {
     }
   }, [])
 
-  // Filter tables based on search term, status, and guest count
+  // Filter tables based on search term, status, guest count, and date/time
   const filteredTables = tables.filter((table) => {
     const matchesRestaurant = table.restaurantId === restaurantId
     const matchesSearch =
@@ -122,11 +141,70 @@ export default function TableReservation() {
     const matchesStatus = selectedStatus ? table.status.toLowerCase() === selectedStatus.toLowerCase() : true
     const matchesGuestCount = !guestCount || (!isNaN(Number(guestCount)) && Number(guestCount) <= table.seats)
 
-    return matchesRestaurant && matchesSearch && matchesStatus && matchesGuestCount
+    // Check if the table is available on the selected date and time
+    let matchesDateTime = true
+
+    if (reservationDate && reservationTime && table.availability) {
+      // Convert reservation date to day of week
+      const reservationDay = new Date(reservationDate).getDay()
+      // Convert JS day (0=Sunday) to our day keys
+      const dayMap: Record<number, keyof typeof table.availability> = {
+        0: "sunday",
+        1: "monday",
+        2: "tuesday",
+        3: "wednesday",
+        4: "thursday",
+        5: "friday",
+        6: "saturday",
+      }
+
+      const dayKey = dayMap[reservationDay]
+
+      // Check if the table is available on this day of week
+      const isAvailableOnDay = table.availability[dayKey]
+
+      // Check if the time is within available time ranges
+      let isAvailableAtTime = false
+
+      if (isAvailableOnDay && table.availability.timeRanges && table.availability.timeRanges.length > 0) {
+        // Convert reservation time to minutes for easier comparison
+        const [resHours, resMinutes] = reservationTime.split(":").map(Number)
+        const reservationTimeInMinutes = resHours * 60 + resMinutes
+
+        // Check each time range
+        isAvailableAtTime = table.availability.timeRanges.some((range) => {
+          const [fromHours, fromMinutes] = range.from.split(":").map(Number)
+          const [toHours, toMinutes] = range.to.split(":").map(Number)
+
+          const fromTimeInMinutes = fromHours * 60 + fromMinutes
+          const toTimeInMinutes = toHours * 60 + toMinutes
+
+          // Check if reservation time falls within this range
+          return reservationTimeInMinutes >= fromTimeInMinutes && reservationTimeInMinutes <= toTimeInMinutes
+        })
+      }
+
+      matchesDateTime = isAvailableOnDay && isAvailableAtTime
+    }
+
+    return matchesRestaurant && matchesSearch && matchesStatus && matchesGuestCount && matchesDateTime
   })
 
   const handleTableClick = (tableId: string) => {
-    router.push(`/table-reservation/${tableId}`)
+    router.push(`/table-reservation/${tableId}?date=${reservationDate}&time=${reservationTime}&guests=${guestCount}`)
+  }
+
+  // Helper function to format time
+  function formatTime(time: string): string {
+    try {
+      const [hours, minutes] = time.split(":")
+      const hour = Number.parseInt(hours, 10)
+      const ampm = hour >= 12 ? "PM" : "AM"
+      const formattedHour = hour % 12 || 12
+      return `${formattedHour}:${minutes} ${ampm}`
+    } catch (e) {
+      return time
+    }
   }
 
   return (
@@ -216,11 +294,22 @@ export default function TableReservation() {
         <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 sm:justify-between sm:items-center">
           <div className="flex items-center gap-2">
             <Calendar className="text-gray-500" size={isMobile ? 16 : 20} />
-            <span className="text-sm sm:text-base text-gray-700 font-medium">Today, March 12, 2025</span>
+            <span className="text-sm sm:text-base text-gray-700 font-medium">
+              {reservationDate
+                ? new Date(reservationDate).toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })
+                : "Select a date"}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <Clock className="text-gray-500" size={isMobile ? 16 : 20} />
-            <span className="text-sm sm:text-base text-gray-700 font-medium">Current time: 5:45 PM</span>
+            <span className="text-sm sm:text-base text-gray-700 font-medium">
+              {reservationTime ? formatTime(reservationTime) : "Select a time"}
+            </span>
           </div>
           <Button size={isMobile ? "sm" : "default"} className="bg-primary hover:bg-primary/90 mt-2 sm:mt-0">
             Change Date & Time
@@ -239,13 +328,28 @@ export default function TableReservation() {
       ) : (
         <>
           <div className="mb-4">
-            <p className="text-sm sm:text-base text-gray-600">{filteredTables.length} tables found</p>
+            <p className="text-sm sm:text-base text-gray-600">
+              {filteredTables.length} tables found for {reservationDate && formatTime(reservationTime)}
+            </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {filteredTables.map((table) => (
-              <TableCard key={table.id} table={table} onClick={() => handleTableClick(table.id)} />
-            ))}
-          </div>
+          {filteredTables.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {filteredTables.map((table) => (
+                <TableCard key={table.id} table={table} onClick={() => handleTableClick(table.id)} />
+              ))}
+            </div>
+          ) : (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-8 text-center">
+              <div className="flex justify-center mb-4">
+                <Clock className="h-12 w-12 text-amber-500" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2 text-amber-800">No Tables Available</h3>
+              <p className="text-amber-700 mb-4">
+                There are no tables available at this time. Please try a different time or date.
+              </p>
+              <Button className="bg-amber-600 hover:bg-amber-700">Change Reservation Time</Button>
+            </div>
+          )}
         </>
       )}
     </div>
