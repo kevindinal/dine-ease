@@ -1,12 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Calendar, Clock, Users, Tag, AlertCircle } from "lucide-react"
+import { Calendar, Clock, Users, Tag, AlertCircle, MapPin, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 
 interface ReservationFormProps {
@@ -47,6 +49,8 @@ export default function ReservationForm({
   const [showPromoInput, setShowPromoInput] = useState(false)
   const [dateError, setDateError] = useState<string | null>(null)
   const [timeError, setTimeError] = useState<string | null>(null)
+  const [location, setLocation] = useState("indoor")
+  const [specialRequests, setSpecialRequests] = useState("")
 
   // Calculate the total price with discount
   const discountAmount = (tablePrice * promoDiscount) / 100
@@ -223,6 +227,43 @@ export default function ReservationForm({
               </Button>
             </div>
             <p className="text-xs text-gray-500">This table can accommodate up to {tableSeats} guests</p>
+          </div>
+
+          {/* Location Preference */}
+          <div className="space-y-2">
+            <Label htmlFor="location" className="flex items-center">
+              <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+              Seating Preference
+            </Label>
+            <Select value={location} onValueChange={setLocation}>
+              <SelectTrigger id="location">
+                <SelectValue placeholder="Select location" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="indoor">Indoor</SelectItem>
+                <SelectItem value="outdoor">Outdoor</SelectItem>
+                <SelectItem value="bar">Bar Area</SelectItem>
+                <SelectItem value="private">Private Room</SelectItem>
+                <SelectItem value="no-preference">No Preference</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Special Requests */}
+          <div className="space-y-2">
+            <Label htmlFor="special-requests" className="flex items-center">
+              <MessageSquare className="h-4 w-4 mr-2 text-gray-500" />
+              Special Requests
+            </Label>
+            <Textarea
+              id="special-requests"
+              placeholder="Any special requests or dietary requirements?"
+              value={specialRequests}
+              onChange={(e) => setSpecialRequests(e.target.value)}
+              className="resize-none"
+              rows={3}
+            />
+            <p className="text-xs text-gray-500">We'll do our best to accommodate your requests</p>
           </div>
 
           {/* Promo Code */}
