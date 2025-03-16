@@ -81,6 +81,9 @@ const AVAILABLE_FEATURES = [
   { id: "ambient-lighting", label: "Ambient Lighting", icon: <Sparkles className="h-4 w-4 mr-2" /> },
   { id: "wifi", label: "Free WiFi", icon: <Wifi className="h-4 w-4 mr-2" /> },
   { id: "air-conditioning", label: "Air Conditioning", icon: <Wind className="h-4 w-4 mr-2" /> },
+  { id: "privacy", label: "Privacy", icon: <Users className="h-4 w-4 mr-2" /> },
+  { id: "smoking-allowed", label: "Smoking Allowed", icon: <Cigarette className="h-4 w-4 mr-2" /> },
+  { id: "non-smoking", label: "Non-Smoking", icon: <CigaretteOff className="h-4 w-4 mr-2" /> },
 ]
 
 export default function TableReservation() {
@@ -1102,7 +1105,6 @@ function TableCard({ table, onClick }: TableCardProps) {
                         </TooltipContent>
                       </Tooltip>
                     )
-                    
                   } else if (feature === "privacy") {
                     return (
                       <Tooltip key={index}>
@@ -1117,9 +1119,7 @@ function TableCard({ table, onClick }: TableCardProps) {
                         </TooltipContent>
                       </Tooltip>
                     )
-                    
-                  } 
-                  else {
+                  } else {
                     // Default badge for other features
                     return (
                       <Tooltip key={index}>
