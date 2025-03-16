@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Calendar, Clock, Users, Tag, AlertCircle, MapPin, MessageSquare } from "lucide-react"
+import { Calendar, Clock, Users, Tag, AlertCircle, GlassWater, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -49,7 +49,7 @@ export default function ReservationForm({
   const [showPromoInput, setShowPromoInput] = useState(false)
   const [dateError, setDateError] = useState<string | null>(null)
   const [timeError, setTimeError] = useState<string | null>(null)
-  const [location, setLocation] = useState("indoor")
+  const [occasion, setOccasion] = useState("none")
   const [specialRequests, setSpecialRequests] = useState("")
 
   // Calculate the total price with discount
@@ -229,24 +229,27 @@ export default function ReservationForm({
             <p className="text-xs text-gray-500">This table can accommodate up to {tableSeats} guests</p>
           </div>
 
-          {/* Location Preference */}
+          {/* Occasion */}
           <div className="space-y-2">
-            <Label htmlFor="location" className="flex items-center">
-              <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-              Seating Preference
+            <Label htmlFor="occasion" className="flex items-center">
+              <GlassWater className="h-4 w-4 mr-2 text-gray-500" />
+              Occasion
             </Label>
-            <Select value={location} onValueChange={setLocation}>
-              <SelectTrigger id="location">
-                <SelectValue placeholder="Select location" />
+            <Select value={occasion} onValueChange={setOccasion}>
+              <SelectTrigger id="occasion">
+                <SelectValue placeholder="Select occasion" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="indoor">Indoor</SelectItem>
-                <SelectItem value="outdoor">Outdoor</SelectItem>
-                <SelectItem value="bar">Bar Area</SelectItem>
-                <SelectItem value="private">Private Room</SelectItem>
-                <SelectItem value="no-preference">No Preference</SelectItem>
+                <SelectItem value="none">None / Regular Dining</SelectItem>
+                <SelectItem value="birthday">Birthday Celebration</SelectItem>
+                <SelectItem value="anniversary">Anniversary</SelectItem>
+                <SelectItem value="date">Date Night</SelectItem>
+                <SelectItem value="business">Business Meeting</SelectItem>
+                <SelectItem value="graduation">Graduation</SelectItem>
+                <SelectItem value="other">Other Special Occasion</SelectItem>
               </SelectContent>
             </Select>
+            <p className="text-xs text-gray-500">Let us know if you're celebrating something special</p>
           </div>
 
           {/* Special Requests */}
