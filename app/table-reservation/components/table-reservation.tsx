@@ -849,7 +849,7 @@ export default function TableReservation() {
 
       {/* Date & Time Selection Dialog */}
       <Dialog open={showDateTimeDialog} onOpenChange={setShowDateTimeDialog}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] w-[90%] max-w-[350px] mx-auto rounded-xl overflow-hidden">
           <DialogHeader>
             <DialogTitle>Change Reservation Date & Time</DialogTitle>
             <DialogDescription>Select a new date and time for your table reservation.</DialogDescription>
