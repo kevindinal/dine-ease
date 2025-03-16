@@ -60,6 +60,7 @@ export interface Restaurant {
   updatedAt: Date;
 }
 
+
 export interface MenuItem {
   id: string;
   name: string;
