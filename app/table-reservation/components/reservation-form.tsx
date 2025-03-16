@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Calendar, Clock, Users, Tag, AlertCircle, GlassWater, MessageSquare } from "lucide-react"
+import { CalendarIcon, Clock, Users, Tag, AlertCircle, GlassWater, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,6 +10,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
+import { format } from "date-fns"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 interface ReservationFormProps {
   tablePrice: number
@@ -42,7 +45,7 @@ export default function ReservationForm({
   onApplyPromoCode,
   availability,
 }: ReservationFormProps) {
-  const [date, setDate] = useState("")
+  const [date, setDate] = useState<Date | undefined>(undefined)
   const [time, setTime] = useState("")
   const [guests, setGuests] = useState(2)
   const [promoCode, setPromoCode] = useState("")
@@ -59,8 +62,7 @@ export default function ReservationForm({
   // Check if the selected date is available
   useEffect(() => {
     if (date && availability) {
-      const selectedDate = new Date(date)
-      const dayOfWeek = selectedDate.getDay() // 0 = Sunday, 1 = Monday, etc.
+      const dayOfWeek = date.getDay() // 0 = Sunday, 1 = Monday, etc.
 
       // Map JavaScript day to our availability object keys
       const dayMap: Record<number, keyof typeof availability> = {
@@ -138,6 +140,11 @@ export default function ReservationForm({
     }
   }
 
+  // Remove this function
+  // const handleTimeChange = (newTime: string) => {
+  //   setTime(newTime)
+  // }
+
   return (
     <Card className="sticky top-20">
       <CardHeader className="bg-primary/5 border-b">
@@ -146,20 +153,42 @@ export default function ReservationForm({
       </CardHeader>
       <CardContent className="pt-6">
         <div className="space-y-4">
-          {/* Date Selection */}
+          {/* Date Selection with Calendar Popover */}
           <div className="space-y-2">
             <Label htmlFor="date" className="flex items-center">
-              <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+              <CalendarIcon className="h-4 w-4 mr-2 text-gray-500" />
               Date
             </Label>
-            <Input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              min={new Date().toISOString().split("T")[0]}
-              className={cn(dateError ? "border-red-500" : "")}
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !date && "text-muted-foreground",
+                    dateError && "border-red-500 text-red-500",
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, "PPP") : <span>Select a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  initialFocus
+                  disabled={(date) => {
+                    // Disable dates in the past
+                    const today = new Date()
+                    today.setHours(0, 0, 0, 0)
+                    return date < today
+                  }}
+                  className="rounded-md border"
+                />
+              </PopoverContent>
+            </Popover>
             {dateError && (
               <Alert variant="destructive" className="py-2 mt-1">
                 <AlertCircle className="h-4 w-4" />
