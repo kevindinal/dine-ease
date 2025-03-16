@@ -79,7 +79,7 @@ const HighlyRatedRestaurants = () => {
                 </div>
               </div>
               <p className="text-gray-600 mb-4">{restaurant.cuisine}</p>
-              <Button className="w-full bg-primary hover:bg-primary-hover text-white">
+              <Button className="w-full bg-[#FA4032] hover:bg-[#FFECEB] text-white hover:text-[#FA4032] transition-all duration-300 animate-fade-in">
                 View Details
               </Button>
             </div>
