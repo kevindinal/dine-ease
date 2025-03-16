@@ -5,7 +5,7 @@ import { CalendarIcon, Clock, Users, Tag, AlertCircle, GlassWater, MessageSquare
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { TimePicker } from "@/app/table-reservation/components/time-picker"
+import { TimePicker } from "./time-picker"
 
 interface ReservationFormProps {
   tablePrice: number
@@ -148,7 +148,7 @@ export default function ReservationForm({
   return (
     <Card className="sticky top-20">
       <CardHeader className="bg-primary/5 border-b">
-        <CardTitle>Make a Reservation</CardTitle>
+        <CardTitle className="text-red-500">Make a Reservation</CardTitle>
         <CardDescription>Reserve this table for your dining experience</CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
@@ -341,17 +341,17 @@ export default function ReservationForm({
               <span>${totalPrice.toFixed(2)}</span>
             </div>
           </div>
+
+          {/* Reservation Button */}
+          <Button
+            className={cn("w-full mt-4", isAvailable ? "bg-red-500 hover:bg-red-600" : "bg-gray-400")}
+            disabled={!isAvailable || !date || !time || !!dateError || !!timeError}
+            onClick={handleReservation}
+          >
+            {isAvailable ? "Reserve Now" : "Not Available"}
+          </Button>
         </div>
       </CardContent>
-      <CardFooter className="bg-gray-50 border-t">
-        <Button
-          className={cn("w-full", isAvailable ? "bg-green-600 hover:bg-green-700" : "bg-gray-400")}
-          disabled={!isAvailable || !date || !time || !!dateError || !!timeError}
-          onClick={handleReservation}
-        >
-          {isAvailable ? "Reserve Now" : "Not Available"}
-        </Button>
-      </CardFooter>
     </Card>
   )
 }
