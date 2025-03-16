@@ -1,25 +1,34 @@
 "use client"
 
-import { useState } from "react"
-import { Users, Calendar, Clock, Loader2, CreditCard } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Calendar, Clock, Users, Tag, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DatePicker } from "@/components/ui/date-picker"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
-import { motion } from "framer-motion"
 
 interface ReservationFormProps {
   tablePrice: number
   tableSeats: number
   isAvailable: boolean
   onReservation: () => void
-  promoDiscount?: number
+  promoDiscount: number
   onApplyPromoCode: (code: string) => void
+  availability?: {
+    monday: boolean
+    tuesday: boolean
+    wednesday: boolean
+    thursday: boolean
+    friday: boolean
+    saturday: boolean
+    sunday: boolean
+    timeRanges: Array<{
+      from: string
+      to: string
+    }>
+  }
 }
 
 export default function ReservationForm({
@@ -27,281 +36,256 @@ export default function ReservationForm({
   tableSeats,
   isAvailable,
   onReservation,
-  promoDiscount = 0,
+  promoDiscount,
   onApplyPromoCode,
+  availability,
 }: ReservationFormProps) {
-  console.log("ReservationForm props:", { tablePrice, tableSeats, isAvailable, promoDiscount })
-  const [guestCount, setGuestCount] = useState("1")
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
-  const [selectedTime, setSelectedTime] = useState("18:00")
-  const [specialRequests, setSpecialRequests] = useState("")
-  const [selectedOccasion, setSelectedOccasion] = useState<string>("none")
-  const [showPromoCode, setShowPromoCode] = useState(false)
+  const [date, setDate] = useState("")
+  const [time, setTime] = useState("")
+  const [guests, setGuests] = useState(2)
   const [promoCode, setPromoCode] = useState("")
-  const [showPaymentOptions, setShowPaymentOptions] = useState(false)
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("credit-card")
-  const [isSubmittingReservation, setIsSubmittingReservation] = useState(false)
-  const [termsAccepted, setTermsAccepted] = useState(false)
+  const [showPromoInput, setShowPromoInput] = useState(false)
+  const [dateError, setDateError] = useState<string | null>(null)
+  const [timeError, setTimeError] = useState<string | null>(null)
 
-  // Check if guest count is valid for this table
-  const isValidGuestCount =
-    tableSeats > 0 && !isNaN(Number(guestCount)) && Number(guestCount) <= tableSeats && Number(guestCount) > 0
+  // Calculate the total price with discount
+  const discountAmount = (tablePrice * promoDiscount) / 100
+  const totalPrice = tablePrice - discountAmount
 
-  console.log("Guest count validation:", { guestCount, tableSeats, isValidGuestCount })
+  // Check if the selected date is available
+  useEffect(() => {
+    if (date && availability) {
+      const selectedDate = new Date(date)
+      const dayOfWeek = selectedDate.getDay() // 0 = Sunday, 1 = Monday, etc.
 
-  // Calculate price with discount
-  const calculatePrice = (basePrice: number) => {
-    if (promoDiscount > 0) {
-      const discountAmount = basePrice * (promoDiscount / 100)
-      return basePrice - discountAmount
+      // Map JavaScript day to our availability object keys
+      const dayMap: Record<number, keyof typeof availability> = {
+        0: "sunday",
+        1: "monday",
+        2: "tuesday",
+        3: "wednesday",
+        4: "thursday",
+        5: "friday",
+        6: "saturday",
+      }
+
+      const dayKey = dayMap[dayOfWeek]
+      const isDayAvailable = availability[dayKey]
+
+      if (!isDayAvailable) {
+        setDateError(
+          `This table is not available on ${dayKey.charAt(0).toUpperCase() + dayKey.slice(1)}s. Please select another day.`,
+        )
+      } else {
+        setDateError(null)
+      }
+    } else {
+      setDateError(null)
     }
-    return basePrice
-  }
+  }, [date, availability])
+
+  // Check if the selected time is within available time ranges
+  useEffect(() => {
+    if (time && availability && !dateError) {
+      const [hours, minutes] = time.split(":").map(Number)
+      const timeInMinutes = hours * 60 + minutes
+
+      let isTimeAvailable = false
+
+      if (availability.timeRanges && availability.timeRanges.length > 0) {
+        isTimeAvailable = availability.timeRanges.some((range) => {
+          const [fromHours, fromMinutes] = range.from.split(":").map(Number)
+          const [toHours, toMinutes] = range.to.split(":").map(Number)
+
+          const fromTimeInMinutes = fromHours * 60 + fromMinutes
+          const toTimeInMinutes = toHours * 60 + toMinutes
+
+          return timeInMinutes >= fromTimeInMinutes && timeInMinutes <= toTimeInMinutes
+        })
+      }
+
+      if (!isTimeAvailable) {
+        setTimeError("The selected time is outside available hours. Please choose a time within the available ranges.")
+      } else {
+        setTimeError(null)
+      }
+    } else {
+      setTimeError(null)
+    }
+  }, [time, availability, dateError])
 
   const handleReservation = () => {
-    // Simulate reservation process
-    setIsSubmittingReservation(true)
+    if (!date || !time) {
+      alert("Please select a date and time for your reservation.")
+      return
+    }
 
-    setTimeout(() => {
-      setIsSubmittingReservation(false)
-      onReservation()
-    }, 2000)
+    if (dateError || timeError) {
+      alert("Please correct the errors before making a reservation.")
+      return
+    }
+
+    onReservation()
   }
 
-  const handleApplyPromoCode = () => {
+  const handleApplyPromo = () => {
     if (promoCode.trim()) {
       onApplyPromoCode(promoCode)
     }
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 sticky top-20"
-    >
-      <h3 className="text-xl font-bold mb-6 text-gray-800">Make a Reservation</h3>
-
-      <div className="space-y-5">
-        <div>
-          <Label htmlFor="guest-count" className="text-gray-700 font-medium">
-            Number of Guests
-          </Label>
-          <div className="relative mt-1.5">
-            <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-            <Input
-              id="guest-count"
-              type="number"
-              min="1"
-              max={tableSeats}
-              className="pl-10"
-              value={guestCount}
-              onChange={(e) => setGuestCount(e.target.value)}
-            />
-          </div>
-          {!isValidGuestCount && (
-            <p className="text-red-500 text-sm mt-1.5">Please enter a valid number of guests (1-{tableSeats})</p>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="date" className="text-gray-700 font-medium">
-            Date
-          </Label>
-          <div className="relative mt-1.5">
-            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-            <DatePicker date={selectedDate} setDate={setSelectedDate} className="pl-10 w-full" />
-          </div>
-        </div>
-
-        <div>
-          <Label htmlFor="time" className="text-gray-700 font-medium">
-            Time
-          </Label>
-          <div className="relative mt-1.5">
-            <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-            <Select defaultValue={selectedTime} onValueChange={setSelectedTime}>
-              <SelectTrigger className="w-full pl-10">
-                <SelectValue placeholder="Select time" />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: 13 }).map((_, i) => {
-                  const hour = i + 10 // Start from 10 AM
-                  const time = `${hour}:00`
-                  const display = hour > 12 ? `${hour - 12}:00 PM` : `${hour}:00 AM`
-                  return (
-                    <SelectItem key={time} value={time}>
-                      {display}
-                    </SelectItem>
-                  )
-                })}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div>
-          <Label htmlFor="occasion" className="text-gray-700 font-medium">
-            Occasion (optional)
-          </Label>
-          <Select value={selectedOccasion} onValueChange={setSelectedOccasion}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select an occasion" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">None</SelectItem>
-              <SelectItem value="birthday">Birthday</SelectItem>
-              <SelectItem value="anniversary">Anniversary</SelectItem>
-              <SelectItem value="date">Date Night</SelectItem>
-              <SelectItem value="business">Business Meeting</SelectItem>
-              <SelectItem value="celebration">Celebration</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor="special-requests" className="text-gray-700 font-medium">
-            Special Requests (optional)
-          </Label>
-          <Textarea
-            id="special-requests"
-            placeholder="Any special requests or dietary requirements?"
-            className="mt-1.5"
-            value={specialRequests}
-            onChange={(e) => setSpecialRequests(e.target.value)}
-          />
-        </div>
-
-        {/* Promo Code */}
-        <div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="promo-code" className="text-gray-700 font-medium">
-              Promo Code
+    <Card className="sticky top-20">
+      <CardHeader className="bg-primary/5 border-b">
+        <CardTitle>Make a Reservation</CardTitle>
+        <CardDescription>Reserve this table for your dining experience</CardDescription>
+      </CardHeader>
+      <CardContent className="pt-6">
+        <div className="space-y-4">
+          {/* Date Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="date" className="flex items-center">
+              <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+              Date
             </Label>
-            <Button variant="link" className="p-0 h-auto text-xs" onClick={() => setShowPromoCode(!showPromoCode)}>
-              {showPromoCode ? "Hide" : "Have a code?"}
-            </Button>
+            <Input
+              id="date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              min={new Date().toISOString().split("T")[0]}
+              className={cn(dateError ? "border-red-500" : "")}
+            />
+            {dateError && (
+              <Alert variant="destructive" className="py-2 mt-1">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-xs ml-2">{dateError}</AlertDescription>
+              </Alert>
+            )}
           </div>
-          {showPromoCode && (
-            <div className="flex gap-2 mt-1.5">
+
+          {/* Time Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="time" className="flex items-center">
+              <Clock className="h-4 w-4 mr-2 text-gray-500" />
+              Time
+            </Label>
+            <Input
+              id="time"
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              className={cn(timeError ? "border-red-500" : "")}
+            />
+            {timeError && (
+              <Alert variant="destructive" className="py-2 mt-1">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-xs ml-2">{timeError}</AlertDescription>
+              </Alert>
+            )}
+          </div>
+
+          {/* Guests Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="guests" className="flex items-center">
+              <Users className="h-4 w-4 mr-2 text-gray-500" />
+              Number of Guests
+            </Label>
+            <div className="flex items-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 rounded-r-none"
+                onClick={() => setGuests(Math.max(1, guests - 1))}
+                disabled={guests <= 1}
+              >
+                -
+              </Button>
               <Input
-                id="promo-code"
-                placeholder="Enter promo code"
-                value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value)}
-                className="flex-1"
+                id="guests"
+                type="number"
+                value={guests}
+                onChange={(e) => setGuests(Number(e.target.value))}
+                min={1}
+                max={tableSeats}
+                className="h-8 rounded-none text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
-              <Button variant="outline" onClick={handleApplyPromoCode} disabled={!promoCode.trim()}>
-                Apply
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 rounded-l-none"
+                onClick={() => setGuests(Math.min(tableSeats, guests + 1))}
+                disabled={guests >= tableSeats}
+              >
+                +
               </Button>
             </div>
-          )}
-        </div>
+            <p className="text-xs text-gray-500">This table can accommodate up to {tableSeats} guests</p>
+          </div>
 
-        {tablePrice > 0 && (
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="flex justify-between items-center text-gray-700">
-              <span>Reservation fee</span>
+          {/* Promo Code */}
+          {showPromoInput ? (
+            <div className="space-y-2">
+              <Label htmlFor="promo" className="flex items-center">
+                <Tag className="h-4 w-4 mr-2 text-gray-500" />
+                Promo Code
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  id="promo"
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                  placeholder="Enter promo code"
+                />
+                <Button type="button" onClick={handleApplyPromo}>
+                  Apply
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              type="button"
+              variant="ghost"
+              className="text-sm text-primary w-full"
+              onClick={() => setShowPromoInput(true)}
+            >
+              <Tag className="h-4 w-4 mr-2" />
+              Add promo code
+            </Button>
+          )}
+
+          {/* Price Summary */}
+          <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Table price</span>
               <span className="font-medium">${tablePrice.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between items-center text-gray-700 mt-2">
-              <span>Service fee</span>
-              <span className="font-medium">${(tablePrice * 0.1).toFixed(2)}</span>
-            </div>
             {promoDiscount > 0 && (
-              <div className="flex justify-between items-center text-green-600 mt-2">
+              <div className="flex justify-between text-sm text-green-600">
                 <span>Discount ({promoDiscount}%)</span>
-                <span className="font-medium">
-                  -${((tablePrice + tablePrice * 0.1) * (promoDiscount / 100)).toFixed(2)}
-                </span>
+                <span>-${discountAmount.toFixed(2)}</span>
               </div>
             )}
-            <div className="border-t border-gray-200 my-2 pt-2 flex justify-between items-center font-bold">
+            <div className="flex justify-between font-medium pt-2 border-t border-gray-200">
               <span>Total</span>
-              <span>${calculatePrice(tablePrice * 1.1).toFixed(2)}</span>
+              <span>${totalPrice.toFixed(2)}</span>
             </div>
           </div>
-        )}
-
-        {/* Payment Method */}
-        <div>
-          <div className="flex items-center justify-between">
-            <Label className="text-gray-700 font-medium">Payment Method</Label>
-            <Button
-              variant="link"
-              className="p-0 h-auto text-xs"
-              onClick={() => setShowPaymentOptions(!showPaymentOptions)}
-            >
-              {showPaymentOptions ? "Hide" : "Select method"}
-            </Button>
-          </div>
-          {showPaymentOptions && (
-            <RadioGroup
-              value={selectedPaymentMethod}
-              onValueChange={setSelectedPaymentMethod}
-              className="mt-2 space-y-2"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="credit-card" id="credit-card" />
-                <Label htmlFor="credit-card" className="flex items-center">
-                  <CreditCard className="h-4 w-4 mr-2 text-blue-500" />
-                  Credit Card
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="paypal" id="paypal" />
-                <Label htmlFor="paypal">PayPal</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="apple-pay" id="apple-pay" />
-                <Label htmlFor="apple-pay">Apple Pay</Label>
-              </div>
-            </RadioGroup>
-          )}
         </div>
-
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="terms"
-            checked={termsAccepted}
-            onCheckedChange={(checked) => setTermsAccepted(checked === true)}
-          />
-          <label
-            htmlFor="terms"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-600"
-          >
-            I agree to the reservation policies and terms of service
-          </label>
-        </div>
-
+      </CardContent>
+      <CardFooter className="bg-gray-50 border-t">
         <Button
-          className={cn(
-            "w-full py-6 text-base font-medium transition-all",
-            isAvailable && isValidGuestCount && termsAccepted
-              ? "bg-primary hover:bg-primary/90"
-              : "bg-gray-300 text-gray-500 cursor-not-allowed",
-          )}
+          className={cn("w-full", isAvailable ? "bg-green-600 hover:bg-green-700" : "bg-gray-400")}
+          disabled={!isAvailable || !date || !time || !!dateError || !!timeError}
           onClick={handleReservation}
-          disabled={!isAvailable || !isValidGuestCount || !termsAccepted || isSubmittingReservation}
         >
-          {isSubmittingReservation ? (
-            <span className="flex items-center justify-center">
-              <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-              Processing...
-            </span>
-          ) : isAvailable ? (
-            "Reserve Now"
-          ) : (
-            "Not Available"
-          )}
+          {isAvailable ? "Reserve Now" : "Not Available"}
         </Button>
-
-        <p className="text-xs text-gray-500 text-center">
-          By clicking "Reserve Now", you agree to our reservation policies
-        </p>
-      </div>
-    </motion.div>
+      </CardFooter>
+    </Card>
   )
 }
 

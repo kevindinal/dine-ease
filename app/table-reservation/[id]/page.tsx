@@ -51,12 +51,12 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
-// Import our new components
+// Import our components
 import ReviewSection from "@/app/table-reservation/components/review-section"
 import ReservationForm from "@/app/table-reservation/components/reservation-form"
 import SpecialOffers from "@/app/table-reservation/components/special-offers"
 import FeaturesSection from "@/app/table-reservation/components/features-section"
-
+import AvailabilityCalendar from "@/app/table-reservation/components/availability-calendar"
 
 interface Table {
   id: string
@@ -72,6 +72,19 @@ interface Table {
   reviews?: Review[]
   rating?: number
   features?: string[]
+  availability?: {
+    monday: boolean
+    tuesday: boolean
+    wednesday: boolean
+    thursday: boolean
+    friday: boolean
+    saturday: boolean
+    sunday: boolean
+    timeRanges: Array<{
+      from: string
+      to: string
+    }>
+  }
 }
 
 interface Review {
@@ -167,6 +180,21 @@ export default function TableDetailsPage() {
     },
   ]
 
+  // Mock availability data if none exists
+  const mockAvailability = {
+    monday: true,
+    tuesday: true,
+    wednesday: true,
+    thursday: true,
+    friday: true,
+    saturday: true,
+    sunday: false,
+    timeRanges: [
+      { from: "11:00", to: "15:00" },
+      { from: "17:30", to: "22:00" },
+    ],
+  }
+
   useEffect(() => {
     const fetchTable = async () => {
       setLoading(true)
@@ -232,6 +260,9 @@ export default function TableDetailsPage() {
           "Air Conditioning",
         ]
 
+        // Add mock availability if none exists
+        const availability = tableData.availability || mockAvailability
+
         setTable({
           id: tableDoc.id,
           ...tableData,
@@ -240,6 +271,7 @@ export default function TableDetailsPage() {
           additionalImages: processedAdditionalImages.filter(Boolean) as string[],
           reviews,
           features,
+          availability,
         })
 
         setLoading(false)
@@ -767,6 +799,9 @@ export default function TableDetailsPage() {
               </div>
             )}
 
+            {/* Availability Calendar */}
+            <AvailabilityCalendar availability={table.availability} />
+
             {/* Special Offers */}
             <SpecialOffers offers={specialOffers} onApplyCode={handleApplyPromoCode} />
 
@@ -913,6 +948,7 @@ export default function TableDetailsPage() {
               onReservation={handleReservation}
               promoDiscount={promoDiscount}
               onApplyPromoCode={handleApplyPromoCode}
+              availability={table.availability}
             />
           </div>
         </div>
