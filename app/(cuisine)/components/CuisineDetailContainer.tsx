@@ -137,7 +137,7 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
     const customizations = {
       id: meal.id,
       name: meal.name,
-      price: calculateTotalPrice(),
+      price: calculateTotalPrice(), // This is the price of a single item
       basePrice: meal.price,
       image: meal.image || (carouselImages.length > 0 ? carouselImages[0] : null),
       size: selectedSize,
@@ -145,12 +145,13 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
       addOns,
       drink: selectedDrink,
       categoryId: resolvedCategoryId,
-      quantity: quantity
+      quantity: quantity // This should be handled correctly in the parent component
     };
     console.log('Adding to pre-order:', customizations);
+    // Only send this item once, with the quantity property indicating how many
     handleAddToPreOrder(customizations);
   };
-
+  
   const calculateTotalPrice = () => {
     let total = meal.price;
 
