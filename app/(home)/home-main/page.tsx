@@ -59,7 +59,9 @@ export default function HomePage() {
       </section>
 
       {/* Weekly offers */}
+      <section className="bg-white">
       <WeeklyOffers />
+      </section>
 
       {/* Testimonial Section */}
       <Testimonials />

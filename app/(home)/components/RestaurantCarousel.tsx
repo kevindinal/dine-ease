@@ -59,8 +59,8 @@ const RestaurantCarousel = () => {
   };
 
   return (
-    <div className="relative w-full overflow-hidden py-8">
-      <h2 className="text-3xl font-bold text-accent-dark mb-8 text-center">
+    <div className="relative w-full overflow-hidden py-8 px-10">
+      <h2 className="text-3xl font-bold mb-8 text-center">
         Top Restaurants of the Week
       </h2>
       <div className="relative flex items-center justify-center">
