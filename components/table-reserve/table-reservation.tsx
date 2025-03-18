@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { db, storage } from "@/lib/firebase/config"
+import { db, storage } from "@/lib/firebase"
 import { collection, getDocs } from "firebase/firestore"
 import { useRouter } from "next/navigation"
 import { ref, getDownloadURL } from "firebase/storage"
