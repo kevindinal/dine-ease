@@ -295,4 +295,3 @@ Thank you for your purchase!
 };
 
 export default PaymentSuccessPage;
-

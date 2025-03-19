@@ -8,7 +8,7 @@ import {
   orderBy,
   limit
 } from 'firebase/firestore';
-import { Restaurant } from '@/app/(restaurants)/types/firebase';
+import { Restaurant } from '@/app/(restaurants)/types/restaurant';
 
 export const restaurantsCollection = collection(db, 'restaurants');
 

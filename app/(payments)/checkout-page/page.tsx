@@ -126,4 +126,3 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
 };
 
 export default CheckoutPage;
-

@@ -458,7 +458,7 @@ const SummaryPage = () => {
     if (typeof window !== "undefined") {
       try {
         // Get preOrder data from localStorage
-        const savedItems = localStorage.getItem("preOrder");
+        const savedItems = localStorage.getItem("preOrders");
 
         if (savedItems) {
           const parsedData = JSON.parse(savedItems);
@@ -818,7 +818,11 @@ const SummaryPage = () => {
                       >
                         Cancel
                       </Button>
-                      
+                      <Button 
+                        className="w-full bg-[#FA4032] text-white hover:bg-[#FB665B]"
+                      >
+                        Complete Payment
+                      </Button>
                     </div>
                   </Dialog.Panel>
                 </Transition.Child>
@@ -841,3 +845,4 @@ const DetailCard = ({ icon, label, value }: { icon: React.ReactNode; label: stri
 );
 
 export default SummaryPage;
+
