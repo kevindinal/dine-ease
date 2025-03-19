@@ -1,35 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaCalendarAlt, FaClock, FaUsers, FaSearch } from "react-icons/fa";
-import { restaurants } from "@/data/restaurrants";
 import RestaurantCard from "./RestaurantCard";
-
-// Define the Restaurant type
-export type Restaurant = {
-  id: string;
-  name: string;
-  image: string;
-  rating: number;
-  reviews: number;
-  category: string;
-  times: string[];
-};
+import { useAllRestaurants } from "../hooks/useRestaurants";
+import { Restaurant } from "../types/restaurant";
 
 export default function AllRestaurants() {
   const [date, setDate] = useState("2025-02-02");
   const [time, setTime] = useState("19:00");
   const [people, setPeople] = useState(2);
   const [search, setSearch] = useState("");
+  const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>([]);
 
   const router = useRouter();
+  const { restaurants, loading, error } = useAllRestaurants();
 
-  // Type-safe alternative without type assertion
-  const filteredRestaurants = restaurants.filter((restaurant: any) =>
-    restaurant.name.toLowerCase().includes(search.toLowerCase()) ||
-    restaurant.category.toLowerCase().includes(search.toLowerCase())
-  );
+  // Filter restaurants based on search input
+  useEffect(() => {
+    if (restaurants) {
+      const filtered = restaurants.filter(
+        (restaurant) =>
+          restaurant.name.toLowerCase().includes(search.toLowerCase()) ||
+          restaurant.category.toLowerCase().includes(search.toLowerCase()) ||
+          restaurant.cuisine.some(item => 
+            item.toLowerCase().includes(search.toLowerCase())
+          ) ||
+          restaurant.location.toLowerCase().includes(search.toLowerCase())
+      );
+      setFilteredRestaurants(filtered);
+    }
+  }, [search, restaurants]);
 
   return (
     <div className="text-white">
@@ -90,15 +92,29 @@ export default function AllRestaurants() {
       {/* Restaurant Listing */}
       <div className="p-6">
         <h2 className="text-2xl font-semibold mb-4">Book for lunch today in Sri Lanka</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredRestaurants.map((restaurant) => (
-            <RestaurantCard 
-              key={restaurant.id} 
-              restaurant={restaurant} 
-              router={router} 
-            />
-          ))}
-        </div>
+        
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="text-xl">Loading restaurants...</div>
+          </div>
+        ) : error ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="text-xl text-red-500">Error: {error.message}</div>
+          </div>
+        ) : filteredRestaurants.length === 0 ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="text-xl">No restaurants found matching your search.</div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {filteredRestaurants.map((restaurant) => (
+              <RestaurantCard 
+                key={restaurant.id} 
+                restaurant={restaurant} 
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
