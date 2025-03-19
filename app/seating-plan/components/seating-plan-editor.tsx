@@ -77,7 +77,7 @@ interface Table {
   name: string
   seats: number
   location: string
-  imageUrl?: string
+  imageUrls?: string[] // Changed from imageUrl?: string
   description?: string
   status?: string
   createdAt?: Date
@@ -149,7 +149,7 @@ const SeatingPlanEditor = () => {
     name: "",
     seats: 0,
     location: "",
-    imageUrl: "",
+    imageUrls: [], // Changed from imageUrl: ""
     description: "",
     status: "available",
     features: [],
@@ -158,8 +158,8 @@ const SeatingPlanEditor = () => {
   const [formError, setFormError] = useState("")
   const [loading, setLoading] = useState(false)
   const [editingTableId, setEditingTableId] = useState<string | null>(null)
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [selectedTable, setSelectedTable] = useState<Table | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
@@ -184,18 +184,37 @@ const SeatingPlanEditor = () => {
         const tablesData = await Promise.all(
           querySnapshot.docs.map(async (docSnap) => {
             const data = docSnap.data()
-            let imageUrl = data.imageUrl
+            let imageUrls = data.imageUrls || []
 
-            if (imageUrl && !imageUrl.startsWith("http")) {
-              try {
-                const storageRef = ref(storage, imageUrl)
-                imageUrl = await getDownloadURL(storageRef)
-              } catch (error) {
-                console.error("Error fetching image URL: ", error)
-              }
+            // Handle legacy data with single imageUrl
+            if (data.imageUrl && !imageUrls.includes(data.imageUrl)) {
+              imageUrls = [data.imageUrl, ...imageUrls]
             }
 
-            return { id: docSnap.id, ...data, imageUrl } as Table
+            // Resolve any storage references to actual URLs
+            const resolvedImageUrls = await Promise.all(
+              imageUrls.map(async (url: string) => {
+                if (url && !url.startsWith("http")) {
+                  try {
+                    const storageRef = ref(storage, url)
+                    return await getDownloadURL(storageRef)
+                  } catch (error) {
+                    console.error("Error fetching image URL: ", error)
+                    return null
+                  }
+                }
+                return url
+              }),
+            )
+
+            // Filter out any null values from failed URL resolutions
+            const filteredImageUrls = resolvedImageUrls.filter(Boolean) as string[]
+
+            return {
+              id: docSnap.id,
+              ...data,
+              imageUrls: filteredImageUrls,
+            } as Table
           }),
         )
 
@@ -218,16 +237,45 @@ const SeatingPlanEditor = () => {
     }
   }, [])
 
-  // Upload image to Firebase Storage
-  const uploadImage = async (file: File): Promise<string | null> => {
-    if (!file) return null
+  // Handle image selection
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+
+    // Limit to 3 images total
+    const remainingSlots = 3 - imagePreviews.length
+    if (remainingSlots <= 0) {
+      return // Already have 3 images
+    }
+
+    const newFiles: File[] = []
+    const newPreviews: string[] = []
+
+    // Process only up to the remaining slots
+    for (let i = 0; i < Math.min(files.length, remainingSlots); i++) {
+      const file = files[i]
+      newFiles.push(file)
+      newPreviews.push(URL.createObjectURL(file))
+    }
+
+    setImageFiles([...imageFiles, ...newFiles])
+    setImagePreviews([...imagePreviews, ...newPreviews])
+  }
+
+  // Upload images to Firebase Storage
+  const uploadImages = async (files: File[]): Promise<string[]> => {
+    if (!files.length) return []
     try {
-      const storageRef = ref(storage, `table-images/${Date.now()}-${file.name}`)
-      const snapshot = await uploadBytes(storageRef, file)
-      return await getDownloadURL(snapshot.ref)
+      const uploadPromises = files.map(async (file) => {
+        const storageRef = ref(storage, `table-images/${Date.now()}-${file.name}`)
+        const snapshot = await uploadBytes(storageRef, file)
+        return await getDownloadURL(snapshot.ref)
+      })
+
+      return await Promise.all(uploadPromises)
     } catch (error) {
-      console.error("Error in uploadImage function:", error)
-      return null
+      console.error("Error in uploadImages function:", error)
+      return []
     }
   }
 
@@ -242,45 +290,50 @@ const SeatingPlanEditor = () => {
     setLoading(true)
 
     try {
-      let uploadedImageUrl = tableData.imageUrl
-      if (imageFile) {
+      let uploadedImageUrls = [...(tableData.imageUrls || [])]
+
+      if (imageFiles.length > 0) {
         try {
-          const url = await uploadImage(imageFile)
-          if (url) {
-            uploadedImageUrl = url
+          const urls = await uploadImages(imageFiles)
+          if (urls.length > 0) {
+            uploadedImageUrls = [...uploadedImageUrls, ...urls]
           } else {
-            console.error("Image upload returned null")
-            // Continue with existing image URL if upload fails
+            console.error("Image upload returned empty array")
+            // Continue with existing image URLs if upload fails
           }
         } catch (uploadError) {
-          console.error("Error uploading image:", uploadError)
-          // Continue with existing image URL if upload fails
+          console.error("Error uploading images:", uploadError)
+          // Continue with existing image URLs if upload fails
         }
       }
-      const tableWithImage = {
+
+      // Limit to 3 images
+      uploadedImageUrls = uploadedImageUrls.slice(0, 3)
+
+      const tableWithImages = {
         ...tableData,
-        imageUrl: uploadedImageUrl,
+        imageUrls: uploadedImageUrls,
         seats: Number(tableData.seats),
       }
 
       if (editingTableId) {
         // Update existing table
         const tableRef = doc(db, "tables", editingTableId)
-        await updateDoc(tableRef, tableWithImage)
+        await updateDoc(tableRef, tableWithImages)
 
         setTables((prevTables) =>
-          prevTables.map((table) => (table.id === editingTableId ? { ...table, ...tableWithImage } : table)),
+          prevTables.map((table) => (table.id === editingTableId ? { ...table, ...tableWithImages } : table)),
         )
         setEditingTableId(null)
       } else {
         // Add new table
         const newTableRef = await addDoc(collection(db, "tables"), {
-          ...tableWithImage,
+          ...tableWithImages,
           status: "available",
           createdAt: new Date(),
         })
 
-        setTables([...tables, { id: newTableRef.id, ...tableWithImage, createdAt: new Date() }])
+        setTables([...tables, { id: newTableRef.id, ...tableWithImages, createdAt: new Date() }])
       }
 
       // Reset form
@@ -288,28 +341,19 @@ const SeatingPlanEditor = () => {
         name: "",
         seats: 0,
         location: "",
-        imageUrl: "",
+        imageUrls: [],
         description: "",
         status: "available",
         features: [],
         availability: DEFAULT_AVAILABILITY,
       })
-      setImageFile(null)
-      setImagePreview(null)
+      setImageFiles([])
+      setImagePreviews([])
     } catch (error) {
       console.error("Error saving table:", error)
       setFormError("Failed to save table. Please try again.")
     } finally {
       setLoading(false)
-    }
-  }
-
-  // Handle image selection
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setImageFile(file)
-      setImagePreview(URL.createObjectURL(file))
     }
   }
 
@@ -333,7 +377,7 @@ const SeatingPlanEditor = () => {
       name: table.name,
       seats: table.seats,
       location: table.location,
-      imageUrl: table.imageUrl || "",
+      imageUrls: table.imageUrls || [],
       description: table.description || "",
       status: table.status || "available",
       features: table.features || [],
@@ -341,11 +385,12 @@ const SeatingPlanEditor = () => {
     })
     setEditingTableId(table.id)
 
-    if (table.imageUrl) {
-      setImagePreview(table.imageUrl)
+    if (table.imageUrls && table.imageUrls.length > 0) {
+      setImagePreviews(table.imageUrls)
     } else {
-      setImagePreview(null)
+      setImagePreviews([])
     }
+    setImageFiles([])
 
     // Scroll to form
     setTimeout(() => {
@@ -396,15 +441,15 @@ const SeatingPlanEditor = () => {
       name: "",
       seats: 0,
       location: "",
-      imageUrl: "",
+      imageUrls: [],
       description: "",
       status: "available",
       features: [],
       availability: DEFAULT_AVAILABILITY,
     })
     setEditingTableId(null)
-    setImageFile(null)
-    setImagePreview(null)
+    setImageFiles([])
+    setImagePreviews([])
     setFormError("")
   }
 
@@ -652,29 +697,46 @@ const SeatingPlanEditor = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Table Image</Label>
+                  <Label>Table Images (Up to 3)</Label>
                   <div className="grid grid-cols-1 gap-4">
-                    {imagePreview && (
-                      <div className="relative rounded-md overflow-hidden aspect-video bg-gray-100">
-                        <img
-                          src={imagePreview || "/placeholder.svg"}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                        />
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2 h-8 w-8 rounded-full"
-                          onClick={() => {
-                            setImagePreview(null)
-                            setImageFile(null)
-                            if (editingTableId) {
-                              setTableData({ ...tableData, imageUrl: "" })
-                            }
-                          }}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                    {imagePreviews.length > 0 && (
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        {imagePreviews.map((preview, index) => (
+                          <div key={index} className="relative rounded-md overflow-hidden aspect-video bg-gray-100">
+                            <img
+                              src={preview || "/placeholder.svg"}
+                              alt={`Preview ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                              onClick={() => {
+                                const newPreviews = [...imagePreviews]
+                                newPreviews.splice(index, 1)
+                                setImagePreviews(newPreviews)
+
+                                const newFiles = [...imageFiles]
+                                if (index < newFiles.length) {
+                                  newFiles.splice(index, 1)
+                                  setImageFiles(newFiles)
+                                }
+
+                                if (editingTableId) {
+                                  // Remove from tableData.imageUrls if it's an existing image
+                                  const newImageUrls = [...(tableData.imageUrls || [])]
+                                  if (index < newImageUrls.length) {
+                                    newImageUrls.splice(index, 1)
+                                    setTableData({ ...tableData, imageUrls: newImageUrls })
+                                  }
+                                }
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
                       </div>
                     )}
 
@@ -686,14 +748,17 @@ const SeatingPlanEditor = () => {
                           accept="image/*"
                           onChange={handleImageChange}
                           className="hidden"
+                          multiple
+                          disabled={imagePreviews.length >= 3}
                         />
                         <Button
                           variant="outline"
                           className="w-full"
                           onClick={() => document.getElementById("image-upload")?.click()}
+                          disabled={imagePreviews.length >= 3}
                         >
                           <Upload className="h-4 w-4 mr-2" />
-                          Upload Image
+                          Upload Images {imagePreviews.length > 0 && `(${imagePreviews.length}/3)`}
                         </Button>
                       </div>
 
@@ -705,11 +770,13 @@ const SeatingPlanEditor = () => {
                           capture="environment"
                           onChange={handleImageChange}
                           className="hidden"
+                          disabled={imagePreviews.length >= 3}
                         />
                         <Button
                           variant="outline"
                           className="w-full"
                           onClick={() => document.getElementById("camera-input")?.click()}
+                          disabled={imagePreviews.length >= 3}
                         >
                           <Camera className="h-4 w-4 mr-2" />
                           Take Photo
@@ -987,13 +1054,30 @@ const SeatingPlanEditor = () => {
           {selectedTable && (
             <div className="space-y-4 py-2">
               <div className="flex flex-col sm:flex-row gap-4">
-                {selectedTable.imageUrl ? (
-                  <div className="w-full sm:w-1/2 aspect-video rounded-md overflow-hidden bg-muted">
-                    <img
-                      src={selectedTable.imageUrl || "/placeholder.svg"}
-                      alt={selectedTable.name}
-                      className="w-full h-full object-cover"
-                    />
+                {selectedTable.imageUrls && selectedTable.imageUrls.length > 0 ? (
+                  <div className="w-full sm:w-1/2">
+                    <div className="grid grid-cols-1 gap-2">
+                      <div className="aspect-video rounded-md overflow-hidden bg-muted">
+                        <img
+                          src={selectedTable.imageUrls[0] || "/placeholder.svg"}
+                          alt={selectedTable.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      {selectedTable.imageUrls.length > 1 && (
+                        <div className="grid grid-cols-2 gap-2">
+                          {selectedTable.imageUrls.slice(1, 3).map((url, idx) => (
+                            <div key={idx} className="aspect-square rounded-md overflow-hidden bg-muted">
+                              <img
+                                src={url || "/placeholder.svg"}
+                                alt={`${selectedTable.name} ${idx + 2}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <div className="w-full sm:w-1/2 aspect-video rounded-md bg-muted flex items-center justify-center">
@@ -1155,8 +1239,21 @@ const TableCard = ({
       onClick={onView}
     >
       <div className="relative h-48 bg-muted">
-        {table.imageUrl ? (
-          <img src={table.imageUrl || "/placeholder.svg"} alt={table.name} className="w-full h-full object-cover" />
+        {table.imageUrls && table.imageUrls.length > 0 ? (
+          <div className="relative w-full h-full">
+            <img
+              src={table.imageUrls[0] || "/placeholder.svg"}
+              alt={table.name}
+              className="w-full h-full object-cover"
+            />
+            {table.imageUrls.length > 1 && (
+              <div className="absolute bottom-2 right-2 flex gap-1">
+                {table.imageUrls.slice(1).map((_, idx) => (
+                  <div key={idx} className="w-2 h-2 rounded-full bg-white opacity-70" />
+                ))}
+              </div>
+            )}
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-muted">
             <ImageIcon className="h-12 w-12 text-muted-foreground/50" />
@@ -1291,8 +1388,21 @@ const TableRow = ({
       onClick={onView}
     >
       <div className="w-full sm:w-24 h-24 bg-muted flex-shrink-0">
-        {table.imageUrl ? (
-          <img src={table.imageUrl || "/placeholder.svg"} alt={table.name} className="w-full h-full object-cover" />
+        {table.imageUrls && table.imageUrls.length > 0 ? (
+          <div className="relative w-full h-full">
+            <img
+              src={table.imageUrls[0] || "/placeholder.svg"}
+              alt={table.name}
+              className="w-full h-full object-cover"
+            />
+            {table.imageUrls.length > 1 && (
+              <div className="absolute bottom-1 right-1 flex gap-1">
+                {table.imageUrls.slice(1).map((_, idx) => (
+                  <div key={idx} className="w-1.5 h-1.5 rounded-full bg-white opacity-70" />
+                ))}
+              </div>
+            )}
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-muted">
             <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
