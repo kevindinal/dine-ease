@@ -30,12 +30,12 @@ const meals = [
 
 const WeeklyOffers = () => {
   return (
-    <div className="bg-primary-softer py-16">
-      <div className="container mx-auto px-4">
+    <div className="py-16 px-4">
+      <div className="container mx-auto px-6">
         <h2 className="text-3xl font-bold text-accent-dark mb-8 text-center">
           This Week's Offers
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {meals.map((meal) => (
             <div
               key={meal.id}
@@ -62,7 +62,7 @@ const WeeklyOffers = () => {
                   <Clock className="h-4 w-4 mr-2" />
                   {meal.estimatedTime}
                 </div>
-                <Button className="w-full bg-primary hover:bg-primary-hover text-white">
+                <Button className="w-full bg-[#FA4032] hover:bg-[#FFECEB] text-white hover:text-[#FA4032] transition-all duration-300 animate-fade-in">
                   Order Now
                   <ChevronRight className="h-4 w-4 ml-2" />
                 </Button>
