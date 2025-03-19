@@ -8,7 +8,7 @@ export default function LocationSection({ address, location }: LocationSectionPr
     <div className="p-8 max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
         <iframe 
-          src={https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed} 
+          src={`https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`} 
           className="w-full h-64 rounded-lg">
         </iframe>
       </div>

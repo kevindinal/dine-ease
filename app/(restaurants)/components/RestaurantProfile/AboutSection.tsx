@@ -55,7 +55,7 @@ export default function AboutSection({ restaurant }: AboutSectionProps) {
                 key={index} 
                 src={photo} 
                 className="w-full h-[180px] md:h-[220px] object-cover rounded-lg" 
-                alt={${restaurant.name} photo ${index + 1}} 
+                alt={`${restaurant.name} photo ${index + 1}`} 
               />
             ))
           ) : (
