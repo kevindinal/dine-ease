@@ -51,12 +51,12 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
-// Import our new components
+// Import our components
 import ReviewSection from "@/app/table-reservation/components/review-section"
 import ReservationForm from "@/app/table-reservation/components/reservation-form"
 import SpecialOffers from "@/app/table-reservation/components/special-offers"
 import FeaturesSection from "@/app/table-reservation/components/features-section"
-
+import AvailabilityCalendar from "@/app/table-reservation/components/availability-calendar"
 
 interface Table {
   id: string
@@ -72,6 +72,19 @@ interface Table {
   reviews?: Review[]
   rating?: number
   features?: string[]
+  availability?: {
+    monday: boolean
+    tuesday: boolean
+    wednesday: boolean
+    thursday: boolean
+    friday: boolean
+    saturday: boolean
+    sunday: boolean
+    timeRanges: Array<{
+      from: string
+      to: string
+    }>
+  }
 }
 
 interface Review {
@@ -167,6 +180,21 @@ export default function TableDetailsPage() {
     },
   ]
 
+  // Mock availability data if none exists
+  const mockAvailability = {
+    monday: true,
+    tuesday: true,
+    wednesday: true,
+    thursday: true,
+    friday: true,
+    saturday: true,
+    sunday: false,
+    timeRanges: [
+      { from: "11:00", to: "15:00" },
+      { from: "17:30", to: "22:00" },
+    ],
+  }
+
   useEffect(() => {
     const fetchTable = async () => {
       setLoading(true)
@@ -232,6 +260,9 @@ export default function TableDetailsPage() {
           "Air Conditioning",
         ]
 
+        // Add mock availability if none exists
+        const availability = tableData.availability || mockAvailability
+
         setTable({
           id: tableDoc.id,
           ...tableData,
@@ -240,6 +271,7 @@ export default function TableDetailsPage() {
           additionalImages: processedAdditionalImages.filter(Boolean) as string[],
           reviews,
           features,
+          availability,
         })
 
         setLoading(false)
@@ -397,33 +429,96 @@ export default function TableDetailsPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="flex items-center mb-6">
-          <Button variant="ghost" size="icon" className="mr-2" onClick={handleGoBack}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <Skeleton className="h-8 w-48" />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div>
-            <Skeleton className="h-[400px] w-full rounded-xl mb-4" />
-            <div className="flex gap-2 mt-2">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-20 w-20 rounded-md" />
-              ))}
+      <div className="bg-white min-h-screen">
+        {/* Header with Navigation - Loading State */}
+        <div className="bg-white sticky top-0 z-50 shadow-sm">
+          <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div className="flex items-center">
+              <Button variant="ghost" size="icon" className="mr-2" disabled>
+                <ArrowLeft className="h-5 w-5 text-gray-300" />
+              </Button>
+              <Skeleton className="h-6 w-32" />
+            </div>
+            <div className="flex gap-2">
+              {isMobile ? (
+                <Skeleton className="h-10 w-10 rounded-full" />
+              ) : (
+                <>
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                </>
+              )}
             </div>
           </div>
+        </div>
 
-          <div>
-            <Skeleton className="h-10 w-36 mb-4" />
-            <Skeleton className="h-6 w-full mb-2" />
-            <Skeleton className="h-6 w-3/4 mb-6" />
+        {/* Main Content - Loading State */}
+        <div className="container mx-auto px-4 py-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column - Images and Details */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Status and Rating */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <Skeleton className="h-8 w-24 rounded-full" />
+                  <Skeleton className="h-8 w-32 rounded-full" />
+                </div>
+                <Skeleton className="h-6 w-20" />
+              </div>
 
-            <div className="grid gap-6">
-              <Skeleton className="h-24 w-full rounded-lg" />
-              <Skeleton className="h-24 w-full rounded-lg" />
-              <Skeleton className="h-12 w-full rounded-lg" />
+              {/* Main Image Gallery */}
+              <Skeleton className="w-full aspect-[16/9] rounded-xl" />
+
+              {/* Thumbnails */}
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-16 w-16 rounded-md flex-shrink-0" />
+                ))}
+              </div>
+
+              {/* Availability Calendar */}
+              <Skeleton className="w-full h-48 rounded-xl" />
+
+              {/* Special Offers */}
+              <Skeleton className="w-full h-40 rounded-xl" />
+
+              {/* Table Information */}
+              <div className="space-y-4">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-6 w-1/2" />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-40" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+
+              {/* Features */}
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-48" />
+                <div className="flex flex-wrap gap-2">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton key={i} className="h-8 w-24 rounded-full" />
+                  ))}
+                </div>
+              </div>
+
+              {/* Reviews */}
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-32 w-full rounded-lg" />
+              </div>
+            </div>
+
+            {/* Right Column - Reservation Form */}
+            <div>
+              <div className="sticky top-20">
+                <Skeleton className="h-[500px] w-full rounded-xl" />
+              </div>
             </div>
           </div>
         </div>
@@ -767,6 +862,9 @@ export default function TableDetailsPage() {
               </div>
             )}
 
+            {/* Availability Calendar */}
+            <AvailabilityCalendar availability={table.availability} />
+
             {/* Special Offers */}
             <SpecialOffers offers={specialOffers} onApplyCode={handleApplyPromoCode} />
 
@@ -913,6 +1011,7 @@ export default function TableDetailsPage() {
               onReservation={handleReservation}
               promoDiscount={promoDiscount}
               onApplyPromoCode={handleApplyPromoCode}
+              availability={table.availability}
             />
           </div>
         </div>

@@ -10,7 +10,7 @@ import {
   Search,
   Filter,
   MapPin,
-  Calendar,
+  CalendarIcon,
   Clock,
   Users,
   CheckCircle,
@@ -47,6 +47,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
+import { Calendar } from "@/components/ui/calendar"
+import { format } from "date-fns"
+import { TimePicker } from "@/app/table-reservation/components/time-picker"
 
 interface Table {
   id: string
@@ -104,8 +107,8 @@ export default function TableReservation() {
 
   // Date/time dialog state
   const [showDateTimeDialog, setShowDateTimeDialog] = useState(false)
-  const [newDate, setNewDate] = useState(reservationDate)
-  const [newTime, setNewTime] = useState(reservationTime)
+  const [newDate, setNewDate] = useState<Date | undefined>(undefined)
+  const [newTime, setNewTime] = useState("")
 
   // Additional filters state
   const [showFiltersPopover, setShowFiltersPopover] = useState(false)
@@ -118,16 +121,19 @@ export default function TableReservation() {
   // Function to handle date/time changes
   const handleDateTimeChange = () => {
     if (newDate && newTime) {
+      // Format the date to YYYY-MM-DD for URL
+      const formattedDate = format(newDate, "yyyy-MM-dd")
+
       // Update the URL with new parameters
       const currentUrl = new URL(window.location.href)
-      currentUrl.searchParams.set("date", newDate)
+      currentUrl.searchParams.set("date", formattedDate)
       currentUrl.searchParams.set("time", newTime)
 
       // Navigate to the updated URL
       router.push(currentUrl.toString())
 
       // Update local state
-      setReservationDate(newDate)
+      setReservationDate(formattedDate)
       setReservationTime(newTime)
       setShowDateTimeDialog(false)
     }
@@ -168,7 +174,14 @@ export default function TableReservation() {
         setGuestCount(Number.parseInt(guestCount, 10))
         setReservationDate(reservationDate)
         setReservationTime(reservationTime)
-        setNewDate(reservationDate)
+
+        // Set the date object for the calendar
+        try {
+          setNewDate(new Date(reservationDate))
+        } catch (e) {
+          console.error("Invalid date format:", e)
+        }
+
         setNewTime(reservationTime)
       }
     }
@@ -766,7 +779,7 @@ export default function TableReservation() {
               className="bg-primary hover:bg-primary/90"
               onClick={() => setShowDateTimeDialog(true)}
             >
-              <Calendar className="mr-2 h-4 w-4" />
+              <CalendarIcon className="mr-2 h-4 w-4" />
               Change Date & Time
             </Button>
           </div>
@@ -774,7 +787,7 @@ export default function TableReservation() {
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-white rounded-lg p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
               <div className="bg-primary/10 p-3 rounded-full">
-                <Calendar className="text-primary h-6 w-6" />
+                <CalendarIcon className="text-primary h-6 w-6" />
               </div>
               <div>
                 <p className="text-sm text-gray-500 font-medium">Date</p>
@@ -849,32 +862,64 @@ export default function TableReservation() {
 
       {/* Date & Time Selection Dialog */}
       <Dialog open={showDateTimeDialog} onOpenChange={setShowDateTimeDialog}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] w-[90%] max-w-[350px] mx-auto rounded-xl overflow-hidden">
           <DialogHeader>
             <DialogTitle>Change Reservation Date & Time</DialogTitle>
             <DialogDescription>Select a new date and time for your table reservation.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="reservation-date">Date</Label>
-              <Input
-                id="reservation-date"
-                type="date"
-                value={newDate}
-                onChange={(e) => setNewDate(e.target.value)}
-                min={new Date().toISOString().split("T")[0]}
-              />
+              <Label htmlFor="date" className="flex items-center">
+                <CalendarIcon className="h-4 w-4 mr-2 text-gray-500" />
+                Date
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn("w-full justify-start text-left font-normal", !newDate && "text-muted-foreground")}
+                    id="date"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {newDate ? format(newDate, "PPP") : <span>Select a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={newDate}
+                    onSelect={setNewDate}
+                    initialFocus
+                    disabled={(date) => {
+                      // Disable dates in the past
+                      const today = new Date()
+                      today.setHours(0, 0, 0, 0)
+                      return date < today
+                    }}
+                    className="rounded-md border"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="reservation-time">Time</Label>
-              <Input id="reservation-time" type="time" value={newTime} onChange={(e) => setNewTime(e.target.value)} />
+              <Label htmlFor="time" className="flex items-center">
+                <Clock className="h-4 w-4 mr-2 text-gray-500" />
+                Time
+              </Label>
+              <TimePicker value={newTime} onChange={(time) => setNewTime(time)} error={false} />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDateTimeDialog(false)}>
+          <DialogFooter className="flex flex-col sm:flex-row gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowDateTimeDialog(false)}
+              className="sm:order-first order-last"
+            >
               Cancel
             </Button>
-            <Button onClick={handleDateTimeChange}>Update Reservation</Button>
+            <Button onClick={handleDateTimeChange} className="w-full sm:w-auto">
+              Update Reservation
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
