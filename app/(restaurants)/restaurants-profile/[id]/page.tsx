@@ -1,22 +1,40 @@
-import { restaurants } from "@/data/restaurrants";
+"use client";
+
+import { useParams } from "next/navigation";
+import { useRestaurant } from "../../hooks/useRestaurants";
 import RestaurantProfile from "../../components/RestaurantProfile/RestaurantProfile";
 
-export default function RestaurantProfilePage({ 
-  params 
-}: { 
-  params: { id: string } 
-}) {
-  // Find the restaurant by ID from the params
-  const restaurant = restaurants.find((r) => r.id.toString() === params.id) || restaurants[0];
-
-  // Uncomment this when you're ready to use Firebase
-  // async function getServerSideData() {
-  //   const restaurant = await getRestaurantById(params.id);
-  //   if (!restaurant) {
-  //     return { notFound: true };
-  //   }
-  //   return { restaurant };
-  // }
-
+export default function RestaurantProfilePage() {
+  // Use the useParams hook to get the params object
+  const params = useParams();
+  const id = params.id as string;
+  
+  // Now use the id from useParams in your custom hook
+  const { restaurant, loading, error } = useRestaurant(id);
+  
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-xl">Loading restaurant details...</div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-xl text-red-500">Error: {error.message}</div>
+      </div>
+    );
+  }
+  
+  if (!restaurant) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-xl">Restaurant not found</div>
+      </div>
+    );
+  }
+  
   return <RestaurantProfile restaurant={restaurant} />;
 }
