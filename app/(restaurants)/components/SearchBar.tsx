@@ -20,7 +20,7 @@ export default function SearchBar() {
     if (guests) searchParams.set('guests', guests);
     if (location) searchParams.set('location', location);
     
-    router.push(`/restaurants?${searchParams.toString()}`);
+    router.push(/restaurants?${searchParams.toString()});
   };
 
   return (

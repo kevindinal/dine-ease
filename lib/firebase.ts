@@ -1,10 +1,12 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
-// import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-// import { getMessaging, getToken, isSupported } from "firebase/messaging";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 
+// Ensure API key exists before initializing Firebase
+if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+  throw new Error("Missing Firebase API Key! Check .env.local file.");
+}
 
 // Firebase configuration
 const firebaseConfig = {
@@ -16,36 +18,11 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
+
 // Initialize Firebase
-export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-const storage = getStorage(app);
+export const storage = getStorage(app);
 
-export {storage, ref, getDownloadURL };
-
-// export const messaging = getMessaging(app);
-// export { app, auth, db };
-
-// const messaging = async () => {
-//   const supported = await isSupported();
-//   return supported ? getMessaging(app) : null;
-// };
-
-// export const fetchToken = async () => {
-//   try {
-//     const fcmMessaging = await messaging();
-//     if (fcmMessaging) {
-//       const token = await getToken(fcmMessaging, {
-//         vapidKey: process.env.NEXT_PUBLIC_FIREBASE_FCM_VAPID_KEY,
-//       });
-//       return token;
-//     }
-//     return null;
-//   } catch (err) {
-//     console.error("An error occurred while fetching the token:", err);
-//     return null;
-//   }
-// };
-
-// export { messaging };
+export { ref, getDownloadURL };

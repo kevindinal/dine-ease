@@ -13,9 +13,9 @@ import { Button } from "@/components/ui/button";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-softer to-white">
+    <div className="min-h-screen bg-gradient-to-b from-[#E6F1FF] to-white">
       <Navbar />
-      
+
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center px-4">
         <div className="absolute inset-0 overflow-hidden">
@@ -25,23 +25,24 @@ export default function HomePage() {
             className="w-full h-full object-cover opacity-40"
           />
         </div>
-        
+
         <div className="container mx-auto flex flex-col items-center justify-center text-center relative z-10 gap-8">
           <div className="w-full max-w-2xl">
-            <h1 className="text-4xl md:text-6xl font-bold text-accent-darkest mb-6 animate-fade-in">
+            <h1 className="text-4xl md:text-6xl font-bold text-[#1B1B1B] mb-6 animate-fade-in">
               Revolutionizing Dining with Smart AI & AR
             </h1>
-            <p className="text-lg md:text-xl text-accent-darker mb-8 animate-fade-in">
+            <p className="text-lg md:text-xl text-[#3A3A3A] mb-8 animate-fade-in">
               Experience the future of dining with our AI-powered restaurant platform.
               Book tables, pre-order meals, and explore menus in AR.
             </p>
             <Button
               size="lg"
-              className="bg-accent hover:bg-accent-dark text-white transition-all duration-300 animate-fade-in"
+              className="bg-[#FA4032] hover:bg-[#FFECEB] font-semibold text-[#FFECEB] hover:text-[#FA4032] transition-all duration-300 animate-fade-in"
             >
               Make a Reservation
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
+
           </div>
         </div>
       </section>
@@ -53,13 +54,15 @@ export default function HomePage() {
       </section>
 
       {/* Highly Rated Restaurants Section */}
-      <section className="bg-primary-softer">
+      <section className="bg-[#FFECEB]">
         <HighlyRatedRestaurants />
       </section>
-      
+
       {/* Weekly offers */}
+      <section className="bg-white">
       <WeeklyOffers />
-      
+      </section>
+
       {/* Testimonial Section */}
       <Testimonials />
 
