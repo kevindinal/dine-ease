@@ -73,6 +73,7 @@ interface Table {
   reviews?: Review[]
   rating?: number
   features?: string[]
+  restaurantId?: string // Added restaurantId property
   availability?: {
     monday: boolean
     tuesday: boolean
@@ -316,15 +317,15 @@ export default function TableDetailsPage() {
     setShowNotification(true)
     setTimeout(() => setShowNotification(false), 5000)
 
-    // Navigate to the appropriate page based on selection
     if (option === "payment") {
-      // For now, just log the action, but you could navigate to payment page
       console.log("Proceeding to payment")
       // router.push('/payment')
     } else {
-      // For now, just log the action, but you could navigate to preorder page
       console.log("Proceeding to meal preorder")
-      // router.push('/preorder')
+      // Use restaurantId for preorder navigation if available
+      if (table?.restaurantId) {
+        router.push(`/cuisine-main-page?restaurantId=${encodeURIComponent(table.restaurantId)}`)
+      } 
     }
   }
 
@@ -579,7 +580,10 @@ export default function TableDetailsPage() {
             <Button variant="ghost" size="icon" className="mr-2" onClick={handleGoBack}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-bold truncate">{table.name}</h1>
+            <h1 className="text-xl font-bold truncate">
+              {table.name}
+              {table.restaurantId && <span className="text-sm text-gray-500 ml-2">#{table.restaurantId}</span>}
+            </h1>
           </div>
 
           <div className="flex gap-2">
