@@ -976,6 +976,7 @@ if (option === "payment") {
               )}
             </div>
 
+          
             {/* Thumbnails - only show in gallery view */}
             {activeView === "gallery" && allImages.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -983,16 +984,20 @@ if (option === "payment") {
                   <div
                     key={idx}
                     className={cn(
-                      "cursor-pointer rounded-md overflow-hidden h-16 w-16 flex-shrink-0",
-                      currentImageIndex === idx ? "ring-2 ring-primary ring-offset-2" : "opacity-70 hover:opacity-100",
+                      "cursor-pointer h-16 w-16 flex-shrink-0 p-0.5",
+                      currentImageIndex === idx
+                        ? "border-2 border-primary rounded-md"
+                        : "opacity-70 hover:opacity-100 border-2 border-transparent rounded-md"
                     )}
                     onClick={() => setCurrentImageIndex(idx)}
                   >
-                    <img
-                      src={img || "/placeholder.svg"}
-                      alt={`Thumbnail ${idx + 1}`}
-                      className="w-full h-full object-cover"
-                    />
+                    <div className="w-full h-full overflow-hidden rounded-sm">
+                      <img
+                        src={img || "/placeholder.svg"}
+                        alt={`Thumbnail ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
