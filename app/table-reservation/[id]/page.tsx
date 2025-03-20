@@ -1036,7 +1036,7 @@ export default function TableDetailsPage() {
       </div>
       {/* Payment Options Dialog */}
       <Dialog open={showPaymentOptions} onOpenChange={setShowPaymentOptions}>
-        <DialogContent className="sm:max-w-[400px]">
+        <DialogContent className="sm:max-w-[400px] w-[90%] max-w-[350px] mx-auto rounded-xl overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-xl">Complete Your Reservation</DialogTitle>
             <DialogDescription>Would you like to proceed to payment or preorder your meals now?</DialogDescription>
