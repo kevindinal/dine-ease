@@ -24,7 +24,7 @@ import Image from "next/image"
 
 const navLinks = [
   { title: "Home", href: "/home-main" },
-  { title: "Restaurant", href: "/restaurant" },
+  { title: "Restaurant", href: "/restaurants" },
   { title: "Contact", href: "/contact" },
 ]
 
