@@ -298,6 +298,123 @@ const Navbar = () => {
                   </motion.div>
                 </Button>
               </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer transition-colors duration-200 hover:bg-[#FA4032]/10 group">
+                  <Settings className="mr-2 h-4 w-4 group-hover:rotate-90 transition-transform duration-300" />
+                  <span>Profile Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer transition-colors duration-200 hover:bg-[#FA4032]/10 group"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="mr-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Mobile Button */}
+          <div className="md:hidden">
+            <Button
+              variant="ghost"
+              className="text-white hover:bg-white/10 transition-colors duration-200 rounded-full relative"
+              onClick={toggleMobileMenu}
+            >
+              <AnimatePresence mode="wait">
+                {isMobileMenuOpen ? (
+                  <motion.div
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <X className="h-6 w-6" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Menu className="h-6 w-6" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Animated ring */}
+              <motion.div
+                className="absolute inset-0 rounded-full border border-white/30"
+                animate={{
+                  scale: [1, 1.1, 1],
+                  opacity: [0.3, 0.6, 0.3],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Number.POSITIVE_INFINITY,
+                  repeatType: "reverse",
+                }}
+              />
+            </Button>
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              className="md:hidden mt-4 bg-gradient-to-b from-[#FA4032]/90 to-[#FA4032] rounded-lg p-4 overflow-hidden"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              {/* Decorative elements */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <svg width="100%" height="100%" className="opacity-10">
+                  <pattern id="mobile-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <circle cx="10" cy="10" r="1" fill="white" />
+                  </pattern>
+                  <rect x="0" y="0" width="100%" height="100%" fill="url(#mobile-pattern)" />
+                </svg>
+
+                {/* Floating food icons */}
+                {[...Array(5)].map((_, i) => (
+                  <motion.div
+                    key={`mobile-icon-${i}`}
+                    className="absolute text-white/10"
+                    initial={{
+                      x: `${Math.random() * 100}%`,
+                      y: `${Math.random() * 100}%`,
+                      rotate: Math.random() * 360,
+                      scale: 0.5 + Math.random() * 0.5,
+                    }}
+                    animate={{
+                      y: [0, -10, 0],
+                      rotate: [0, 360],
+                      opacity: [0.1, 0.2, 0.1],
+                    }}
+                    transition={{
+                      duration: 5 + Math.random() * 5,
+                      repeat: Number.POSITIVE_INFINITY,
+                      delay: i * 0.5,
+                    }}
+                  >
+                    {React.cloneElement(foodIcons[i % foodIcons.length], { size: 20 + (i % 10) })}
+                  </motion.div>
+                ))}
+              </div>
+
               
             </motion.div>
           )}
