@@ -97,6 +97,7 @@ interface Table {
   description?: string;
   price?: number;
   imageUrl?: string;
+  imageUrls?: string[]; // Add this line
   threeSixtyImageUrl?: string;
   additionalImages?: string[];
   reviews?: Review[];
@@ -245,44 +246,80 @@ export default function TableDetailsPage() {
         }
 
         const tableData = tableDoc.data() as Omit<Table, "id">;
-        let imageUrl = tableData.imageUrl;
-        let threeSixtyImageUrl = tableData.threeSixtyImageUrl;
-        const additionalImages = tableData.additionalImages || [];
+        let imageUrls: string[] = [];
+        let threeSixtyImageUrl: string | undefined;
 
-        // Process image URLs
-        if (imageUrl && !imageUrl.startsWith("http")) {
-          try {
-            const storageRef = ref(storage, imageUrl);
-            imageUrl = await getDownloadURL(storageRef);
-          } catch (error) {
-            console.error("Error fetching image URL: ", error);
-          }
-        }
-
-        if (threeSixtyImageUrl && !threeSixtyImageUrl.startsWith("http")) {
-          try {
-            const storageRef = ref(storage, threeSixtyImageUrl);
-            threeSixtyImageUrl = await getDownloadURL(storageRef);
-          } catch (error) {
-            console.error("Error fetching 360 image URL: ", error);
-          }
-        }
-
-        // Process additional images
-        const processedAdditionalImages = await Promise.all(
-          additionalImages.map(async (imgUrl) => {
-            if (imgUrl && !imgUrl.startsWith("http")) {
-              try {
-                const storageRef = ref(storage, imgUrl);
-                return await getDownloadURL(storageRef);
-              } catch (error) {
-                console.error("Error fetching additional image URL: ", error);
-                return null;
+        // Check if table has imageUrls array (new format)
+        if (tableData.imageUrls && Array.isArray(tableData.imageUrls)) {
+          // Process imageUrls array
+          imageUrls = await Promise.all(
+            tableData.imageUrls.map(async (imgUrl) => {
+              if (imgUrl && !imgUrl.startsWith("http")) {
+                try {
+                  const storageRef = ref(storage, imgUrl);
+                  return await getDownloadURL(storageRef);
+                } catch (error) {
+                  console.error("Error fetching image URL: ", error);
+                  return null;
+                }
               }
+              return imgUrl;
+            })
+          );
+
+          // Filter out any null values
+          imageUrls = imageUrls.filter(Boolean) as string[];
+        } else {
+          // Handle legacy format with imageUrl and additionalImages
+          let imageUrl = tableData.imageUrl;
+          threeSixtyImageUrl = tableData.threeSixtyImageUrl;
+          const additionalImages = tableData.additionalImages || [];
+
+          // Process main image URL
+          if (imageUrl && !imageUrl.startsWith("http")) {
+            try {
+              const storageRef = ref(storage, imageUrl);
+              imageUrl = await getDownloadURL(storageRef);
+              imageUrls.push(imageUrl);
+            } catch (error) {
+              console.error("Error fetching image URL: ", error);
             }
-            return imgUrl;
-          })
-        );
+          } else if (imageUrl) {
+            imageUrls.push(imageUrl);
+          }
+
+          // Process 360 image URL
+          if (threeSixtyImageUrl && !threeSixtyImageUrl.startsWith("http")) {
+            try {
+              const storageRef = ref(storage, threeSixtyImageUrl);
+              threeSixtyImageUrl = await getDownloadURL(storageRef);
+            } catch (error) {
+              console.error("Error fetching 360 image URL: ", error);
+            }
+          }
+
+          // Process additional images
+          const processedAdditionalImages = await Promise.all(
+            additionalImages.map(async (imgUrl) => {
+              if (imgUrl && !imgUrl.startsWith("http")) {
+                try {
+                  const storageRef = ref(storage, imgUrl);
+                  return await getDownloadURL(storageRef);
+                } catch (error) {
+                  console.error("Error fetching additional image URL: ", error);
+                  return null;
+                }
+              }
+              return imgUrl;
+            })
+          );
+
+          // Add processed additional images to imageUrls array
+          imageUrls = [
+            ...imageUrls,
+            ...(processedAdditionalImages.filter(Boolean) as string[]),
+          ];
+        }
 
         // Fetch reviews from table-reviews collection
         let reviews: Review[] = [];
@@ -326,11 +363,9 @@ export default function TableDetailsPage() {
         setTable({
           id: tableDoc.id,
           ...tableData,
-          imageUrl,
+          imageUrl: imageUrls[0] || "",
           threeSixtyImageUrl,
-          additionalImages: processedAdditionalImages.filter(
-            Boolean
-          ) as string[],
+          additionalImages: imageUrls.slice(1),
           reviews,
           features,
           availability,
@@ -678,9 +713,11 @@ export default function TableDetailsPage() {
 
   const isAvailable = Boolean(table?.status?.toLowerCase() === "available");
   console.log("Table status:", table?.status, "isAvailable:", isAvailable);
-  const allImages = [table.imageUrl, ...(table.additionalImages || [])].filter(
-    Boolean
-  ) as string[];
+  const allImages =
+    table.imageUrls ||
+    ([table.imageUrl, ...(table.additionalImages || [])].filter(
+      Boolean
+    ) as string[]);
   // Calculate the actual average rating from reviews if available
   const calculatedRating = table?.reviews?.length
     ? (
@@ -706,7 +743,7 @@ export default function TableDetailsPage() {
             </Button>
             <h1 className="text-xl font-bold truncate">
               {table.name}
-              
+             
             </h1>
           </div>
 
