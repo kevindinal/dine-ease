@@ -261,7 +261,106 @@ const HighlyRatedRestaurants = () => {
           </p>
         </motion.div>
 
-        
+        <div className="relative">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+            <AnimatePresence>
+              {restaurants.slice(0, visibleCount).map((restaurant, index) => {
+                const isActive = activeIndex === index
+                return (
+                  <motion.div
+                    key={restaurant.id}
+                    initial={{ opacity: 0, y: 60 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 60 }}
+                    transition={{ duration: 0.7, delay: index * 0.1 }}
+                    className="relative"
+                    onMouseEnter={() => setActiveIndex(index)}
+                    onMouseLeave={() => setActiveIndex(null)}
+                  >
+                    <Link href={`/restaurants/${restaurant.id}`}>
+                      <motion.div
+                        className="bg-white rounded-3xl overflow-hidden cursor-pointer relative group"
+                        whileHover={{ y: -10, transition: { duration: 0.3, type: "spring" } }}
+                        style={{ boxShadow: "0 10px 30px -5px rgba(0, 0, 0, 0.1)" }}
+                      >
+                        {/* Image container with rating badge */}
+                        <div className="relative">
+                          <div className="h-56 overflow-hidden">
+                            <img
+                              src={restaurant.mealPageImage || "/placeholder.svg?height=224&width=400"}
+                              alt={restaurant.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+
+                          {/* Rating badge */}
+                          <div className="absolute top-4 right-4 z-20 w-12 h-12 rounded-full bg-[#FA4032] flex items-center justify-center shadow-lg">
+                            <span className="text-white font-bold text-lg">{Number(restaurant.rating).toFixed(1)}</span>
+                          </div>
+                        </div>
+
+                        {/* Content section */}
+                        <div className="p-6">
+                          <h3 className="text-xl font-bold text-[#6D1A36] mb-4">{restaurant.name}</h3>
+
+                          <div className="space-y-2 mb-4">
+                            <div className="flex items-center text-gray-600">
+                              <MapPin className="h-4 w-4 mr-2 text-[#FA4032]" />
+                              <span className="text-sm">{restaurant.location}</span>
+                            </div>
+                            <div className="flex items-center text-gray-600">
+                              <Clock className="h-4 w-4 mr-2 text-[#FA4032]" />
+                              <span className="text-sm">{restaurant.openingHours}</span>
+                            </div>
+                            <div className="flex items-center text-gray-600">
+                              <Star className="h-4 w-4 mr-2 text-[#FA4032]" />
+                              <span className="text-sm">reviews</span>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center mt-4">
+                            <div className="flex">
+                              {[...Array(5)].map((_, i) => (
+                                <Star key={`star-${i}`} className="h-5 w-5 text-yellow-400 fill-current" />
+                              ))}
+                            </div>
+                            <div className="flex items-center text-[#FA4032] font-medium">
+                              <span>View Details</span>
+                              <ChevronRight className="h-4 w-4 ml-1" />
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </Link>
+                  </motion.div>
+                )
+              })}
+            </AnimatePresence>
+          </div>
+
+          {/* Show more button */}
+          {visibleCount < restaurants.length && (
+            <motion.div
+              className="mt-16 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <motion.button
+                onClick={handleShowMore}
+                className="group relative inline-flex items-center justify-center px-8 py-3 overflow-hidden font-medium text-[#FA4032] border-2 border-[#FA4032] rounded-full hover:text-white"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-[#FA4032] to-[#FF6B60] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                <span className="relative flex items-center">
+                  Discover More
+                  <Sparkles className="ml-2 h-4 w-4" />
+                </span>
+              </motion.button>
+            </motion.div>
+          )}
+        </div>
       </div>
 
       {/* Decorative bottom elements */}
