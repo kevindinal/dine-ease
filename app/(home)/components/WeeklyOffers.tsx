@@ -265,7 +265,132 @@ const WeeklyOffers = () => {
           </p>
         </motion.div>
 
-        
+        {offers.length === 0 ? (
+          <motion.div
+            className="text-center py-16 bg-white rounded-2xl shadow-xl max-w-lg mx-auto relative overflow-hidden"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            {/* Empty state with animated elements */}
+            <div className="absolute inset-0">
+              <div className="absolute inset-0 opacity-5">
+                {[...Array(20)].map((_, i) => (
+                  <div
+                    key={`dot-${i}`}
+                    className="absolute w-4 h-4 rounded-full bg-[#FA4032]"
+                    style={{
+                      top: `${getRandomNumber(0, 100, `dot-top-${i}`)}%`,
+                      left: `${getRandomNumber(0, 100, `dot-left-${i}`)}%`,
+                      opacity: getRandomNumber(10, 40, `dot-op-${i}`) / 100,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="relative z-10 p-8">
+              <motion.div
+                className="w-24 h-24 mx-auto relative mb-6"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+              >
+                <svg viewBox="0 0 100 100" className="w-full h-full">
+                  <circle cx="50" cy="50" r="45" fill="none" stroke="#FFECEB" strokeWidth="8" />
+                  <motion.circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    fill="none"
+                    stroke="#FA4032"
+                    strokeWidth="8"
+                    strokeDasharray="70 283"
+                    strokeLinecap="round"
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                    style={{ transformOrigin: "center" }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <ChefHat className="h-10 w-10 text-[#FA4032]" />
+                </div>
+              </motion.div>
+
+              <h3 className="text-2xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-[#FA4032] to-[#FF6B60]">
+                Cooking Up New Offers
+              </h3>
+
+              <p className="text-gray-500 mb-6">Our chefs are preparing something special just for you!</p>
+
+              <div className="w-32 h-1 bg-gradient-to-r from-[#FFECEB] via-[#FA4032] to-[#FFECEB] mx-auto"></div>
+
+              <motion.p
+                className="text-sm text-gray-500 mt-6"
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+              >
+                Check back soon for delicious savings
+              </motion.p>
+            </div>
+          </motion.div>
+        ) : (
+          <div className="relative">
+            {/* Offers display with creative card design */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-20">
+              {offers.map((offer, index) => {
+                const discount = calculateDiscount(offer.old_price, offer.this_week_price)
+                const isActive = activeIndex === index
+
+                return (
+                  <motion.div
+                    key={offer.id}
+                    initial={{ opacity: 0, y: 60 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7, delay: index * 0.15 }}
+                    className="relative"
+                    onMouseEnter={() => setActiveIndex(index)}
+                    onMouseLeave={() => setActiveIndex(null)}
+                  >
+                    {/* Animated plate background */}
+                    <motion.div
+                      className="absolute -top-12 left-1/2 transform -translate-x-1/2 w-full h-full pointer-events-none z-0"
+                      animate={{
+                        rotate: isActive ? [0, 5, -5, 0] : 0,
+                        scale: isActive ? [1, 1.05, 1] : 1,
+                      }}
+                      transition={{ duration: 2, repeat: isActive ? Number.POSITIVE_INFINITY : 0 }}
+                    >
+                      <svg viewBox="0 0 200 200" className="w-full">
+                        <circle cx="100" cy="100" r="90" fill="#FFECEB" opacity="0.3" />
+                      </svg>
+                    </motion.div>
+
+                    
+                )
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Decorative bottom elements */}
+      <div className="absolute bottom-0 left-0 w-full h-20 pointer-events-none overflow-hidden">
+        <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-to-t from-white/30 to-transparent"></div>
+        <motion.div
+          className="absolute bottom-0 left-0 w-full"
+          animate={{ x: ["-100%", "100%"] }}
+          transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+        >
+          <svg viewBox="0 0 1200 30" height="30" width="100%">
+            <path
+              d="M0,15 Q30,5 60,15 T120,15 T180,15 T240,15 T300,15 T360,15 T420,15 T480,15 T540,15 T600,15 T660,15 T720,15 T780,15 T840,15 T900,15 T960,15 T1020,15 T1080,15 T1140,15 T1200,15"
+              fill="none"
+              stroke="#FA4032"
+              strokeWidth="2"
+              strokeOpacity="0.3"
+            />
+          </svg>
+        </motion.div>
       </div>
     </motion.div>
   )
