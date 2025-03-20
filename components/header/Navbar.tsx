@@ -6,7 +6,14 @@ import { useState, useEffect, useRef } from "react"
 import { Menu, X, LogOut, Settings, ChevronRight, Sparkles, Coffee, ChefHat, Pizza } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { auth } from "@/lib/firebase"
@@ -17,7 +24,7 @@ import Image from "next/image"
 
 const navLinks = [
   { title: "Home", href: "/home-main" },
-  { title: "Restaurant", href: "/restaurant" },
+  { title: "Restaurant", href: "/restaurants" },
   { title: "Contact", href: "/contact" },
 ]
 
@@ -76,29 +83,17 @@ const Navbar = () => {
       }
     }
 
-// //   const navLinks = [
-// //     { title: 'Home', href: '/home-main' },
-// //     // { title: 'Features', href: '#features' },
-// //     // { title: 'Restaurants', href: '#restaurants' },
-// //     { title: 'Reservations', href: '/restaurants' },
-// //     { title: 'Contact', href: '#contact' },
-// //   ];
+    // Add scroll event listener
+    window.addEventListener("scroll", handleScroll)
 
-// //   return (
-// //     <nav
-// //       className={`fixed top-0 left-0 w-full py-4 ${
-// //         isScrolled ? "bg-red-600 shadow-md" : "bg-red-600/90"
-// //       } z-50 transition-colors duration-300`}
-// //     >
-// //       <div className="container mx-auto px-4">
-// //         <div className="flex items-center justify-between">
-// //           {/* Logo */}
-// //           <Link
-// //             href="/home-main"
-// //             className="text-2xl font-bold text-white transition-all duration-300 hover:text-white/90 hover:scale-105"
-// //           >
-// //             DineEase
-// //           </Link>
+    // Initial check
+    handleScroll()
+
+    // Cleanup function
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+    }
+  }, [])
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
