@@ -365,7 +365,203 @@ const WeeklyOffers = () => {
                       </svg>
                     </motion.div>
 
-                    
+                    {/* Floating discount badge */}
+                    <motion.div
+                      className="absolute -top-8 -right-8 z-20 w-20 h-20"
+                      initial={{ rotate: -10 }}
+                      animate={{
+                        rotate: isActive ? [-10, 5, -10] : -10,
+                        y: isActive ? [0, -5, 0] : 0,
+                      }}
+                      transition={{ duration: 2, repeat: isActive ? Number.POSITIVE_INFINITY : 0 }}
+                    >
+                      <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-xl">
+                        <defs>
+                          <linearGradient id={`discountGradient-${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#FA4032" />
+                            <stop offset="100%" stopColor="#FF6B60" />
+                          </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="50" fill={`url(#discountGradient-${index})`} />
+                        <text x="50" y="45" textAnchor="middle" fill="white" fontWeight="bold" fontSize="24">
+                          {discount}%
+                        </text>
+                        <text x="50" y="65" textAnchor="middle" fill="white" fontWeight="bold" fontSize="14">
+                          OFF
+                        </text>
+                      </svg>
+                    </motion.div>
+
+                    <Link href={`/offers/${offer.id}`}>
+                      <motion.div
+                        className="bg-white rounded-3xl overflow-hidden cursor-pointer relative group"
+                        whileHover={{
+                          y: -10,
+                          transition: { duration: 0.3, type: "spring" },
+                        }}
+                        style={{
+                          boxShadow: "0 10px 30px -5px rgba(0, 0, 0, 0.1)",
+                        }}
+                      >
+                        {/* Card content with creative design */}
+                        <div className="relative">
+                          {/* Image container with creative overlay */}
+                          <div className="relative h-56 overflow-hidden">
+                            {/* Background pattern */}
+                            <div className="absolute inset-0 bg-[#FA4032]/5 z-0">
+                              <svg width="100%" height="100%" className="opacity-30">
+                                <pattern
+                                  id={`pattern-${index}`}
+                                  x="0"
+                                  y="0"
+                                  width="20"
+                                  height="20"
+                                  patternUnits="userSpaceOnUse"
+                                >
+                                  <circle cx="10" cy="10" r="1.5" fill="#FA4032" />
+                                </pattern>
+                                <rect x="0" y="0" width="100%" height="100%" fill={`url(#pattern-${index})`} />
+                              </svg>
+                            </div>
+
+                            {/* Main image with parallax effect */}
+                            <motion.div
+                              animate={{
+                                y: isActive ? -10 : 0,
+                                scale: isActive ? 1.05 : 1,
+                              }}
+                              transition={{ duration: 0.5 }}
+                              className="relative z-10 h-full"
+                            >
+                              <img
+                                src={offer.offer_image || "/placeholder.svg?height=224&width=400"}
+                                alt={offer.offer_name}
+                                className="w-full h-full object-cover"
+                              />
+
+                              {/* Creative overlay with gradient and pattern */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent">
+                                {/* Animated pattern overlay */}
+                                <motion.div
+                                  className="absolute inset-0 opacity-20 mix-blend-overlay"
+                                  animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
+                                  transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse" }}
+                                  style={{
+                                    backgroundImage:
+                                      "url(\"data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fillOpacity='1' fillRule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1'/%3E%3Ccircle cx='13' cy='13' r='1'/%3E%3C/g%3E%3C/svg%3E\")",
+                                    backgroundSize: "20px 20px",
+                                  }}
+                                />
+                              </div>
+                            </motion.div>
+
+                            {/* Restaurant badge */}
+                            <div className="absolute bottom-4 left-4 z-20">
+                              <motion.div
+                                className="flex items-center bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full"
+                                whileHover={{ scale: 1.05 }}
+                              >
+                                <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center mr-2">
+                                  <ChefHat className="h-3 w-3 text-[#FA4032]" />
+                                </div>
+                                <p className="font-medium text-white text-sm">{offer.restaurant}</p>
+                              </motion.div>
+                            </div>
+                          </div>
+
+                          {/* Content section with creative design */}
+                          <div className="p-6 relative">
+                            {/* Limited time indicator */}
+                            <div className="absolute -top-5 right-6 bg-white px-3 py-1 rounded-full shadow-md border border-gray-100 flex items-center">
+                              <Clock className="h-3 w-3 text-[#FA4032] mr-1" />
+                              <motion.span
+                                className="text-xs font-medium"
+                                animate={{ opacity: isActive ? [1, 0.7, 1] : 1 }}
+                                transition={{ duration: 1.5, repeat: isActive ? Number.POSITIVE_INFINITY : 0 }}
+                              >
+                                Limited Time
+                              </motion.span>
+                            </div>
+
+                            {/* Offer name with creative styling */}
+                            <div className="mb-5">
+                              <motion.h3
+                                className="text-xl font-bold text-gray-800 group-hover:text-[#FA4032] transition-colors"
+                                animate={{
+                                  y: isActive ? [0, -2, 0] : 0,
+                                }}
+                                transition={{ duration: 1, repeat: isActive ? Number.POSITIVE_INFINITY : 0 }}
+                              >
+                                {offer.offer_name}
+                              </motion.h3>
+
+                              {/* Animated underline */}
+                              <div className="relative h-0.5 w-full mt-2 overflow-hidden">
+                                <motion.div
+                                  className="absolute inset-0 bg-gradient-to-r from-[#FA4032]/30 via-[#FA4032] to-[#FA4032]/30"
+                                  initial={{ x: "-100%" }}
+                                  animate={{ x: isActive ? "0%" : "-100%" }}
+                                  transition={{ duration: 0.6 }}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Price display with creative animation */}
+                            <div className="flex items-end justify-between mb-4">
+                              <motion.div
+                                animate={{
+                                  scale: isActive ? [1, 1.05, 1] : 1,
+                                }}
+                                transition={{ duration: 1, repeat: isActive ? Number.POSITIVE_INFINITY : 0 }}
+                              >
+                                <div className="flex items-center mb-1">
+                                  <span className="text-sm text-gray-500 line-through mr-2">
+                                    Rs. {offer.old_price.toLocaleString()}
+                                  </span>
+                                  <span className="text-xs bg-[#FFECEB] text-[#FA4032] px-2 py-0.5 rounded-full">
+                                    Save Rs. {(offer.old_price - offer.this_week_price).toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#FA4032] to-[#FF6B60]">
+                                  Rs. {offer.this_week_price.toLocaleString()}
+                                </div>
+                              </motion.div>
+                            </div>
+
+                            {/* Interactive plate icon */}
+                            <motion.div
+                              className="absolute bottom-6 right-6 w-10 h-10"
+                              animate={{
+                                rotate: isActive ? [0, 360] : 0,
+                              }}
+                              transition={{
+                                duration: 5,
+                                repeat: isActive ? Number.POSITIVE_INFINITY : 0,
+                                ease: "linear",
+                              }}
+                            >
+                              
+                            </motion.div>
+                          </div>
+                        </div>
+
+                        {/* Hover effect overlay */}
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-t from-[#FA4032]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                          animate={{
+                            opacity: isActive ? [0, 0.1, 0] : 0,
+                          }}
+                          transition={{ duration: 1.5, repeat: isActive ? Number.POSITIVE_INFINITY : 0 }}
+                        />
+
+                        {/* Corner accents */}
+                        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#FA4032] rounded-tl-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#FA4032] rounded-tr-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#FA4032] rounded-bl-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#FA4032] rounded-br-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      </motion.div>
+                    </Link>
+                  </motion.div>
                 )
               })}
             </div>
