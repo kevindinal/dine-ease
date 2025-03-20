@@ -1,73 +1,146 @@
+"use client"
 
-import Navbar from "@/components/header/Navbar";
-import HighlyRatedRestaurants from "../components/HighlyRatedRestaurants";
-import RestaurantCarousel from "../components/RestaurantCarousel";
-import Testimonials from "../components/Testimonials";
-import Footer from "@/components/footer/Footer";
-import { ArrowRight } from "lucide-react";
-import WeeklyOffers from "../components/WeeklyOffers";
-import { Button } from "@/components/ui/button";
-
-
-
+import { useEffect, useState, useRef } from "react"
+import { useSearchParams } from "next/navigation"
+import Navbar from "@/components/header/Navbar"
+import HighlyRatedRestaurants from "../components/HighlyRatedRestaurants"
+import RestaurantCarousel from "../components/RestaurantCarousel"
+import Testimonials from "../components/Testimonials"
+import Footer from "@/components/footer/Footer"
+import { ArrowRight, ChevronDown, Star, Clock, MapPin } from "lucide-react"
+import WeeklyOffers from "../components/WeeklyOffers"
+import { Button } from "@/components/ui/button"
+import { motion, useScroll, useTransform, useAnimation, useInView } from "framer-motion"
 
 export default function HomePage() {
+  const searchParams = useSearchParams()
+  const [scrollY, setScrollY] = useState(0)
+  const heroRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const scrollInView = useInView(scrollRef)
+  const controls = useAnimation()
+  const { scrollYProgress } = useScroll()
+
+  const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0])
+  const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.9])
+  const y = useTransform(scrollYProgress, [0, 0.2], [0, -50])
+
+  useEffect(() => {
+    const uid = searchParams.get("uid")
+    const name = searchParams.get("name")
+    const email = searchParams.get("email")
+
+    if (uid && name && email) {
+      console.log("User logged in:", { uid, name, email })
+    }
+
+    const handleScroll = () => {
+      setScrollY(window.scrollY)
+    }
+
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [searchParams])
+
+  useEffect(() => {
+    if (scrollInView) {
+      controls.start({
+        y: 0,
+        opacity: 1,
+        transition: { duration: 0.8, ease: "easeOut" },
+      })
+    }
+  }, [scrollInView, controls])
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#E6F1FF] to-white">
+    <div className="min-h-screen bg-white overflow-hidden">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center px-4">
+      {/* Hero Section - Added pt-24 for mobile to prevent navbar overlap */}
+      <motion.section
+        ref={heroRef}
+        className="relative min-h-screen flex items-center justify-center pt-24 md:pt-16"
+        style={{ opacity, scale, y }}
+      >
+        {/* Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <img
-            src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4"
-            alt="Restaurant ambiance"
-            className="w-full h-full object-cover opacity-40"
-          />
-        </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-[#FFECEB]/80 to-white"></div>
 
-        <div className="container mx-auto flex flex-col items-center justify-center text-center relative z-10 gap-8">
-          <div className="w-full max-w-2xl">
-            <h1 className="text-4xl md:text-6xl font-bold text-[#1B1B1B] mb-6 animate-fade-in">
-              Revolutionizing Dining with Smart AI & AR
-            </h1>
-            <p className="text-lg md:text-xl text-[#3A3A3A] mb-8 animate-fade-in">
-              Experience the future of dining with our AI-powered restaurant platform.
-              Book tables, pre-order meals, and explore menus in AR.
-            </p>
-            <Button
-              size="lg"
-              className="bg-[#FA4032] hover:bg-[#FFECEB] font-semibold text-[#FFECEB] hover:text-[#FA4032] transition-all duration-300 animate-fade-in"
-            >
-              Make a Reservation
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+          {/* Animated Background Patterns */}
+          <div className="absolute inset-0">
+            {[...Array(20)].map((_, i) => (
+              <motion.div
+                key={`circle-${i}`}
+                className="absolute rounded-full"
+                style={{
+                  width: `${Math.random() * 300 + 50}px`,
+                  height: `${Math.random() * 300 + 50}px`,
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  background:
+                    i % 2 === 0
+                      ? `radial-gradient(circle, rgba(250,64,50,0.05) 0%, rgba(255,255,255,0) 70%)`
+                      : `radial-gradient(circle, rgba(255,236,235,0.1) 0%, rgba(255,255,255,0) 70%)`,
+                }}
+                animate={{
+                  x: [0, Math.random() * 50 - 25],
+                  y: [0, Math.random() * 50 - 25],
+                  scale: [1, Math.random() * 0.2 + 0.9, 1],
+                }}
+                transition={{
+                  duration: Math.random() * 10 + 15,
+                  repeat: Number.POSITIVE_INFINITY,
+                  repeatType: "reverse",
+                }}
+              />
+            ))}
+          </div>
 
+          {/* Food Icons Background */}
+          <div className="absolute inset-0 overflow-hidden">
+            {[...Array(15)].map((_, i) => {
+              const icons = ["🍕", "🍔", "🍣", "🍜", "🍲", "🥗", "🍱", "🍛", "🍝", "🌮"]
+              const icon = icons[Math.floor(Math.random() * icons.length)]
+              return (
+                <motion.div
+                  key={`food-${i}`}
+                  className="absolute text-4xl opacity-10"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `-50px`,
+                  }}
+                  animate={{
+                    y: [0, window.innerHeight + 100],
+                    rotate: [0, Math.random() * 360],
+                    opacity: [0, 0.1, 0],
+                  }}
+                  transition={{
+                    duration: Math.random() * 20 + 30,
+                    repeat: Number.POSITIVE_INFINITY,
+                    delay: Math.random() * 20,
+                  }}
+                >
+                  {icon}
+                </motion.div>
+              )
+            })}
+          </div>
+
+          {/* Main Background Image with Overlay */}
+          <div className="absolute inset-0 z-0">
+            <img
+              src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4"
+              alt="Restaurant ambiance"
+              className="w-full h-full object-cover opacity-20"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#FFECEB]/80 via-white/70 to-white"></div>
           </div>
         </div>
-      </section>
 
-      <section className="py-16 px-4 bg-white">
-        <div className="container mx-auto">
-          <RestaurantCarousel />
-        </div>
-      </section>
+        
 
-      {/* Highly Rated Restaurants Section */}
-      <section className="bg-[#FFECEB]">
-        <HighlyRatedRestaurants />
-      </section>
-
-      {/* Weekly offers */}
-      <section className="bg-white">
-      <WeeklyOffers />
-      </section>
-
-      {/* Testimonial Section */}
-      <Testimonials />
-
-      {/* Footer Section */}
-      <Footer />
+      
     </div>
-  );
+  )
 }
+
