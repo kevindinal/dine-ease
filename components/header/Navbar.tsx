@@ -415,7 +415,85 @@ const Navbar = () => {
                 ))}
               </div>
 
-              
+              <div className="relative z-10">
+                {navLinks.map((link, index) => (
+                  <motion.div
+                    key={link.title}
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: index * 0.1, duration: 0.3 }}
+                  >
+                    <Link
+                      href={link.href}
+                      className="block py-2 text-white hover:text-white hover:bg-[#FA4032]/50 px-3 rounded transition-colors duration-200 relative group"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>{link.title}</span>
+                        <motion.div
+                          initial={{ x: -5, opacity: 0 }}
+                          whileHover={{ x: 0, opacity: 1 }}
+                          className="text-white/70"
+                        >
+                          <ChevronRight size={16} />
+                        </motion.div>
+                      </div>
+
+                      {/* Animated line */}
+                      <motion.div
+                        className="absolute bottom-0 left-0 h-[1px] bg-white/20"
+                        initial={{ width: 0 }}
+                        whileInView={{ width: "100%" }}
+                        transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
+                      />
+                    </Link>
+                  </motion.div>
+                ))}
+
+                <motion.div
+                  className="flex items-center gap-2 mt-4 py-2 border-t border-white/10 pt-4"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.3 }}
+                >
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.image} alt={user.name} />
+                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-white">{user.name}</span>
+                </motion.div>
+
+                <div className="mt-2 space-y-2">
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.5, duration: 0.3 }}
+                  >
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-white hover:bg-[#FA4032]/50 transition-colors duration-200 group"
+                    >
+                      <Settings className="mr-2 h-4 w-4 group-hover:rotate-90 transition-transform duration-300" />
+                      Profile Settings
+                    </Button>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.6, duration: 0.3 }}
+                  >
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-white hover:bg-[#FA4032]/50 transition-colors duration-200 group"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="mr-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                      Log out
+                    </Button>
+                  </motion.div>
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
