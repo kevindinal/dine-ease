@@ -9,25 +9,7 @@ import ServicesSection from "./ServicesSection";
 import FeaturedMenu from "./FeaturedMenu";
 import GuestReviews from "./GustReview";
 import LocationSection from "./LocationSection";
-
-type Restaurant = {
-  id: number | string;
-  name: string;
-  bannerImage: string;
-  description: string;
-  about: string;
-  cuisine: string[];
-  priceRange: string;
-  category: string;
-  location: string;
-  address: string;
-  photos: string[];
-  featuredMenu: {
-    name: string;
-    price: string;
-    image: string;
-  }[];
-};
+import { Restaurant } from "../../types/restaurant";
 
 type RestaurantProfileProps = {
   restaurant: Restaurant;
@@ -42,8 +24,8 @@ export default function RestaurantProfile({ restaurant }: RestaurantProfileProps
       <AboutSection restaurant={restaurant} />
       <ServicesSection />
       <FeaturedMenu featuredMenu={restaurant.featuredMenu} />
-      <GuestReviews />
-      <LocationSection address={restaurant.address} />
+      <GuestReviews reviews={restaurant.reviews} />
+      <LocationSection address={restaurant.address} location={restaurant.location} />
     </div>
   );
 }

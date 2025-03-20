@@ -28,9 +28,8 @@ import {
   doc,
   serverTimestamp
 } from 'firebase/firestore';
-import { db } from '../lib/firebase/config';
-import { restaurants } from '@/data/restaurrants';
-
+import { db } from '../lib/firebase';
+import { Restaurant } from "@/app/(restaurants)/types/restaurant"
 // Seed the database with initial restaurant data
 export const seedRestaurants = async (): Promise<void> => {
   try {
@@ -45,24 +44,22 @@ export const seedRestaurants = async (): Promise<void> => {
     const batch = writeBatch(db);
     
     // Add each restaurant to the batch
-    restaurants.forEach((restaurant) => {
-      const restaurantRef = doc(collection(db, 'restaurants'));
-      const restaurantData = {
-        ...restaurant,
-        // Convert id to string if it's a number
-        id: restaurant.id.toString(),
-        // Change "times" field to match our schema
-        availableTimes: restaurant.times,
-        // Add timestamps
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      };
-      
-      // Remove fields we don't want to store
-      // delete restaurantData.times;
-      
-      batch.set(restaurantRef, restaurantData);
-    });
+          const restaurantRef = doc(collection(db, 'restaurants'));
+    const restaurantData = {
+      ...restaurantRef,
+      // Convert id to string if it's a number
+      id: restaurantRef.id.toString(),
+      // Change "times" field to match our schema
+      availableTimes: [], // Replace with actual times data or fetch it from a source
+      // Add timestamps
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
+    
+    // Remove fields we don't want to store
+    // delete restaurantData.times;
+    
+    batch.set(restaurantRef, restaurantData);
     
     // Commit the batch
     await batch.commit();

@@ -1,5 +1,5 @@
 // /app/lib/firebase/search.ts
-import { db } from './config';
+import { db } from '../firebase';
 import { 
   collection, 
   getDocs, 
@@ -8,7 +8,7 @@ import {
   orderBy,
   limit
 } from 'firebase/firestore';
-import { Restaurant } from '@/app/(restaurants)/types/firebase.';
+import { Restaurant } from '@/app/(restaurants)/types/restaurant';
 
 export const restaurantsCollection = collection(db, 'restaurants');
 

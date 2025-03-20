@@ -76,12 +76,29 @@ const Navbar = () => {
       }
     }
 
-    window.addEventListener("scroll", handleScroll)
+// //   const navLinks = [
+// //     { title: 'Home', href: '/home-main' },
+// //     // { title: 'Features', href: '#features' },
+// //     // { title: 'Restaurants', href: '#restaurants' },
+// //     { title: 'Reservations', href: '/restaurants' },
+// //     { title: 'Contact', href: '#contact' },
+// //   ];
 
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
-    }
-  }, [])
+// //   return (
+// //     <nav
+// //       className={`fixed top-0 left-0 w-full py-4 ${
+// //         isScrolled ? "bg-red-600 shadow-md" : "bg-red-600/90"
+// //       } z-50 transition-colors duration-300`}
+// //     >
+// //       <div className="container mx-auto px-4">
+// //         <div className="flex items-center justify-between">
+// //           {/* Logo */}
+// //           <Link
+// //             href="/home-main"
+// //             className="text-2xl font-bold text-white transition-all duration-300 hover:text-white/90 hover:scale-105"
+// //           >
+// //             DineEase
+// //           </Link>
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
