@@ -251,9 +251,185 @@ const Testimonials = () => {
         })}
       </div>
 
-      
+      {/* Interactive cursor effect */}
+      <motion.div
+        className="fixed w-16 h-16 rounded-full pointer-events-none z-50 mix-blend-difference"
+        animate={{
+          x: mousePosition.x - 32,
+          y: mousePosition.y - 32,
+          scale: activeIndex !== null ? 1.5 : 1,
+        }}
+        transition={{ type: "spring", damping: 10, stiffness: 100 }}
+        style={{ background: "rgba(255, 255, 255, 0.8)" }}
+      />
 
-      
+      <div className="container mx-auto px-6 relative z-10">
+        {/* Heading */}
+        <motion.div
+          className="text-center mb-20 relative"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+        >
+          {/* Decorative quote illustration */}
+          <div className="relative inline-block mb-8">
+            <motion.div
+              className="w-32 h-32 mx-auto relative"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 40, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+            >
+              <svg viewBox="0 0 100 100" className="w-full h-full">
+                <defs>
+                  <linearGradient id="quoteGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#FFECEB" />
+                    <stop offset="100%" stopColor="#FA4032" />
+                  </linearGradient>
+                </defs>
+                <circle cx="50" cy="50" r="48" fill="none" stroke="url(#quoteGradient)" strokeWidth="1" />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="none"
+                  stroke="url(#quoteGradient)"
+                  strokeWidth="1"
+                  strokeDasharray="1,3"
+                />
+                <circle cx="50" cy="50" r="32" fill="none" stroke="url(#quoteGradient)" strokeWidth="1" />
+              </svg>
+
+              {/* Orbiting elements */}
+              {[...Array(4)].map((_, i) => (
+                <motion.div
+                  key={`orbit-${i}`}
+                  className="absolute w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center"
+                  initial={{
+                    rotate: i * 90,
+                    translateX: 64,
+                  }}
+                  animate={{
+                    rotate: [i * 90, i * 90 + 360],
+                  }}
+                  transition={{
+                    duration: 20,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "linear",
+                  }}
+                  style={{
+                    top: "50%",
+                    left: "50%",
+                    marginLeft: -12,
+                    marginTop: -12,
+                    transformOrigin: "center center",
+                  }}
+                >
+                  {i === 0 ? (
+                    <Quote className="h-3 w-3 text-[#FA4032]" />
+                  ) : i === 1 ? (
+                    <Star className="h-3 w-3 text-[#FA4032]" />
+                  ) : i === 2 ? (
+                    <Heart className="h-3 w-3 text-[#FA4032]" />
+                  ) : (
+                    <MessageCircle className="h-3 w-3 text-[#FA4032]" />
+                  )}
+                </motion.div>
+              ))}
+
+              {/* Center element */}
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center">
+                <Quote className="h-8 w-8 text-[#FA4032]" />
+              </div>
+            </motion.div>
+          </div>
+
+          <h2 className="text-4xl md:text-5xl font-bold mb-3 relative inline-block">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#FA4032] to-[#FF6B60]">
+              What our Customers Say
+            </span>
+          </h2>
+
+          <div className="relative h-1 w-40 mx-auto mt-4 mb-6 overflow-hidden rounded-full">
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-[#FA4032] to-[#FF6B60]"
+              animate={{ x: ["-100%", "100%"] }}
+              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse" }}
+            />
+          </div>
+
+          <p className="text-gray-600 max-w-2xl mx-auto mt-4 text-lg italic">
+            "Authentic experiences from our valued diners"
+          </p>
+        </motion.div>
+
+        <div className="relative max-w-5xl mx-auto">
+          <div className="flex items-center justify-center">
+            <motion.button
+              onClick={prevTestimonial}
+              className="absolute left-0 z-10 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center"
+              whileHover={{ scale: 1.1, backgroundColor: "#FFECEB" }}
+              whileTap={{ scale: 0.95 }}
+              disabled={testimonials.length <= 1}
+            >
+              <ChevronLeft className="h-6 w-6 text-[#FA4032]" />
+            </motion.button>
+
+            
+
+            <motion.button
+              onClick={nextTestimonial}
+              className="absolute right-0 z-10 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center"
+              whileHover={{ scale: 1.1, backgroundColor: "#FFECEB" }}
+              whileTap={{ scale: 0.95 }}
+              disabled={testimonials.length <= 1}
+            >
+              <ChevronRight className="h-6 w-6 text-[#FA4032]" />
+            </motion.button>
+          </div>
+
+          {/* Pagination dots */}
+          <div className="flex justify-center mt-8 space-x-2">
+            {testimonials.map((_, index) => (
+              <motion.button
+                key={`dot-${index}`}
+                className={`w-3 h-3 rounded-full ${
+                  currentIndex === index ? "bg-[#FA4032]" : "bg-[#FFECEB]"
+                } focus:outline-none`}
+                onClick={() => setCurrentIndex(index)}
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.9 }}
+                animate={{
+                  scale: currentIndex === index ? [1, 1.2, 1] : 1,
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: currentIndex === index ? Number.POSITIVE_INFINITY : 0,
+                  repeatType: "reverse",
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Decorative bottom elements */}
+      <div className="absolute bottom-0 left-0 w-full h-20 pointer-events-none overflow-hidden">
+        <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-to-t from-white/30 to-transparent"></div>
+        <motion.div
+          className="absolute bottom-0 left-0 w-full"
+          animate={{ x: ["-100%", "100%"] }}
+          transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+        >
+          <svg viewBox="0 0 1200 30" height="30" width="100%">
+            <path
+              d="M0,15 Q30,5 60,15 T120,15 T180,15 T240,15 T300,15 T360,15 T420,15 T480,15 T540,15 T600,15 T660,15 T720,15 T780,15 T840,15 T900,15 T960,15 T1020,15 T1080,15 T1140,15 T1200,15"
+              fill="none"
+              stroke="#FA4032"
+              strokeWidth="2"
+              strokeOpacity="0.3"
+            />
+          </svg>
+        </motion.div>
+      </div>
     </motion.div>
   )
 }
