@@ -1,140 +1,83 @@
-import { Send } from "lucide-react";
-import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import { Button } from "../ui/button";
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { Send, ChefHat, Instagram, Facebook, Twitter } from "lucide-react"
+import Link from "next/link"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { motion, useAnimation } from "framer-motion"
 
 export default function Footer() {
-    return (
-        <footer className="bg-accent-darkest text-white py-16">
-            <div className="container mx-auto px-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    <div className="space-y-4">
-                        <h3 className="text-2xl font-bold">DineEase</h3>
-                        <p className="text-gray-400">
-                            Revolutionizing the dining experience with smart technology.
-                        </p>
-                    </div>
+  // Reduce the number of animated elements
+  const [email, setEmail] = useState("")
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const controls = useAnimation()
 
-                    <div>
-                        <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
-                        <ul className="space-y-2">
-                            {['About', 'Features', 'Restaurants', 'Contact'].map((item) => (
-                                <li key={item}>
-                                    <a
-                                        href={`#${item.toLowerCase()}`}
-                                        className="text-gray-400 hover:text-primary-light transition-colors"
-                                    >
-                                        {item}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+  useEffect(() => {
+    // Simplify the background animation - slower and less dramatic
+    controls.start({
+      backgroundPosition: ["0% 0%", "100% 100%"],
+      transition: { duration: 30, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse", ease: "linear" },
+    })
+  }, [controls])
 
-                    <div>
-                        <h4 className="text-lg font-semibold mb-4">Legal</h4>
-                        <ul className="space-y-2">
-                            {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map((item) => (
-                                <li key={item}>
-                                    <a
-                                        href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
-                                        className="text-gray-400 hover:text-primary-light transition-colors"
-                                    >
-                                        {item}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (email) {
+      setIsSubmitted(true)
+      setEmail("")
+      setTimeout(() => setIsSubmitted(false), 3000)
+    }
+  }
 
-                    <div className="space-y-4">
-                        <h4 className="text-lg font-semibold">Newsletter</h4>
-                        <p className="text-gray-400">
-                            Stay updated with our latest features and restaurants.
-                        </p>
-                        <div className="flex gap-2">
-                            <Input
-                                type="email"
-                                placeholder="Enter your email"
-                                className="bg-accent-darker text-white placeholder:text-gray-400"
-                            />
-                            <Button className="bg-accent hover:bg-primary text-white">
-                                <Send className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
-                </div>
+  const currentYear = new Date().getFullYear()
 
-                <div className="border-t border-accent-darker mt-12 pt-8 text-center text-gray-400">
-                    <p>&copy; {new Date().getFullYear()} DineEase. All rights reserved.</p>
-                </div>
-            </div>
-        </footer>
-    )
+  return (
+    <motion.footer
+      className="relative overflow-hidden py-16"
+      animate={controls}
+      style={{
+        background: "#4B130F",
+        backgroundImage: "radial-gradient(circle at 10% 20%, rgba(75, 19, 15, 0.9) 0%, rgba(95, 25, 20, 1) 90%)",
+        backgroundSize: "200% 200%",
+      }}
+    >
+      {/* Reduce decorative elements - fewer circles and no animations */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Reduced static circles */}
+        {[...Array(4)].map((_, i) => (
+          <div
+            key={`circle-${i}`}
+            className="absolute rounded-full opacity-10"
+            style={{
+              background: i % 2 === 0 ? "#FA4032" : "#FFECEB",
+              width: `${100 + i * 30}px`,
+              height: `${100 + i * 30}px`,
+              left: `${(i * 15) % 100}%`,
+              top: `${(i * 20) % 100}%`,
+            }}
+          />
+        ))}
+
+        {/* Remove the floating food icons */}
+      </div>
+
+      
+
+      {/* Simple static wave instead of animated */}
+      <div className="absolute bottom-0 left-0 w-full overflow-hidden">
+        <svg
+          viewBox="0 0 1200 120"
+          preserveAspectRatio="none"
+          className="relative block w-full h-12"
+          style={{ fill: "rgba(255, 236, 235, 0.05)" }}
+        >
+          <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.11,130.83,141.14,213.2,141.14c62.5,0,125.91-16.88,186.19-32.47C443.88,89.44,486.26,74.93,531.35,61.32Z"></path>
+        </svg>
+      </div>
+    </motion.footer>
+  )
 }
 
-    //    <footer className="bg-accent-darkest text-white py-16">
-    //     <div className="container mx-auto px-4">
-    //       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-    //         <div className="space-y-4">
-    //           <h3 className="text-2xl font-bold">DineEase</h3>
-    //           <p className="text-gray-400">
-    //             Revolutionizing the dining experience with smart technology.
-    //           </p>
-    //         </div>
-            
-    //         <div>
-    //           <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
-    //           <ul className="space-y-2">
-    //             {['About', 'Features', 'Restaurants', 'Contact'].map((item) => (
-    //               <li key={item}>
-    //                 <a
-    //                   href={`#${item.toLowerCase()}`}
-    //                   className="text-gray-400 hover:text-primary-light transition-colors"
-    //                 >
-    //                   {item}
-    //                 </a>
-    //               </li>
-    //             ))}
-    //           </ul>
-    //         </div>
-            
-    //         <div>
-    //           <h4 className="text-lg font-semibold mb-4">Legal</h4>
-    //           <ul className="space-y-2">
-    //             {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map((item) => (
-    //               <li key={item}>
-    //                 <a
-    //                   href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
-    //                   className="text-gray-400 hover:text-primary-light transition-colors"
-    //                 >
-    //                   {item}
-    //                 </a>
-    //               </li>
-    //             ))}
-    //           </ul>
-    //         </div>
-            
-    //         <div className="space-y-4">
-    //           <h4 className="text-lg font-semibold">Newsletter</h4>
-    //           <p className="text-gray-400">
-    //             Stay updated with our latest features and restaurants.
-    //           </p>
-    //           <div className="flex gap-2">
-    //             <input
-    //               type="email"
-    //               placeholder="Enter your email"
-    //               className="bg-accent-darker text-white placeholder:text-gray-400"
-    //             />
-    //             <button className="bg-accent hover:bg-primary text-white">
-    //               <Send className="h-4 w-4" />
-    //             </button>
-    //           </div>
-    //         </div>
-    //       </div>
-          
-    //       <div className="border-t border-accent-darker mt-12 pt-8 text-center text-gray-400">
-    //         <p>&copy; {new Date().getFullYear()} DineEase. All rights reserved.</p>
-    //       </div>
-    //     </div>
-    //   </footer>
