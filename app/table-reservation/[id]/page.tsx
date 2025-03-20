@@ -318,11 +318,10 @@ export default function TableDetailsPage() {
     setTimeout(() => setShowNotification(false), 5000)
 
     if (option === "payment") {
-      console.log("Proceeding to payment")
-      // router.push('/payment')
+      if (table?.restaurantId){
+        router.push(`/payment-page?restaurantId=${encodeURIComponent(table?.restaurantId)}`)
+      }
     } else {
-      console.log("Proceeding to meal preorder")
-      // Use restaurantId for preorder navigation if available
       if (table?.restaurantId) {
         router.push(`/cuisine-main-page?restaurantId=${encodeURIComponent(table.restaurantId)}`)
       } 
