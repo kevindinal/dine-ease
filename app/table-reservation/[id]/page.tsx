@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { doc, getDoc, collection, getDocs, query, where } from "firebase/firestore"
+// Import addDoc for adding reviews to Firebase
+import { doc, getDoc, collection, getDocs, query, where, addDoc } from "firebase/firestore"
 import { ref, getDownloadURL } from "firebase/storage"
 import { db, storage } from "@/lib/firebase/tables"
 import {
@@ -96,6 +97,7 @@ interface Review {
   rating: number
   comment: string
   date: string
+  tableId?: string
 }
 
 interface SpecialOffer {
@@ -347,6 +349,7 @@ export default function TableDetailsPage() {
       } 
     }
 
+
   }
 
   const handleToggleFavorite = () => {
@@ -379,26 +382,49 @@ export default function TableDetailsPage() {
     }
   }
 
-  const handleSubmitReview = (rating: number, comment: string) => {
+  // Replace the handleSubmitReview function with this updated version
+  const handleSubmitReview = async (rating: number, comment: string) => {
     // Add the new review to the table's reviews
     if (table && comment.trim()) {
-      const newReview: Review = {
-        id: `rev${Date.now()}`,
-        userName: "You",
-        userAvatar: "/placeholder.svg?height=40&width=40",
-        rating,
-        comment,
-        date: new Date().toISOString().split("T")[0],
+      try {
+        // Create the review object
+        const newReview: Review = {
+          id: `rev${Date.now()}`,
+          userName: "You",
+          userAvatar: "/placeholder.svg?height=40&width=40",
+          rating,
+          comment,
+          date: new Date().toISOString().split("T")[0],
+          tableId: table.id, // Add tableId to associate with the table
+        }
+
+        // Add the review to Firebase
+        const reviewsCollection = collection(db, "table-reviews")
+        const docRef = await addDoc(reviewsCollection, {
+          userName: newReview.userName,
+          userAvatar: newReview.userAvatar,
+          rating: newReview.rating,
+          comment: newReview.comment,
+          date: newReview.date,
+          tableId: table.id,
+        })
+
+        // Update the review ID with the Firebase document ID
+        newReview.id = docRef.id
+
+        // Update local state
+        setTable({
+          ...table,
+          reviews: [...(table.reviews || []), newReview],
+        })
+
+        // Show success notification
+        setShowNotification(true)
+        setTimeout(() => setShowNotification(false), 3000)
+      } catch (error) {
+        console.error("Error adding review:", error)
+        alert("Failed to submit review. Please try again.")
       }
-
-      setTable({
-        ...table,
-        reviews: [...(table.reviews || []), newReview],
-      })
-
-      // Show success notification
-      setShowNotification(true)
-      setTimeout(() => setShowNotification(false), 3000)
     }
   }
 
