@@ -137,9 +137,154 @@ export default function HomePage() {
           </div>
         </div>
 
-        
+        {/* Hero Content */}
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
+            <motion.div
+              className="lg:w-1/2 text-center lg:text-left"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="inline-block mb-4 px-4 py-1 rounded-full bg-[#FFECEB] text-[#FA4032] font-medium text-sm"
+              >
+                #1 Food Delivery & Restaurant Platform
+              </motion.div>
 
-      
+              <motion.h1
+                className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+              >
+                <span className="block">Discover</span>
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#FA4032] to-[#FF6B60]">
+                  Culinary Magic
+                </span>
+                <span className="block">At Your Fingertips</span>
+              </motion.h1>
+
+              <motion.p
+                className="text-lg md:text-xl text-gray-600 mb-8 max-w-xl"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+              >
+                Experience the future of dining with our AI-powered restaurant platform. Book tables, pre-order meals,
+                and explore menus in AR.
+              </motion.p>
+
+              <motion.div
+                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+              >
+                <Button
+                  size="lg"
+                  className="bg-[#FA4032] hover:bg-[#E63326] text-white rounded-full px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
+                >
+                  Make a Reservation
+                  <motion.span
+                    className="inline-block ml-2"
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, repeatType: "loop" }}
+                  >
+                    <ArrowRight className="h-5 w-5" />
+                  </motion.span>
+                </Button>
+
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-2 border-[#FA4032] text-[#FA4032] hover:bg-[#FFECEB] rounded-full px-8 py-6 text-lg font-semibold transition-all duration-300"
+                >
+                  Explore Menu
+                </Button>
+              </motion.div>
+
+              <motion.div
+                className="mt-12 flex items-center justify-center lg:justify-start gap-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.8 }}
+              >
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-[#FA4032]">500+</div>
+                  <div className="text-sm text-gray-500">Restaurants</div>
+                </div>
+
+                <div className="h-12 w-px bg-gray-200"></div>
+
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-[#FA4032]">50k+</div>
+                  <div className="text-sm text-gray-500">Happy Customers</div>
+                </div>
+
+                <div className="h-12 w-px bg-gray-200"></div>
+
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-[#FA4032]">100+</div>
+                  <div className="text-sm text-gray-500">Cities</div>
+                </div>
+              </motion.div>
+            </motion.div>
+
+            <motion.div
+              className="lg:w-1/2"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              
+            </motion.div>
+          </div>
+
+          {/* Scroll Down Indicator */}
+          <motion.div
+            className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center"
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+          >
+            <span className="text-sm text-gray-500 mb-2">Scroll to explore</span>
+            <ChevronDown className="h-6 w-6 text-[#FA4032]" />
+          </motion.div>
+        </div>
+      </motion.section>
+
+      {/* Restaurant Carousel Section */}
+      <section className="py-16 px-4 bg-white relative">
+        <div className="absolute inset-0 bg-[#FFECEB]/20 skew-y-3 transform origin-top-right"></div>
+        <div className="container mx-auto relative z-10">
+          <RestaurantCarousel />
+        </div>
+      </section>
+
+      {/* Highly Rated Restaurants Section */}
+      <section className="relative">
+        <div className="absolute inset-0 bg-[#FFECEB]/30 -skew-y-3 transform origin-top-left"></div>
+        <div className="relative z-10">
+          <HighlyRatedRestaurants />
+        </div>
+      </section>
+
+      {/* Weekly offers */}
+      <section className="relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-white to-[#FFECEB]/20"></div>
+        <div className="relative z-10">
+          <WeeklyOffers />
+        </div>
+      </section>
+
+      {/* Testimonial Section */}
+      <Testimonials />
+
+      {/* Footer Section */}
+      <Footer />
     </div>
   )
 }
