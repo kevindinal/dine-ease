@@ -1,109 +1,109 @@
+"use client"
 
-"use client";
+import type React from "react"
 
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react"
+import { ChevronLeft, ChevronRight, Quote, Star, Heart, MessageCircle } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { motion, useAnimation } from "framer-motion"
+import type { User } from "../hooks/models"
+import { fetchUserReviews, getInitials, getRandomNumber } from "../services/userService"
+import { startBackgroundAnimation } from "../services/animationService"
 
-const testimonials = [
-    {
-        id: 1,
-        name: "Sarah Johnson",
-        role: "Food Enthusiast",
-        comment: "The AR menu experience was mind-blowing! I could see exactly what my dish would look like before ordering.",
-        image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
-    },
-    {
-        id: 2,
-        name: "Michael Chen",
-        role: "Tech Reviewer",
-        comment: "DineEase has revolutionized how I discover and book restaurants. The AI recommendations are spot-on!",
-        image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
-    },
-    {
-        id: 3,
-        name: "Emma Wilson",
-        role: "Food Blogger",
-        comment: "The seamless booking experience and personalized suggestions make DineEase my go-to platform for dining.",
-        image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
-    },
-];
+const Testimonials = () => {
+  const [testimonials, setTestimonials] = useState<User[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const containerRef = useRef<HTMLDivElement>(null)
+  const controls = useAnimation()
 
-const Testimonials =() => {
-    const [currentIndex, setCurretnIndex] = useState(0);
+  useEffect(() => {
+    const loadTestimonials = async () => {
+      try {
+        const usersWithReviews = await fetchUserReviews()
+        setTestimonials(usersWithReviews)
+      } catch (error) {
+        console.error("Error fetching user reviews:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-    const nextTestimonial = () => {
-        setCurretnIndex((prev) => (prev + 1) % testimonials.length);
-    };
+    loadTestimonials()
+    startBackgroundAnimation(controls)
+  }, [controls])
 
-    const prevTestimonial = () => {
-        setCurretnIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-    };
+  const nextTestimonial = () => {
+    if (testimonials.length > 0) {
+      setCurrentIndex((prev) => (prev + 1) % testimonials.length)
+    }
+  }
 
+  const prevTestimonial = () => {
+    if (testimonials.length > 0) {
+      setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length)
+    }
+  }
+
+  // Handle mouse move for interactive effects
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect()
+      setMousePosition({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      })
+    }
+  }
+
+  if (loading) {
     return (
-        <div className="bg-white py-16">
-            <div className="container mx-auto px-4">
-                <h2 className="text-3xl font-bold text-accent-dark mb-12 text-center">
-                    What our Customers Say
-                </h2>
-                <div className="relative max-w-4xl mx-auto">
-                    <div className="flex items-center justify-center">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute left-0 z-10 bg-white shadow-lg rounded-full"
-                            onClick={prevTestimonial}
-                        >
-                            <ChevronLeft className="h-6 w-6" />
-                        </Button>
-
-                        <div className="overflow-hidden">
-                            <div
-                                className="flex transition-transform duration-500 ease-in-out"
-                                style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-                            >
-                                {testimonials.map((testimonial) => (
-                                    <div
-                                        key={testimonial.id}
-                                        className="min-w-full px-4"
-                                    >
-                                        <div className="bg-primary-softer rounded-2xl p-8 relative">
-                                            <Quote className="absolute top-4 right-4 h-12 w-12 text-primary opacity-20" />
-                                            <div className="flex flex-col items-center text-center">
-                                                <img 
-                                                    src={testimonial.image} 
-                                                    alt={testimonial.name}
-                                                    className="w-20 h-20 rounded-full object-cover mb-4" 
-                                                />
-                                                <p className="text-lg text-accent-darker mb-6 italic">
-                                                    "{testimonial.comment}"
-                                                </p>
-                                                <h4 className="font-semibold text-accent-dark">
-                                                    {testimonial.name}
-                                                </h4>
-                                                <p className="text-sm text-gray-600">
-                                                    {testimonial.role}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-0 z-10 bg-white shadow-lg rounded-full"
-                            onClick={nextTestimonial}
-                        >
-                            <ChevronRight className="h-6 w-6" />
-                        </Button>
-                    </div>
-                </div>
+      <div className="bg-gradient-to-b from-white to-[#FFECEB]/30 py-16">
+        <div className="container mx-auto px-4 flex justify-center items-center min-h-[50vh]">
+          <motion.div
+            className="w-32 h-32 relative"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+          >
+            <svg viewBox="0 0 100 100" className="w-full h-full">
+              <defs>
+                <linearGradient id="quoteGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#FA4032" />
+                  <stop offset="100%" stopColor="#FF6B60" />
+                </linearGradient>
+              </defs>
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#FFECEB" strokeWidth="8" />
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                fill="none"
+                stroke="url(#quoteGradient)"
+                strokeWidth="8"
+                strokeDasharray="70 283"
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Quote className="h-12 w-12 text-[#FA4032]" />
             </div>
+          </motion.div>
+          <motion.p
+            className="ml-6 text-lg font-medium text-[#FA4032]"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
+          >
+            Loading customer stories...
+          </motion.p>
         </div>
-    );
-};
+      </div>
+    )
+  }
 
-export default Testimonials;
+  
+}
+
+export default Testimonials
+
