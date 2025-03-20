@@ -1,93 +1,123 @@
-import { Button } from "@/components/ui/button";
-import { Star, Bookmark } from "lucide-react";
+"use client"
 
-const restaurants = [
-  {
-    id: 1,
-    name: "The Golden Plate",
-    image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0",
-    cuisine: "Contemporary",
-    rating: 4.9,
-  },
-  {
-    id: 2,
-    name: "Mamma Mia",
-    image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5",
-    cuisine: "Italian",
-    rating: 4.8,
-  },
-  {
-    id: 3,
-    name: "Sushi Master",
-    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c",
-    cuisine: "Japanese",
-    rating: 4.9,
-  },
-  {
-    id: 4,
-    name: "Le Bistrot",
-    image: "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c",
-    cuisine: "French",
-    rating: 4.7,
-  },
-  {
-    id: 5,
-    name: "The Spice Route",
-    image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe",
-    cuisine: "Indian",
-    rating: 4.8,
-  },
-  {
-    id: 6,
-    name: "Verde",
-    image: "https://images.unsplash.com/photo-1496412705862-e0088f16f791",
-    cuisine: "Vegetarian",
-    rating: 4.7,
-  },
-];
+import type React from "react"
+
+import { useState, useEffect, useRef } from "react"
+import { motion, useAnimation, AnimatePresence } from "framer-motion"
+import { Star, MapPin, Clock, ChevronRight, Sparkles } from "lucide-react"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import type { Restaurant } from "../hooks/models"
+import { fetchHighlyRatedRestaurants } from "../services/restaurantService"
+import { startBackgroundAnimation } from "../services/animationService"
 
 const HighlyRatedRestaurants = () => {
-  return (
-    <div className="container mx-auto px-10 py-16">
-      <h2 className="text-3xl font-bold mb-8 text-center">
-        Highly Rated Restaurants
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-        {restaurants.map((restaurant) => (
-          <div
-            key={restaurant.id}
-            className="bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105"
-          >
-            <div className="relative h-48">
-              <img
-                src={restaurant.image}
-                alt={restaurant.name}
-                className="w-full h-full object-cover"
-              />
-              <button className="absolute top-4 right-4 p-2 bg-white/80 rounded-full hover:bg-white transition-colors">
-                <Bookmark className="h-5 w-5 text-accent-dark" />
-              </button>
-            </div>
-            <div className="p-4">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="text-lg font-semibold text-accent-dark">
-                  {restaurant.name}
-                </h3>
-                <div className="flex items-center">
-                  <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                  <span className="ml-1 text-sm font-medium">{restaurant.rating}</span>
-                </div>
-              </div>
-              <p className="text-gray-600 mb-4">{restaurant.cuisine}</p>
-              <Button className="w-full bg-[#FA4032] hover:bg-[#FFECEB] text-white hover:text-[#FA4032] transition-all duration-300 animate-fade-in">
-                View Details
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 })
+  const containerRef = useRef<HTMLDivElement>(null)
+  const controls = useAnimation()
+  const [visibleCount, setVisibleCount] = useState(6)
 
-export default HighlyRatedRestaurants;
+  useEffect(() => {
+    const loadRestaurants = async () => {
+      try {
+        const highlyRatedRestaurants = await fetchHighlyRatedRestaurants()
+        setRestaurants(highlyRatedRestaurants)
+      } catch (error) {
+        console.error("Error fetching highly rated restaurants:", error)
+        setError("Failed to load restaurants. Please try again later.")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadRestaurants()
+    startBackgroundAnimation(controls)
+  }, [controls])
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect()
+      setHoverPosition({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      })
+    }
+  }
+
+  const handleShowMore = () => setVisibleCount((prev) => Math.min(prev + 3, restaurants.length))
+
+  if (loading) {
+    return (
+      <div className="bg-[#FFECEB] py-16">
+        <div className="container mx-auto px-4 flex flex-col items-center justify-center min-h-[50vh]">
+          <motion.div
+            className="w-32 h-32 relative"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+          >
+            <svg viewBox="0 0 100 100" className="w-full h-full">
+              <defs>
+                <linearGradient id="loaderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#FA4032" />
+                  <stop offset="100%" stopColor="#FF6B60" />
+                </linearGradient>
+              </defs>
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#FFECEB" strokeWidth="8" />
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                fill="none"
+                stroke="url(#loaderGradient)"
+                strokeWidth="8"
+                strokeDasharray="70 283"
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Star className="h-12 w-12 text-[#FA4032] fill-current" />
+            </div>
+          </motion.div>
+          <motion.p
+            className="mt-8 text-lg font-medium text-[#FA4032]"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
+          >
+            Discovering culinary excellence...
+          </motion.p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-[#FFECEB] py-16">
+        <div className="container mx-auto px-4 text-center">
+          <div className="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg">
+            <div className="w-20 h-20 mx-auto mb-6 text-[#FA4032]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-bold mb-4 text-gray-800">Something went wrong</h3>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <Button onClick={() => window.location.reload()} className="bg-[#FA4032] hover:bg-[#E63326] text-white">
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+}
+
+export default HighlyRatedRestaurants
+
