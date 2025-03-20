@@ -1,11 +1,19 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useState, useEffect, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
 // Import addDoc for adding reviews to Firebase
-import { doc, getDoc, collection, getDocs, query, where, addDoc } from "firebase/firestore"
-import { ref, getDownloadURL } from "firebase/storage"
-import { db, storage } from "@/lib/firebase/tables"
+import {
+  doc,
+  getDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+  addDoc,
+} from "firebase/firestore";
+import { ref, getDownloadURL } from "firebase/storage";
+import { db, storage } from "@/lib/firebase/tables";
 import {
   ArrowLeft,
   AlertCircle,
@@ -39,95 +47,115 @@ import {
   CreditCard,
   Gift,
   Percent,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
-import { cn } from "@/lib/utils"
-import ThreeSixtyViewer from "@/app/table-reservation/thresixty"
-import { useMediaQuery } from "@/hooks/use-media-query"
-import Fallback360Viewer from "@/app/table-reservation/fall-back-360"
-import { motion, AnimatePresence } from "framer-motion"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import ThreeSixtyViewer from "@/app/table-reservation/thresixty";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import Fallback360Viewer from "@/app/table-reservation/fall-back-360";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Import our components
-import ReviewSection from "@/app/table-reservation/components/review-section"
-import ReservationForm from "@/app/table-reservation/components/reservation-form"
-import SpecialOffers from "@/app/table-reservation/components/special-offers"
-import FeaturesSection from "@/app/table-reservation/components/features-section"
-import AvailabilityCalendar from "@/app/table-reservation/components/availability-calendar"
+import ReviewSection from "@/app/table-reservation/components/review-section";
+import ReservationForm from "@/app/table-reservation/components/reservation-form";
+import SpecialOffers from "@/app/table-reservation/components/special-offers";
+import FeaturesSection from "@/app/table-reservation/components/features-section";
+import AvailabilityCalendar from "@/app/table-reservation/components/availability-calendar";
 
 interface Table {
-  id: string
-  name: string
-  location: string
-  status: string
-  seats: number
-  description?: string
-  price?: number
-  imageUrl?: string
-  threeSixtyImageUrl?: string
-  additionalImages?: string[]
-  reviews?: Review[]
-  rating?: number
-  features?: string[]
-  restaurantId?: string // Added restaurantId property
+  id: string;
+  name: string;
+  location: string;
+  status: string;
+  seats: number;
+  description?: string;
+  price?: number;
+  imageUrl?: string;
+  threeSixtyImageUrl?: string;
+  additionalImages?: string[];
+  reviews?: Review[];
+  rating?: number;
+  features?: string[];
+  restaurantId?: string; // Added restaurantId property
   availability?: {
-    monday: boolean
-    tuesday: boolean
-    wednesday: boolean
-    thursday: boolean
-    friday: boolean
-    saturday: boolean
-    sunday: boolean
+    monday: boolean;
+    tuesday: boolean;
+    wednesday: boolean;
+    thursday: boolean;
+    friday: boolean;
+    saturday: boolean;
+    sunday: boolean;
     timeRanges: Array<{
-      from: string
-      to: string
-    }>
-  }
+      from: string;
+      to: string;
+    }>;
+  };
 }
 
 interface Review {
-  id: string
-  userName: string
-  userAvatar?: string
-  rating: number
-  comment: string
-  date: string
-  tableId?: string
+  id: string;
+  userName: string;
+  userAvatar?: string;
+  rating: number;
+  comment: string;
+  date: string;
+  tableId?: string;
 }
 
 interface SpecialOffer {
-  id: string
-  title: string
-  description: string
-  discount: string
-  code: string
-  validUntil: string
+  id: string;
+  title: string;
+  description: string;
+  discount: string;
+  code: string;
+  validUntil: string;
 }
 
 export default function TableDetailsPage() {
-  const { id } = useParams()
-  const router = useRouter()
-  const [table, setTable] = useState<Table | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [isFullscreen, setIsFullscreen] = useState(false)
-  const [isFavorite, setIsFavorite] = useState(false)
-  const [activeView, setActiveView] = useState<"gallery" | "360">("gallery")
-  const [showShareOptions, setShowShareOptions] = useState(false)
-  const [showMobileMenu, setShowMobileMenu] = useState(false)
-  const [reservationSuccess, setReservationSuccess] = useState(false)
-  const [showNotification, setShowNotification] = useState(false)
-  const [isReminderSet, setIsReminderSet] = useState(false)
-  const [promoDiscount, setPromoDiscount] = useState(0)
-  const [showPaymentOptions, setShowPaymentOptions] = useState(false)
-  const isMobile = useMediaQuery("(max-width: 768px)")
-  const imageContainerRef = useRef<HTMLDivElement>(null)
+  const { id } = useParams();
+  const router = useRouter();
+  const [table, setTable] = useState<Table | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [activeView, setActiveView] = useState<"gallery" | "360">("gallery");
+  const [showShareOptions, setShowShareOptions] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [reservationSuccess, setReservationSuccess] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
+  const [isReminderSet, setIsReminderSet] = useState(false);
+  const [promoDiscount, setPromoDiscount] = useState(0);
+  const [showPaymentOptions, setShowPaymentOptions] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const imageContainerRef = useRef<HTMLDivElement>(null);
 
   // Mock data for special offers
   const specialOffers: SpecialOffer[] = [
@@ -150,12 +178,13 @@ export default function TableDetailsPage() {
     {
       id: "offer3",
       title: "Anniversary Special",
-      description: "Celebrating an anniversary? Get a free dessert with your meal",
+      description:
+        "Celebrating an anniversary? Get a free dessert with your meal",
       discount: "Free Dessert",
       code: "CELEBRATE",
       validUntil: "2025-12-31",
     },
-  ]
+  ];
 
   // Mock reviews data
   const mockReviews: Review[] = [
@@ -164,7 +193,8 @@ export default function TableDetailsPage() {
       userName: "Sarah Johnson",
       userAvatar: "/placeholder.svg?height=40&width=40",
       rating: 5,
-      comment: "Absolutely loved this table! The window view was spectacular and service was impeccable.",
+      comment:
+        "Absolutely loved this table! The window view was spectacular and service was impeccable.",
       date: "2025-02-15",
     },
     {
@@ -172,7 +202,8 @@ export default function TableDetailsPage() {
       userName: "Michael Chen",
       userAvatar: "/placeholder.svg?height=40&width=40",
       rating: 4,
-      comment: "Great location, comfortable seating. Perfect for our business lunch.",
+      comment:
+        "Great location, comfortable seating. Perfect for our business lunch.",
       date: "2025-02-10",
     },
     {
@@ -180,10 +211,11 @@ export default function TableDetailsPage() {
       userName: "Jessica Williams",
       userAvatar: "/placeholder.svg?height=40&width=40",
       rating: 5,
-      comment: "The ambiance was perfect for our anniversary dinner. Highly recommend!",
+      comment:
+        "The ambiance was perfect for our anniversary dinner. Highly recommend!",
       date: "2025-01-28",
     },
-  ]
+  ];
 
   // Mock availability data if none exists
   const mockAvailability = {
@@ -198,41 +230,41 @@ export default function TableDetailsPage() {
       { from: "11:00", to: "15:00" },
       { from: "17:30", to: "22:00" },
     ],
-  }
+  };
 
   useEffect(() => {
     const fetchTable = async () => {
-      setLoading(true)
+      setLoading(true);
       try {
-        const tableDoc = await getDoc(doc(db, "tables", id as string))
+        const tableDoc = await getDoc(doc(db, "tables", id as string));
 
         if (!tableDoc.exists()) {
-          setError("Table not found")
-          setLoading(false)
-          return
+          setError("Table not found");
+          setLoading(false);
+          return;
         }
 
-        const tableData = tableDoc.data() as Omit<Table, "id">
-        let imageUrl = tableData.imageUrl
-        let threeSixtyImageUrl = tableData.threeSixtyImageUrl
-        const additionalImages = tableData.additionalImages || []
+        const tableData = tableDoc.data() as Omit<Table, "id">;
+        let imageUrl = tableData.imageUrl;
+        let threeSixtyImageUrl = tableData.threeSixtyImageUrl;
+        const additionalImages = tableData.additionalImages || [];
 
         // Process image URLs
         if (imageUrl && !imageUrl.startsWith("http")) {
           try {
-            const storageRef = ref(storage, imageUrl)
-            imageUrl = await getDownloadURL(storageRef)
+            const storageRef = ref(storage, imageUrl);
+            imageUrl = await getDownloadURL(storageRef);
           } catch (error) {
-            console.error("Error fetching image URL: ", error)
+            console.error("Error fetching image URL: ", error);
           }
         }
 
         if (threeSixtyImageUrl && !threeSixtyImageUrl.startsWith("http")) {
           try {
-            const storageRef = ref(storage, threeSixtyImageUrl)
-            threeSixtyImageUrl = await getDownloadURL(storageRef)
+            const storageRef = ref(storage, threeSixtyImageUrl);
+            threeSixtyImageUrl = await getDownloadURL(storageRef);
           } catch (error) {
-            console.error("Error fetching 360 image URL: ", error)
+            console.error("Error fetching 360 image URL: ", error);
           }
         }
 
@@ -241,22 +273,25 @@ export default function TableDetailsPage() {
           additionalImages.map(async (imgUrl) => {
             if (imgUrl && !imgUrl.startsWith("http")) {
               try {
-                const storageRef = ref(storage, imgUrl)
-                return await getDownloadURL(storageRef)
+                const storageRef = ref(storage, imgUrl);
+                return await getDownloadURL(storageRef);
               } catch (error) {
-                console.error("Error fetching additional image URL: ", error)
-                return null
+                console.error("Error fetching additional image URL: ", error);
+                return null;
               }
             }
-            return imgUrl
-          }),
-        )
+            return imgUrl;
+          })
+        );
 
         // Fetch reviews from table-reviews collection
-        let reviews: Review[] = []
+        let reviews: Review[] = [];
         try {
-          const reviewsQuery = query(collection(db, "table-reviews"), where("tableId", "==", id))
-          const reviewsSnapshot = await getDocs(reviewsQuery)
+          const reviewsQuery = query(
+            collection(db, "table-reviews"),
+            where("tableId", "==", id)
+          );
+          const reviewsSnapshot = await getDocs(reviewsQuery);
 
           if (!reviewsSnapshot.empty) {
             reviews = reviewsSnapshot.docs.map(
@@ -264,15 +299,15 @@ export default function TableDetailsPage() {
                 ({
                   id: doc.id,
                   ...doc.data(),
-                }) as Review,
-            )
+                } as Review)
+            );
           } else {
-            console.log("No reviews found in Firebase, using mock reviews")
-            reviews = mockReviews
+            console.log("No reviews found in Firebase, using mock reviews");
+            reviews = mockReviews;
           }
         } catch (error) {
-          console.error("Error fetching reviews:", error)
-          reviews = mockReviews
+          console.error("Error fetching reviews:", error);
+          reviews = mockReviews;
         }
 
         // Add mock features if none exist
@@ -283,104 +318,114 @@ export default function TableDetailsPage() {
           "Ambient Lighting",
           "Privacy",
           "Air Conditioning",
-        ]
+        ];
 
         // Add mock availability if none exists
-        const availability = tableData.availability || mockAvailability
+        const availability = tableData.availability || mockAvailability;
 
         setTable({
           id: tableDoc.id,
           ...tableData,
           imageUrl,
           threeSixtyImageUrl,
-          additionalImages: processedAdditionalImages.filter(Boolean) as string[],
+          additionalImages: processedAdditionalImages.filter(
+            Boolean
+          ) as string[],
           reviews,
           features,
           availability,
-        })
+        });
 
-        setLoading(false)
+        setLoading(false);
       } catch (error) {
-        console.error("Error fetching table:", error)
-        setError("Failed to load table information")
-        setLoading(false)
+        console.error("Error fetching table:", error);
+        setError("Failed to load table information");
+        setLoading(false);
       }
-    }
+    };
 
     if (id) {
-      fetchTable()
+      fetchTable();
     }
-  }, [id])
+  }, [id]);
 
   // Listen for fullscreen change events
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement)
-    }
+      setIsFullscreen(!!document.fullscreenElement);
+    };
 
-    document.addEventListener("fullscreenchange", handleFullscreenChange)
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
 
     return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange)
-    }
-  }, [])
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
 
   const handleGoBack = () => {
-    router.back()
-  }
+    router.back();
+  };
 
   const handleReservation = () => {
-    setShowPaymentOptions(true)
-  }
+    setShowPaymentOptions(true);
+  };
 
   const handlePaymentOption = (option: "payment" | "preorder") => {
-    setShowPaymentOptions(false)
-    setReservationSuccess(true)
-    setShowNotification(true)
-    setTimeout(() => setShowNotification(false), 5000)
+    setShowPaymentOptions(false);
+    setReservationSuccess(true);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 5000);
 
     if (option === "payment") {
-      if (table?.restaurantId){
-        router.push(`/payment-page?restaurantId=${encodeURIComponent(table?.restaurantId)}`)
+      if (table?.restaurantId) {
+        router.push(
+          `/payment-page?restaurantId=${encodeURIComponent(
+            table?.restaurantId
+          )}`
+        );
       }
     } else {
       if (table?.restaurantId) {
-        router.push(`/cuisine-main-page?restaurantId=${encodeURIComponent(table.restaurantId)}`)
-      } 
+        router.push(
+          `/cuisine-main-page?restaurantId=${encodeURIComponent(
+            table.restaurantId
+          )}`
+        );
+      }
     }
-
-
-  }
+  };
 
   const handleToggleFavorite = () => {
-    setIsFavorite(!isFavorite)
+    setIsFavorite(!isFavorite);
     // Show notification when adding to favorites
     if (!isFavorite) {
-      setShowNotification(true)
-      setTimeout(() => setShowNotification(false), 3000)
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 3000);
     }
-  }
+  };
 
   const handleApplyPromoCode = (code: string) => {
     // Check if promo code matches any special offers
-    const offer = specialOffers.find((offer) => offer.code === code.toUpperCase())
+    const offer = specialOffers.find(
+      (offer) => offer.code === code.toUpperCase()
+    );
     if (offer) {
       // Apply discount
       if (offer.discount.includes("%")) {
-        const percentage = Number.parseInt(offer.discount)
-        setPromoDiscount(percentage)
+        const percentage = Number.parseInt(offer.discount);
+        setPromoDiscount(percentage);
       } else {
         // For non-percentage discounts, just show success
-        setPromoDiscount(10) // Default to 10% for demo
+        setPromoDiscount(10); // Default to 10% for demo
       }
       // Show success notification
-      setShowNotification(true)
-      setTimeout(() => setShowNotification(false), 3000)
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 3000);
     } else {
       // Show error for invalid code
-      alert("Invalid promo code. Please try again.")
+      alert("Invalid promo code. Please try again.");
     }
-  }
+  };
 
   // Replace the handleSubmitReview function with this updated version
   const handleSubmitReview = async (rating: number, comment: string) => {
@@ -396,10 +441,10 @@ export default function TableDetailsPage() {
           comment,
           date: new Date().toISOString().split("T")[0],
           tableId: table.id, // Add tableId to associate with the table
-        }
+        };
 
         // Add the review to Firebase
-        const reviewsCollection = collection(db, "table-reviews")
+        const reviewsCollection = collection(db, "table-reviews");
         const docRef = await addDoc(reviewsCollection, {
           userName: newReview.userName,
           userAvatar: newReview.userAvatar,
@@ -407,90 +452,106 @@ export default function TableDetailsPage() {
           comment: newReview.comment,
           date: newReview.date,
           tableId: table.id,
-        })
+        });
 
         // Update the review ID with the Firebase document ID
-        newReview.id = docRef.id
+        newReview.id = docRef.id;
 
         // Update local state
         setTable({
           ...table,
           reviews: [...(table.reviews || []), newReview],
-        })
+        });
 
         // Show success notification
-        setShowNotification(true)
-        setTimeout(() => setShowNotification(false), 3000)
+        setShowNotification(true);
+        setTimeout(() => setShowNotification(false), 3000);
       } catch (error) {
-        console.error("Error adding review:", error)
-        alert("Failed to submit review. Please try again.")
+        console.error("Error adding review:", error);
+        alert("Failed to submit review. Please try again.");
       }
     }
-  }
+  };
 
   const nextImage = () => {
     if (table?.additionalImages?.length) {
-      setCurrentImageIndex((prev) => (prev === table.additionalImages!.length - 1 ? 0 : prev + 1))
+      setCurrentImageIndex((prev) =>
+        prev === table.additionalImages!.length - 1 ? 0 : prev + 1
+      );
     }
-  }
+  };
 
   const prevImage = () => {
     if (table?.additionalImages?.length) {
-      setCurrentImageIndex((prev) => (prev === 0 ? table.additionalImages!.length - 1 : prev - 1))
+      setCurrentImageIndex((prev) =>
+        prev === 0 ? table.additionalImages!.length - 1 : prev - 1
+      );
     }
-  }
+  };
 
   const toggleFullscreen = () => {
-    if (!imageContainerRef.current) return
+    if (!imageContainerRef.current) return;
 
     if (!isFullscreen) {
       if (imageContainerRef.current.requestFullscreen) {
-        imageContainerRef.current.requestFullscreen()
+        imageContainerRef.current.requestFullscreen();
       } else if ((imageContainerRef.current as any).webkitRequestFullscreen) {
         // Safari
-        ;(imageContainerRef.current as any).webkitRequestFullscreen()
+        (imageContainerRef.current as any).webkitRequestFullscreen();
       } else if ((imageContainerRef.current as any).msRequestFullscreen) {
         // IE11
-        ;(imageContainerRef.current as any).msRequestFullscreen()
+        (imageContainerRef.current as any).msRequestFullscreen();
       }
     } else {
       if (document.exitFullscreen) {
-        document.exitFullscreen()
+        document.exitFullscreen();
       } else if ((document as any).webkitExitFullscreen) {
         // Safari
-        ;(document as any).webkitExitFullscreen()
+        (document as any).webkitExitFullscreen();
       } else if ((document as any).msExitFullscreen) {
         // IE11
-        ;(document as any).msExitFullscreen()
+        (document as any).msExitFullscreen();
       }
     }
-  }
+  };
 
   const shareTable = (platform: string) => {
-    const url = window.location.href
-    const title = `Check out this amazing table: ${table?.name}`
+    const url = window.location.href;
+    const title = `Check out this amazing table: ${table?.name}`;
 
     switch (platform) {
       case "copy":
-        navigator.clipboard.writeText(url)
-        alert("Link copied to clipboard!")
-        break
+        navigator.clipboard.writeText(url);
+        alert("Link copied to clipboard!");
+        break;
       case "facebook":
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, "_blank")
-        break
+        window.open(
+          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+            url
+          )}`,
+          "_blank"
+        );
+        break;
       case "twitter":
         window.open(
-          `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`,
-          "_blank",
-        )
-        break
+          `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+            title
+          )}&url=${encodeURIComponent(url)}`,
+          "_blank"
+        );
+        break;
       case "email":
-        window.open(`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`, "_blank")
-        break
+        window.open(
+          `mailto:?subject=${encodeURIComponent(
+            title
+          )}&body=${encodeURIComponent(url)}`,
+          "_blank"
+        );
+        break;
     }
 
-    setShowShareOptions(false)
-  }
+    setShowShareOptions(false);
+  };
 
   if (loading) {
     return (
@@ -538,7 +599,10 @@ export default function TableDetailsPage() {
               {/* Thumbnails */}
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="h-16 w-16 rounded-md flex-shrink-0" />
+                  <Skeleton
+                    key={i}
+                    className="h-16 w-16 rounded-md flex-shrink-0"
+                  />
                 ))}
               </div>
 
@@ -588,7 +652,7 @@ export default function TableDetailsPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -605,17 +669,26 @@ export default function TableDetailsPage() {
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   if (!table) {
-    return null
+    return null;
   }
 
-  const isAvailable = Boolean(table?.status?.toLowerCase() === "available")
-  console.log("Table status:", table?.status, "isAvailable:", isAvailable)
-  const allImages = [table.imageUrl, ...(table.additionalImages || [])].filter(Boolean) as string[]
-  const rating = table?.rating || (4 + Math.random()).toFixed(1)
+  const isAvailable = Boolean(table?.status?.toLowerCase() === "available");
+  console.log("Table status:", table?.status, "isAvailable:", isAvailable);
+  const allImages = [table.imageUrl, ...(table.additionalImages || [])].filter(
+    Boolean
+  ) as string[];
+  // Calculate the actual average rating from reviews if available
+  const calculatedRating = table?.reviews?.length
+    ? (
+        table.reviews.reduce((sum, review) => sum + review.rating, 0) /
+        table.reviews.length
+      ).toFixed(1)
+    : "4.0";
+  const rating = table?.rating || calculatedRating;
 
   return (
     <div className="bg-white min-h-screen">
@@ -623,17 +696,32 @@ export default function TableDetailsPage() {
       <div className="bg-white sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center">
-            <Button variant="ghost" size="icon" className="mr-2" onClick={handleGoBack}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="mr-2"
+              onClick={handleGoBack}
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-xl font-bold truncate">
               {table.name}
+              {table.restaurantId && (
+                <span className="text-sm text-gray-500 ml-2">
+                  #{table.restaurantId}
+                </span>
+              )}
             </h1>
           </div>
 
           <div className="flex gap-2">
             {isMobile ? (
-              <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setShowMobileMenu(true)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full"
+                onClick={() => setShowMobileMenu(true)}
+              >
                 <Menu className="h-5 w-5" />
               </Button>
             ) : (
@@ -641,20 +729,34 @@ export default function TableDetailsPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className={cn("rounded-full", isFavorite ? "text-red-500" : "")}
+                  className={cn(
+                    "rounded-full",
+                    isFavorite ? "text-red-500" : ""
+                  )}
                   onClick={handleToggleFavorite}
                 >
-                  <Heart className={cn("h-5 w-5", isFavorite ? "fill-red-500" : "")} />
+                  <Heart
+                    className={cn("h-5 w-5", isFavorite ? "fill-red-500" : "")}
+                  />
                 </Button>
-                <Popover open={showShareOptions} onOpenChange={setShowShareOptions}>
+                <Popover
+                  open={showShareOptions}
+                  onOpenChange={setShowShareOptions}
+                >
                   <PopoverTrigger asChild>
-                    <Button variant="ghost" size="icon" className="rounded-full">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full"
+                    >
                       <Share2 className="h-5 w-5" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-56 p-0" align="end">
                     <div className="p-2">
-                      <p className="text-sm font-medium px-2 py-1.5">Share this table</p>
+                      <p className="text-sm font-medium px-2 py-1.5">
+                        Share this table
+                      </p>
                       <Button
                         variant="ghost"
                         className="w-full justify-start text-sm px-2 py-1.5 h-9"
@@ -689,10 +791,18 @@ export default function TableDetailsPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className={cn("rounded-full", isReminderSet ? "text-amber-500" : "")}
+                  className={cn(
+                    "rounded-full",
+                    isReminderSet ? "text-amber-500" : ""
+                  )}
                   onClick={() => setIsReminderSet(!isReminderSet)}
                 >
-                  <Bell className={cn("h-5 w-5", isReminderSet ? "fill-amber-500" : "")} />
+                  <Bell
+                    className={cn(
+                      "h-5 w-5",
+                      isReminderSet ? "fill-amber-500" : ""
+                    )}
+                  />
                 </Button>
               </>
             )}
@@ -711,19 +821,24 @@ export default function TableDetailsPage() {
               variant="ghost"
               className="justify-start"
               onClick={() => {
-                handleToggleFavorite()
-                setShowMobileMenu(false)
+                handleToggleFavorite();
+                setShowMobileMenu(false);
               }}
             >
-              <Heart className={cn("h-5 w-5 mr-2", isFavorite ? "fill-red-500 text-red-500" : "")} />
+              <Heart
+                className={cn(
+                  "h-5 w-5 mr-2",
+                  isFavorite ? "fill-red-500 text-red-500" : ""
+                )}
+              />
               {isFavorite ? "Saved to favorites" : "Save to favorites"}
             </Button>
             <Button
               variant="ghost"
               className="justify-start"
               onClick={() => {
-                setShowShareOptions(true)
-                setShowMobileMenu(false)
+                setShowShareOptions(true);
+                setShowMobileMenu(false);
               }}
             >
               <Share2 className="h-5 w-5 mr-2" />
@@ -733,14 +848,23 @@ export default function TableDetailsPage() {
               variant="ghost"
               className="justify-start"
               onClick={() => {
-                setIsReminderSet(!isReminderSet)
-                setShowMobileMenu(false)
+                setIsReminderSet(!isReminderSet);
+                setShowMobileMenu(false);
               }}
             >
-              <Bell className={cn("h-5 w-5 mr-2", isReminderSet ? "fill-amber-500 text-amber-500" : "")} />
+              <Bell
+                className={cn(
+                  "h-5 w-5 mr-2",
+                  isReminderSet ? "fill-amber-500 text-amber-500" : ""
+                )}
+              />
               {isReminderSet ? "Cancel reminder" : "Set reminder"}
             </Button>
-            <Button variant="ghost" className="justify-start" onClick={() => setShowMobileMenu(false)}>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => setShowMobileMenu(false)}
+            >
               <MessageSquare className="h-5 w-5 mr-2" />
               Write a review
             </Button>
@@ -765,8 +889,8 @@ export default function TableDetailsPage() {
                   {reservationSuccess
                     ? "Your reservation has been confirmed."
                     : isFavorite
-                      ? "Table saved to your favorites."
-                      : "Your action was completed successfully."}
+                    ? "Table saved to your favorites."
+                    : "Your action was completed successfully."}
                 </p>
               </div>
             </div>
@@ -785,7 +909,9 @@ export default function TableDetailsPage() {
                 <Badge
                   className={cn(
                     "px-3 py-1.5 text-sm font-medium",
-                    isAvailable ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600",
+                    isAvailable
+                      ? "bg-green-500 hover:bg-green-600"
+                      : "bg-red-500 hover:bg-red-600"
                   )}
                 >
                   {isAvailable ? (
@@ -808,7 +934,9 @@ export default function TableDetailsPage() {
                       size="sm"
                       className={cn(
                         "rounded-full px-3 text-xs h-8",
-                        activeView === "gallery" ? "bg-white shadow-sm" : "bg-transparent",
+                        activeView === "gallery"
+                          ? "bg-white shadow-sm"
+                          : "bg-transparent"
                       )}
                       onClick={() => setActiveView("gallery")}
                     >
@@ -819,7 +947,9 @@ export default function TableDetailsPage() {
                       size="sm"
                       className={cn(
                         "rounded-full px-3 text-xs h-8",
-                        activeView === "360" ? "bg-white shadow-sm" : "bg-transparent",
+                        activeView === "360"
+                          ? "bg-white shadow-sm"
+                          : "bg-transparent"
                       )}
                       onClick={() => setActiveView("360")}
                     >
@@ -835,7 +965,8 @@ export default function TableDetailsPage() {
                   <span className="font-medium">{rating}</span>
                 </div>
                 <Button variant="ghost" size="sm" className="text-xs h-8 px-2">
-                  {table.reviews?.length || 0} {table.reviews?.length === 1 ? "review" : "reviews"}
+                  {table.reviews?.length || 0}{" "}
+                  {table.reviews?.length === 1 ? "review" : "reviews"}
                 </Button>
               </div>
             </div>
@@ -880,7 +1011,11 @@ export default function TableDetailsPage() {
                     className="absolute right-2 bottom-2 bg-white/80 hover:bg-white/90 rounded-full"
                     onClick={toggleFullscreen}
                   >
-                    {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+                    {isFullscreen ? (
+                      <Minimize className="h-5 w-5" />
+                    ) : (
+                      <Maximize className="h-5 w-5" />
+                    )}
                   </Button>
 
                   {/* Image Counter */}
@@ -893,7 +1028,9 @@ export default function TableDetailsPage() {
               ) : (
                 <>
                   {process.env.NODE_ENV === "production" ? (
-                    <Fallback360Viewer imageUrl={table.threeSixtyImageUrl || ""} />
+                    <Fallback360Viewer
+                      imageUrl={table.threeSixtyImageUrl || ""}
+                    />
                   ) : (
                     <ThreeSixtyViewer imageUrl={"/ff.jpg"} />
                   )}
@@ -915,7 +1052,9 @@ export default function TableDetailsPage() {
                     key={idx}
                     className={cn(
                       "cursor-pointer rounded-md overflow-hidden h-16 w-16 flex-shrink-0",
-                      currentImageIndex === idx ? "ring-2 ring-primary ring-offset-2" : "opacity-70 hover:opacity-100",
+                      currentImageIndex === idx
+                        ? "ring-2 ring-primary ring-offset-2"
+                        : "opacity-70 hover:opacity-100"
                     )}
                     onClick={() => setCurrentImageIndex(idx)}
                   >
@@ -933,7 +1072,10 @@ export default function TableDetailsPage() {
             <AvailabilityCalendar availability={table.availability} />
 
             {/* Special Offers */}
-            <SpecialOffers offers={specialOffers} onApplyCode={handleApplyPromoCode} />
+            <SpecialOffers
+              offers={specialOffers}
+              onApplyCode={handleApplyPromoCode}
+            />
 
             {/* Table Information */}
             <div className="space-y-4">
@@ -945,13 +1087,17 @@ export default function TableDetailsPage() {
 
                 <div className="flex items-center gap-2">
                   <Users size={16} className="text-gray-500" />
-                  <span className="text-gray-700">Seats {table.seats} people</span>
+                  <span className="text-gray-700">
+                    Seats {table.seats} people
+                  </span>
                   {table.price && (
                     <>
                       <span className="mx-2 text-gray-300">•</span>
                       <div className="flex items-center text-gray-700">
                         <DollarSign size={16} className="mr-0.5" />
-                        <span className="font-medium">${table.price.toFixed(2)}</span>
+                        <span className="font-medium">
+                          ${table.price.toFixed(2)}
+                        </span>
                       </div>
                     </>
                   )}
@@ -962,13 +1108,20 @@ export default function TableDetailsPage() {
             {/* Description */}
             {table.description && (
               <div className="pt-2">
-                <h3 className="text-lg font-semibold mb-3 text-gray-800">About this table</h3>
-                <p className="text-gray-600 leading-relaxed">{table.description}</p>
+                <h3 className="text-lg font-semibold mb-3 text-gray-800">
+                  About this table
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {table.description}
+                </p>
               </div>
             )}
 
             {/* Features and Amenities */}
-            <FeaturesSection features={table.features || []} seats={table.seats} />
+            <FeaturesSection
+              features={table.features || []}
+              seats={table.seats}
+            />
 
             {/* Reviews Section */}
             <ReviewSection
@@ -1026,15 +1179,17 @@ export default function TableDetailsPage() {
                       </li>
                       <li className="flex items-start">
                         <Info size={16} className="mr-2 mt-0.5 text-blue-500" />
-                        Cancellations must be made at least 1 hour before reservation time
+                        Cancellations must be made at least 1 hour before
+                        reservation time
                       </li>
                       <li className="flex items-start">
                         <Info size={16} className="mr-2 mt-0.5 text-blue-500" />
-                        Late arrivals may result in table being given to other guests
+                        Late arrivals may result in table being given to other
+                        guests
                       </li>
                       <li className="flex items-start">
-                        <Info size={16} className="mr-2 mt-0.5 text-blue-500" />A credit card is required to hold your
-                        reservation
+                        <Info size={16} className="mr-2 mt-0.5 text-blue-500" />
+                        A credit card is required to hold your reservation
                       </li>
                     </ul>
                   </AccordionContent>
@@ -1087,8 +1242,12 @@ export default function TableDetailsPage() {
       <Dialog open={showPaymentOptions} onOpenChange={setShowPaymentOptions}>
         <DialogContent className="sm:max-w-[400px] w-[90%] max-w-[350px] mx-auto rounded-xl overflow-hidden">
           <DialogHeader>
-            <DialogTitle className="text-xl">Complete Your Reservation</DialogTitle>
-            <DialogDescription>Would you like to proceed to payment or preorder your meals now?</DialogDescription>
+            <DialogTitle className="text-xl">
+              Complete Your Reservation
+            </DialogTitle>
+            <DialogDescription>
+              Would you like to proceed to payment or preorder your meals now?
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <Button
@@ -1110,6 +1269,5 @@ export default function TableDetailsPage() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
-
