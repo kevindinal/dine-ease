@@ -59,6 +59,7 @@ interface Table {
   restaurantId: string
   seats: number
   imageUrl?: string
+  imageUrls?: string[]
   price?: number
   features?: string[]
   availability?: {
@@ -199,18 +200,27 @@ export default function TableReservation() {
         const tablesData = await Promise.all(
           querySnapshot.docs.map(async (docSnap) => {
             const data = docSnap.data()
-            let imageUrl = data.imageUrl
+            let imageUrls = data.imageUrls || []
 
-            if (imageUrl && !imageUrl.startsWith("http")) {
-              try {
-                const storageRef = ref(storage, imageUrl)
-                imageUrl = await getDownloadURL(storageRef)
-              } catch (error) {
-                console.error("Error fetching image URL: ", error)
-              }
+            // Process imageUrls array
+            if (imageUrls.length > 0) {
+              imageUrls = await Promise.all(
+                imageUrls.map(async (url: string) => {
+                  if (url && !url.startsWith("http")) {
+                    try {
+                      const storageRef = ref(storage, url)
+                      return await getDownloadURL(storageRef)
+                    } catch (error) {
+                      console.error("Error fetching image URL: ", error)
+                      return null
+                    }
+                  }
+                  return url
+                }),
+              ).then((urls) => urls.filter(Boolean))
             }
 
-            return { id: docSnap.id, ...data, imageUrl } as Table
+            return { id: docSnap.id, ...data, imageUrls } as Table
           }),
         )
 
@@ -939,8 +949,9 @@ function TableCard({ table, onClick }: TableCardProps) {
   // Generate a random rating between 4.0 and 5.0 for demo purposes
   const rating = (4 + Math.random()).toFixed(1)
 
-  // Get a suitable background image if none is provided
-  const tableImage = table.imageUrl || `/placeholder.svg?height=300&width=400`
+  // Get a suitable background image from the imageUrls array if available
+  const tableImage =
+    table.imageUrls && table.imageUrls.length > 0 ? table.imageUrls[0] : `/placeholder.svg?height=300&width=400`
 
   // Get appropriate seat arrangement description
   const getSeatArrangement = (seats: number) => {
