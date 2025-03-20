@@ -1,5 +1,5 @@
 import { GalleryVerticalEnd } from "lucide-react";
-import AuthForm from "@/components/auth/AuthForm";
+import { AuthForm } from "@/components/auth/AuthForm";
 import Image from "next/image";
 
 const SignUp = () => {
