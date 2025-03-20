@@ -50,6 +50,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 // Import our components
 import ReviewSection from "@/app/table-reservation/components/review-section"
@@ -121,6 +122,7 @@ export default function TableDetailsPage() {
   const [showNotification, setShowNotification] = useState(false)
   const [isReminderSet, setIsReminderSet] = useState(false)
   const [promoDiscount, setPromoDiscount] = useState(0)
+  const [showPaymentOptions, setShowPaymentOptions] = useState(false)
   const isMobile = useMediaQuery("(max-width: 768px)")
   const imageContainerRef = useRef<HTMLDivElement>(null)
 
@@ -305,9 +307,25 @@ export default function TableDetailsPage() {
   }
 
   const handleReservation = () => {
+    setShowPaymentOptions(true)
+  }
+
+  const handlePaymentOption = (option: "payment" | "preorder") => {
+    setShowPaymentOptions(false)
     setReservationSuccess(true)
     setShowNotification(true)
     setTimeout(() => setShowNotification(false), 5000)
+
+    // Navigate to the appropriate page based on selection
+    if (option === "payment") {
+      // For now, just log the action, but you could navigate to payment page
+      console.log("Proceeding to payment")
+      // router.push('/payment')
+    } else {
+      // For now, just log the action, but you could navigate to preorder page
+      console.log("Proceeding to meal preorder")
+      // router.push('/preorder')
+    }
   }
 
   const handleToggleFavorite = () => {
@@ -1016,6 +1034,32 @@ export default function TableDetailsPage() {
           </div>
         </div>
       </div>
+      {/* Payment Options Dialog */}
+      <Dialog open={showPaymentOptions} onOpenChange={setShowPaymentOptions}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Complete Your Reservation</DialogTitle>
+            <DialogDescription>Would you like to proceed to payment or preorder your meals now?</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Button
+              onClick={() => handlePaymentOption("payment")}
+              className="w-full flex items-center justify-center gap-2"
+            >
+              <CreditCard className="h-5 w-5" />
+              Proceed to Payment
+            </Button>
+            <Button
+              onClick={() => handlePaymentOption("preorder")}
+              variant="outline"
+              className="w-full flex items-center justify-center gap-2"
+            >
+              <Utensils className="h-5 w-5" />
+              Preorder Meals
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
