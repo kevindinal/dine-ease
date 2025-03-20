@@ -112,7 +112,7 @@ export default function Footer() {
               <div className="absolute -bottom-2 left-0 h-0.5 w-full bg-[#FA4032]" />
             </h4>
             <ul className="space-y-3">
-              {["About", "Features", "Restaurants", "Contact"].map((item) => (
+              {["About", "Restaurants", "Contact"].map((item) => (
                 <li key={item}>
                   <Link
                     href={`#${item.toLowerCase()}`}
@@ -176,7 +176,23 @@ export default function Footer() {
           </div>
         </div>
 
-        
+        <div className="mt-16 pt-8 text-center relative">
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-[#FA4032]/50 to-transparent"></div>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-[#FFECEB]/70">&copy; {currentYear} DineEase. All rights reserved.</p>
+            <div className="flex gap-6">
+              <Link href="#" className="text-[#FFECEB]/70 hover:text-white transition-colors text-sm">
+                FAQ
+              </Link>
+              <Link href="#" className="text-[#FFECEB]/70 hover:text-white transition-colors text-sm">
+                Support
+              </Link>
+              <Link href="#" className="text-[#FFECEB]/70 hover:text-white transition-colors text-sm">
+                Careers
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Simple static wave instead of animated */}
