@@ -1213,7 +1213,7 @@ function TableCard({ table, onClick }: TableCardProps) {
             <Button
               className={cn(
                 "w-full transition-all",
-                isAvailable ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 hover:bg-gray-500 cursor-not-allowed",
+                isAvailable ? "bg-red-500 hover:bg-red-600" : "bg-gray-400 hover:bg-gray-500 cursor-not-allowed",
               )}
               disabled={!isAvailable}
             >
