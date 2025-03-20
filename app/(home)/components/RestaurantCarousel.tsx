@@ -83,7 +83,95 @@ const RestaurantCarousel = () => {
     )
   }
 
-  
+  return (
+    <motion.div
+      className="relative w-full overflow-hidden py-16 px-4"
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      animate={controls}
+      style={{
+        backgroundImage: "radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.9) 0%, rgba(252, 251, 255, 1) 90%)",
+        backgroundSize: "200% 200%",
+      }}
+    >
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Animated circles */}
+        {[...Array(5)].map((_, i) => (
+          <motion.div
+            key={`circle-${i}`}
+            className="absolute rounded-full opacity-10"
+            style={{
+              background: i % 2 === 0 ? "#FA4032" : "#FFECEB",
+              width: `${getRandomNumber(100, 200, `size-${i}`)}px`,
+              height: `${getRandomNumber(100, 200, `size-${i}`)}px`,
+              left: `${getRandomNumber(-10, 110, `left-${i}`)}%`,
+              top: `${getRandomNumber(-10, 110, `top-${i}`)}%`,
+            }}
+            animate={{
+              x: [0, getRandomNumber(-20, 20, `move-x-${i}`)],
+              y: [0, getRandomNumber(-20, 20, `move-y-${i}`)],
+              scale: [1, getRandomNumber(0.9, 1.1, `scale-${i}`)],
+            }}
+            transition={{
+              duration: getRandomNumber(15, 25, `duration-${i}`),
+              repeat: Number.POSITIVE_INFINITY,
+              repeatType: "reverse",
+              ease: "easeInOut",
+            }}
+          />
+        ))}
+
+        {/* Food-themed icons */}
+        {[...Array(8)].map((_, i) => {
+          const icons = [<Utensils key={i} size={20} />, <Star key={i} size={20} />, <Heart key={i} size={20} />]
+          const IconComponent = icons[i % 3]
+
+          return (
+            <motion.div
+              key={`icon-${i}`}
+              className="absolute text-[#FA4032]/10"
+              initial={{
+                x: getRandomNumber(10, 90, `icon-x-${i}`),
+                y: -20,
+                rotate: getRandomNumber(-20, 20, `icon-r-${i}`),
+                scale: getRandomNumber(0.8, 1.5, `icon-s-${i}`),
+              }}
+              animate={{
+                y: ["0%", "100%"],
+                rotate: [getRandomNumber(-20, 20, `icon-r1-${i}`), getRandomNumber(-20, 20, `icon-r2-${i}`)],
+              }}
+              transition={{
+                duration: getRandomNumber(15, 25, `icon-d-${i}`),
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "linear",
+                delay: i * 0.5,
+              }}
+              style={{ left: `${getRandomNumber(0, 100, `icon-pos-${i}`)}%` }}
+            >
+              {IconComponent}
+            </motion.div>
+          )
+        })}
+      </div>
+
+      {/* Interactive cursor effect */}
+      <motion.div
+        className="fixed w-12 h-12 rounded-full pointer-events-none z-50 mix-blend-difference"
+        animate={{
+          x: mousePosition.x - 24,
+          y: mousePosition.y - 24,
+          scale: activeIndex !== null ? 1.5 : 1,
+        }}
+        transition={{ type: "spring", damping: 10, stiffness: 100 }}
+        style={{ background: "rgba(255, 255, 255, 0.8)" }}
+      />
+
+      
+
+      
+    </motion.div>
+  )
 }
 
 export default RestaurantCarousel
