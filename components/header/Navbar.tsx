@@ -181,8 +181,127 @@ const Navbar = () => {
             />
           </Link>
 
-          
-        
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            {navLinks.map((link, index) => (
+              <Link
+                key={link.title}
+                href={link.href}
+                className="text-white relative group py-2"
+                onMouseEnter={() => setHoverLink(index)}
+                onMouseLeave={() => setHoverLink(null)}
+              >
+                <motion.div
+                  className="relative z-10 flex items-center"
+                  whileHover={{ y: -2 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
+                  <span>{link.title}</span>
+
+                  {/* Animated icon on hover */}
+                  <AnimatePresence>
+                    {hoverLink === index && (
+                      <motion.div
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 10 }}
+                        transition={{ duration: 0.2 }}
+                        className="ml-1"
+                      >
+                        {React.cloneElement(foodIcons[index % foodIcons.length])}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+
+                {/* Animated underline with gradient */}
+                <motion.span
+                  className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-white/50 via-white to-white/50 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={hoverLink === index ? { width: "100%" } : { width: 0 }}
+                  transition={{ duration: 0.3 }}
+                />
+
+                {/* Particle effects on hover */}
+                <AnimatePresence>
+                  {hoverLink === index && (
+                    <>
+                      {[...Array(5)].map((_, i) => (
+                        <motion.span
+                          key={`nav-particle-${index}-${i}`}
+                          className="absolute w-1 h-1 rounded-full bg-white"
+                          initial={{
+                            x: 0,
+                            y: 0,
+                            opacity: 0,
+                            scale: 0,
+                          }}
+                          animate={{
+                            x: (Math.random() - 0.5) * 30,
+                            y: (Math.random() - 0.5) * 30,
+                            opacity: [0, 1, 0],
+                            scale: [0, 1, 0],
+                          }}
+                          exit={{ opacity: 0, scale: 0 }}
+                          transition={{ duration: 0.8 }}
+                        />
+                      ))}
+                    </>
+                  )}
+                </AnimatePresence>
+              </Link>
+            ))}
+
+            {/* User Profile Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="relative rounded-full bg-white/10 hover:bg-white/20 p-1 transition-all duration-300 hover:scale-105 group"
+                >
+                  <motion.div
+                    className="flex items-center gap-2 px-2"
+                    whileHover={{ x: 3 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  >
+                    <div className="relative">
+                      <Avatar className="h-8 w-8 border-2 border-white transition-transform duration-300 group-hover:border-primary">
+                        <AvatarImage src={user.image} alt={user.name} />
+                        <AvatarFallback className="bg-primary text-white">{user.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+
+                      {/* Animated ring */}
+                      <motion.div
+                        className="absolute -inset-1 rounded-full border border-white/30"
+                        initial={{ scale: 0, opacity: 0 }}
+                        whileHover={{ scale: 1.2, opacity: 1, rotate: 360 }}
+                        transition={{ duration: 0.8 }}
+                      />
+                    </div>
+                    <span className="text-white font-medium hidden sm:inline">{user.name}</span>
+
+                    {/* Animated sparkle */}
+                    <motion.div
+                      animate={{
+                        rotate: [0, 15, -15, 0],
+                        scale: [1, 1.2, 0.8, 1],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Number.POSITIVE_INFINITY,
+                        repeatType: "reverse",
+                      }}
+                      className="absolute -top-1 -right-1 text-yellow-300"
+                    >
+                      <Sparkles size={12} />
+                    </motion.div>
+                  </motion.div>
+                </Button>
+              </DropdownMenuTrigger>
+              
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.nav>
   )
