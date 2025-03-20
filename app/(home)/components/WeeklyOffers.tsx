@@ -540,7 +540,39 @@ const WeeklyOffers = () => {
                                 ease: "linear",
                               }}
                             >
-                              
+                              <svg viewBox="0 0 100 100" className="w-full h-full">
+                                <circle cx="50" cy="50" r="45" fill="#FFECEB" />
+                                <g transform="translate(50 50)">
+                                  <motion.g
+                                    animate={{ rotate: isActive ? [0, 360] : 0 }}
+                                    transition={{
+                                      duration: 10,
+                                      repeat: isActive ? Number.POSITIVE_INFINITY : 0,
+                                      ease: "linear",
+                                    }}
+                                  >
+                                    {[...Array(8)].map((_, i) => (
+                                      <rect
+                                        key={`rect-${i}`}
+                                        width="4"
+                                        height="12"
+                                        rx="2"
+                                        fill="#FA4032"
+                                        transform={`rotate(${i * 45}) translate(0 -30)`}
+                                        opacity={0.7}
+                                      />
+                                    ))}
+                                  </motion.g>
+                                </g>
+                                <circle cx="50" cy="50" r="20" fill="#FA4032" />
+                                <circle cx="50" cy="50" r="15" fill="#FFECEB" />
+                                <path
+                                  d="M45,50 L55,50 M50,45 L50,55"
+                                  stroke="#FA4032"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                />
+                              </svg>
                             </motion.div>
                           </div>
                         </div>
