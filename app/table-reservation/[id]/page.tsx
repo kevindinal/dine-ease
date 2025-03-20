@@ -628,7 +628,6 @@ export default function TableDetailsPage() {
             </Button>
             <h1 className="text-xl font-bold truncate">
               {table.name}
-              {table.restaurantId && <span className="text-sm text-gray-500 ml-2">#{table.restaurantId}</span>}
             </h1>
           </div>
 
