@@ -240,7 +240,74 @@ export default function HomePage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              
+              <div className="relative">
+                {/* Main Image */}
+                <motion.div
+                  className="relative z-10 rounded-3xl overflow-hidden shadow-2xl"
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 6, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse" }}
+                >
+                  <img
+                    src="https://cdn.vox-cdn.com/thumbor/qUPZWYVUM3qEhelFxDOowoh-6M8=/0x0:8256x5504/1200x900/filters:focal(3468x2092:4788x3412):no_upscale()/cdn.vox-cdn.com/uploads/chorus_image/image/69505012/Peak_Main_Dining_Room_Credit_CharissaFay__2_.0.jpg"
+                    alt="Delicious food"
+                    className="w-full h-auto rounded-3xl"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent rounded-3xl"></div>
+                </motion.div>
+
+                {/* Floating Elements */}
+                <motion.div
+                  className="absolute -top-10 -right-10 bg-white rounded-2xl p-4 shadow-xl z-20"
+                  animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }}
+                  transition={{ duration: 5, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse" }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#FFECEB] flex items-center justify-center">
+                      <Star className="h-5 w-5 text-[#FA4032] fill-[#FA4032]" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium">Top Rated</div>
+                      <div className="text-xs text-gray-500">4.9/5 (2.5k reviews)</div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  className="absolute -bottom-10 -left-10 bg-white rounded-2xl p-4 shadow-xl z-20"
+                  animate={{ y: [0, 15, 0], rotate: [0, -5, 0] }}
+                  transition={{ duration: 5, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse", delay: 1 }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#FFECEB] flex items-center justify-center">
+                      <Clock className="h-5 w-5 text-[#FA4032]" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium">Fast Delivery</div>
+                      <div className="text-xs text-gray-500">30 min or less</div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  className="absolute top-1/2 -translate-y-1/2 -left-16 bg-white rounded-2xl p-4 shadow-xl z-20"
+                  animate={{ x: [0, 10, 0], rotate: [0, 3, 0] }}
+                  transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse", delay: 0.5 }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#FFECEB] flex items-center justify-center">
+                      <MapPin className="h-5 w-5 text-[#FA4032]" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium">Nearby Options</div>
+                      <div className="text-xs text-gray-500">Find local favorites</div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Background Decorative Elements */}
+                <div className="absolute -bottom-10 -right-10 w-64 h-64 rounded-full bg-[#FFECEB] opacity-50 blur-3xl"></div>
+                <div className="absolute -top-10 -left-10 w-48 h-48 rounded-full bg-[#FA4032]/10 opacity-50 blur-3xl"></div>
+              </div>
             </motion.div>
           </div>
 
