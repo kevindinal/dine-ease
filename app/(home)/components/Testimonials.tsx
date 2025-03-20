@@ -373,7 +373,151 @@ const Testimonials = () => {
               <ChevronLeft className="h-6 w-6 text-[#FA4032]" />
             </motion.button>
 
-            
+            <div className="overflow-hidden w-full">
+              <div
+                className="flex transition-transform duration-700 ease-in-out"
+                style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+              >
+                {testimonials.map((testimonial, index) => {
+                  const isActive = currentIndex === index
+                  return (
+                    <div
+                      key={testimonial.uid}
+                      className="min-w-full px-4"
+                      onMouseEnter={() => setActiveIndex(index)}
+                      onMouseLeave={() => setActiveIndex(null)}
+                    >
+                      <motion.div
+                        className="relative bg-white rounded-3xl p-8 shadow-xl overflow-hidden"
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        whileHover={{ y: -5 }}
+                      >
+                        {/* Background pattern */}
+                        <div className="absolute inset-0 opacity-5">
+                          <svg width="100%" height="100%">
+                            <pattern
+                              id={`testimonial-pattern-${index}`}
+                              x="0"
+                              y="0"
+                              width="20"
+                              height="20"
+                              patternUnits="userSpaceOnUse"
+                            >
+                              <circle cx="10" cy="10" r="1" fill="#FA4032" />
+                            </pattern>
+                            <rect x="0" y="0" width="100%" height="100%" fill={`url(#testimonial-pattern-${index})`} />
+                          </svg>
+                        </div>
+
+                        {/* Large quote marks */}
+                        <div className="absolute top-6 right-6 opacity-10">
+                          <Quote className="h-24 w-24 text-[#FA4032]" />
+                        </div>
+
+                        <div className="relative z-10">
+                          <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left">
+                            <motion.div
+                              className="mb-6 md:mb-0 md:mr-8"
+                              animate={{
+                                scale: isActive ? [1, 1.05, 1] : 1,
+                              }}
+                              transition={{ duration: 2, repeat: isActive ? Number.POSITIVE_INFINITY : 0 }}
+                            >
+                              <div className="relative">
+                                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#FFECEB] to-[#FA4032] p-1">
+                                  <Avatar className="w-full h-full border-4 border-white">
+                                    <AvatarFallback className="text-2xl bg-white text-[#FA4032]">
+                                      {getInitials(testimonial.firstName)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                </div>
+
+                                {/* Animated ring */}
+                                <motion.div
+                                  className="absolute -inset-2 rounded-full border-2 border-dashed border-[#FA4032]/30"
+                                  animate={{ rotate: 360 }}
+                                  transition={{
+                                    duration: 20,
+                                    repeat: Number.POSITIVE_INFINITY,
+                                    ease: "linear",
+                                  }}
+                                  style={{ opacity: isActive ? 1 : 0 }}
+                                />
+                              </div>
+                            </motion.div>
+
+                            <div className="flex-1">
+                              <div className="mb-4">
+                                <motion.div
+                                  className="inline-flex items-center space-x-1"
+                                  animate={{
+                                    y: isActive ? [0, -2, 0] : 0,
+                                  }}
+                                  transition={{ duration: 1, repeat: isActive ? Number.POSITIVE_INFINITY : 0 }}
+                                >
+                                  {[...Array(5)].map((_, i) => (
+                                    <motion.div
+                                      key={`star-${i}`}
+                                      animate={{
+                                        scale: isActive ? [1, i === Math.floor(Math.random() * 5) ? 1.3 : 1, 1] : 1,
+                                      }}
+                                      transition={{
+                                        duration: 0.5,
+                                        repeat: isActive ? Number.POSITIVE_INFINITY : 0,
+                                        repeatType: "reverse",
+                                        delay: i * 0.1,
+                                      }}
+                                    >
+                                      <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                                    </motion.div>
+                                  ))}
+                                </motion.div>
+                              </div>
+
+                              <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.2, duration: 0.5 }}
+                              >
+                                <motion.p
+                                  className="text-lg md:text-xl text-gray-700 mb-6 italic relative"
+                                  animate={{
+                                    opacity: isActive ? [0.9, 1, 0.9] : 1,
+                                  }}
+                                  transition={{ duration: 2, repeat: isActive ? Number.POSITIVE_INFINITY : 0 }}
+                                >
+                                  <span className="text-[#FA4032] text-3xl font-serif absolute -left-2 -top-2">"</span>
+                                  {testimonial.user_review}
+                                  <span className="text-[#FA4032] text-3xl font-serif absolute -right-2">"</span>
+                                </motion.p>
+
+                                <div className="flex flex-col items-center md:items-start">
+                                  <h4 className="font-bold text-xl text-[#6D1A36]">
+                                    {testimonial.firstName} {testimonial.lastName || ""}
+                                  </h4>
+                                  <p className="text-sm text-gray-500">
+                                    {testimonial.email ? testimonial.email.split("@")[0] : "Customer"}
+                                  </p>
+                                </div>
+                              </motion.div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Decorative elements */}
+                        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#FA4032] to-transparent opacity-20"></div>
+                        <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-[#FA4032] rounded-tl-md opacity-30"></div>
+                        <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-[#FA4032] rounded-tr-md opacity-30"></div>
+                        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-[#FA4032] rounded-bl-md opacity-30"></div>
+                        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-[#FA4032] rounded-br-md opacity-30"></div>
+                      </motion.div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
 
             <motion.button
               onClick={nextTestimonial}
