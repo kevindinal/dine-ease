@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { doc, getDoc } from "firebase/firestore"
+import { doc, getDoc, collection, getDocs, query, where } from "firebase/firestore"
 import { ref, getDownloadURL } from "firebase/storage"
 import { db, storage } from "@/lib/firebase/tables"
 import {
@@ -250,8 +250,28 @@ export default function TableDetailsPage() {
           }),
         )
 
-        // Add mock reviews if none exist
-        const reviews = tableData.reviews || mockReviews
+        // Fetch reviews from table-reviews collection
+        let reviews: Review[] = []
+        try {
+          const reviewsQuery = query(collection(db, "table-reviews"), where("tableId", "==", id))
+          const reviewsSnapshot = await getDocs(reviewsQuery)
+
+          if (!reviewsSnapshot.empty) {
+            reviews = reviewsSnapshot.docs.map(
+              (doc) =>
+                ({
+                  id: doc.id,
+                  ...doc.data(),
+                }) as Review,
+            )
+          } else {
+            console.log("No reviews found in Firebase, using mock reviews")
+            reviews = mockReviews
+          }
+        } catch (error) {
+          console.error("Error fetching reviews:", error)
+          reviews = mockReviews
+        }
 
         // Add mock features if none exist
         const features = tableData.features || [
@@ -326,6 +346,7 @@ export default function TableDetailsPage() {
         router.push(`/cuisine-main-page?restaurantId=${encodeURIComponent(table.restaurantId)}`)
       } 
     }
+
   }
 
   const handleToggleFavorite = () => {
@@ -581,6 +602,7 @@ export default function TableDetailsPage() {
             </Button>
             <h1 className="text-xl font-bold truncate">
               {table.name}
+              {table.restaurantId && <span className="text-sm text-gray-500 ml-2">#{table.restaurantId}</span>}
             </h1>
           </div>
 
