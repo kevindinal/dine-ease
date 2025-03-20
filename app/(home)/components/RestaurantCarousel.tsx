@@ -463,7 +463,25 @@ const RestaurantCarousel = () => {
         </div>
       </div>
 
-      
+      {/* Decorative bottom elements */}
+      <div className="absolute bottom-0 left-0 w-full h-20 pointer-events-none overflow-hidden">
+        <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-to-t from-white/30 to-transparent"></div>
+        <motion.div
+          className="absolute bottom-0 left-0 w-full"
+          animate={{ x: ["-100%", "100%"] }}
+          transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+        >
+          <svg viewBox="0 0 1200 30" height="30" width="100%">
+            <path
+              d="M0,15 Q30,5 60,15 T120,15 T180,15 T240,15 T300,15 T360,15 T420,15 T480,15 T540,15 T600,15 T660,15 T720,15 T780,15 T840,15 T900,15 T960,15 T1020,15 T1080,15 T1140,15 T1200,15"
+              fill="none"
+              stroke="#FA4032"
+              strokeWidth="2"
+              strokeOpacity="0.3"
+            />
+          </svg>
+        </motion.div>
+      </div>
     </motion.div>
   )
 }
