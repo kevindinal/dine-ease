@@ -1,13 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react";
-import { useMeals } from "../hooks/useMeals";
-import usePreOrder, {PreOrder} from "../hooks/usePreOrder";
-import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
+import usePreOrder from "../hooks/usePreOrder";
 import CuisineDetailContainer from "../components/CuisineDetailContainer";
-import FoodCard from "../components/FoodCard";
 import FloatingButtons from "../components/FloatingButtons";
 import PreOrderModal from "../components/PreOrderModel";
+import { useMeals } from "../hooks/useMeals";
 
 const MealDetailsPage: React.FC = () => {
   const { preOrders, preOrderCount, addItemToPreOrder, removePreOrderItem, clearPreOrder } = usePreOrder();
@@ -67,7 +66,6 @@ const handleAddToPreOrder = (customizations: Customizations) => {
 
       <section className="relative py-20 px-4 md:px-14 text-white">
         <CuisineDetailContainer
-
           handleAddToPreOrder={handleAddToPreOrder}
         />
       </section>
