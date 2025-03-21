@@ -2,13 +2,12 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { CalendarIcon, Clock, Users, ChevronRight } from "lucide-react"
+import { CalendarIcon, Users, ChevronRight } from "lucide-react"
 import { motion } from "framer-motion"
-import { format } from "date-fns"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
+import { TimePicker } from "@/app/(restaurants)/components/timePicker" // Using the TimePicker component
 
 type BannerSectionProps = {
   restaurant?: {
@@ -95,23 +94,23 @@ export default function BannerSection({ restaurant }: BannerSectionProps) {
             </p>
           </motion.div>
 
-          {/* Reservation Card */}
+          {/* Reservation Form - Styled to match the image */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="bg-white rounded-3xl shadow-2xl w-full max-w-xl text-gray-800 overflow-hidden"
+            className="w-full max-w-5xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden p-4"
           >
-            <div className="p-6 sm:p-8">
-              {/* Date Selection */}
+            <div className="flex flex-col md:flex-row gap-3">
+              {/* Date Selector */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="w-full mb-4 p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center text-left">
-                    <CalendarIcon className="h-5 w-5 text-red-500 mr-3" />
+                  <button className="flex-1 flex items-center gap-3 p-4 h-[56px] bg-white border border-gray-200 rounded-lg text-left">
+                    <CalendarIcon className="h-5 w-5 text-red-500" />
                     <span className="text-gray-800 font-medium">{formatDateForDisplay(selectedDate)}</span>
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="center">
+                <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
                     selected={selectedDate}
@@ -127,55 +126,50 @@ export default function BannerSection({ restaurant }: BannerSectionProps) {
                 </PopoverContent>
               </Popover>
 
-              {/* Time Selection */}
+              {/* Time Selector - Using the TimePicker component */}
+              <div className="flex-1 flex">
+                <TimePicker value={selectedTime} onChange={setSelectedTime} error={false} />
+              </div>
+
+              {/* People Selector */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="w-full mb-4 p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center text-left">
-                    <Clock className="h-5 w-5 text-red-500 mr-3" />
+                  <button className="flex-1 flex items-center gap-3 p-4 h-[56px] bg-white border border-gray-200 rounded-lg text-left">
+                    <Users className="h-5 w-5 text-red-500" />
                     <span className="text-gray-800 font-medium">
-                      {selectedTime === "19:00" ? "7:00 PM" : format(new Date(`2023-01-01T${selectedTime}`), "h:mm a")}
+                      {guestCount} {guestCount === 1 ? "person" : "people"}
                     </span>
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="center">
-                  <div className="p-4 w-[300px]">
+                <PopoverContent className="w-auto p-0" align="start">
+                  <div className="p-4 w-[200px]">
                     <div className="grid grid-cols-3 gap-2">
-                      {["17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00"].map((time) => (
-                        <Button
-                          key={time}
-                          variant="outline"
-                          className={cn("text-sm", selectedTime === time ? "bg-red-500 text-white border-red-500" : "")}
-                          onClick={() => setSelectedTime(time)}
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                        <button
+                          key={num}
+                          className={cn(
+                            "py-2 px-3 rounded-md text-sm font-medium",
+                            guestCount === num
+                              ? "bg-red-500 text-white"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+                          )}
+                          onClick={() => setGuestCount(num)}
                         >
-                          {format(new Date(`2023-01-01T${time}`), "h:mm a")}
-                        </Button>
+                          {num}
+                        </button>
                       ))}
                     </div>
                   </div>
                 </PopoverContent>
               </Popover>
 
-              {/* People Selection */}
-              <button
-                className="w-full mb-4 p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center text-left"
-                onClick={() => {
-                  // This would typically open a dropdown, but for simplicity we'll just cycle through options
-                  setGuestCount(guestCount === 10 ? 1 : guestCount + 1)
-                }}
-              >
-                <Users className="h-5 w-5 text-red-500 mr-3" />
-                <span className="text-gray-800 font-medium">
-                  {guestCount} {guestCount === 1 ? "person" : "people"}
-                </span>
-              </button>
-
               {/* Find Tables Button */}
               <button
-                className="w-full p-4 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl flex items-center justify-center transition-colors duration-300"
+                className="flex-1 p-4 h-[56px] bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg flex items-center justify-center gap-2 transition-colors duration-300"
                 onClick={handleFindTable}
               >
                 <span>Find Tables</span>
-                <ChevronRight className="ml-2 h-5 w-5" />
+                <ChevronRight className="h-5 w-5" />
               </button>
             </div>
           </motion.div>
