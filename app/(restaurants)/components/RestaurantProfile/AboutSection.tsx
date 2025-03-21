@@ -1,70 +1,134 @@
+"use client"
+
+import { motion } from "framer-motion"
+import { Tag, MapPin, DollarSign, Utensils } from "lucide-react"
+
 type AboutSectionProps = {
   restaurant: {
-    name: string;
-    about: string;
-    cuisine: string[];
-    priceRange: string;
-    category: string;
-    location: string;
-    photos: string[];
-  };
-};
+    name: string
+    about: string
+    cuisine: string[]
+    priceRange: string
+    category: string
+    location: string
+    photos: string[]
+  }
+}
 
 export default function AboutSection({ restaurant }: AboutSectionProps) {
   return (
-    <div className="p-8 max-w-8xl mx-auto">
-      {/* Main Container - Two Columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+    <div className="py-16 px-4 max-w-7xl mx-auto">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+        className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start"
+      >
         {/* Left Side - About, Cuisine & Details */}
-        <div>
-          {/* About Description */}
-          <h2 className="text-4xl font-semibold mb-4">About {restaurant.name}</h2>
-          <p className="mb-6">{restaurant.about}</p>
+        <div className="space-y-8">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-800 relative">
+              About <span className="text-red-500">{restaurant.name}</span>
+              <div className="h-1 w-20 bg-red-500 mt-4 rounded-full"></div>
+            </h2>
+            <p className="text-gray-600 leading-relaxed text-lg">{restaurant.about}</p>
+          </div>
 
           {/* Two Columns for Cuisine & Details */}
-          <div className="grid grid-cols-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-8">
             {/* Cuisine List */}
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Cuisine</h3>
-              <ul className="list-disc ml-5 space-y-1">
+            <div className="bg-gray-50 p-6 rounded-xl shadow-sm">
+              <h3 className="text-xl font-bold mb-4 flex items-center text-gray-800">
+                <Utensils className="mr-2 text-red-500" size={20} />
+                Cuisine
+              </h3>
+              <div className="flex flex-wrap gap-2">
                 {Array.isArray(restaurant.cuisine) ? (
                   restaurant.cuisine.map((cuisine, index) => (
-                    <li key={index}>{cuisine}</li>
+                    <span
+                      key={index}
+                      className="bg-white px-3 py-1 rounded-full text-sm border border-gray-200 shadow-sm flex items-center"
+                    >
+                      <Tag size={14} className="mr-1 text-red-500" />
+                      {cuisine}
+                    </span>
                   ))
                 ) : (
-                  <li>No cuisine information available</li>
+                  <span className="text-gray-500">No cuisine information available</span>
                 )}
-              </ul>
+              </div>
             </div>
-            
+
             {/* Restaurant Details */}
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Details</h3>
-              <p><strong>Price Range:</strong> {restaurant.priceRange || "Not specified"}</p>
-              <p><strong>Dining Style:</strong> {restaurant.category || "Not specified"}</p>
-              <p><strong>Dress Code:</strong> {restaurant.location || "Not specified"}</p>
+            <div className="bg-gray-50 p-6 rounded-xl shadow-sm">
+              <h3 className="text-xl font-bold mb-4 flex items-center text-gray-800">
+                <MapPin className="mr-2 text-red-500" size={20} />
+                Details
+              </h3>
+              <div className="space-y-3">
+                <p className="flex items-center text-gray-700">
+                  <DollarSign className="mr-2 text-red-500" size={16} />
+                  <span className="font-medium">Price Range:</span>
+                  <span className="ml-2">{restaurant.priceRange || "Not specified"}</span>
+                </p>
+                <p className="flex items-center text-gray-700">
+                  <Utensils className="mr-2 text-red-500" size={16} />
+                  <span className="font-medium">Dining Style:</span>
+                  <span className="ml-2">{restaurant.category || "Not specified"}</span>
+                </p>
+                <p className="flex items-center text-gray-700">
+                  <MapPin className="mr-2 text-red-500" size={16} />
+                  <span className="font-medium">Location:</span>
+                  <span className="ml-2">{restaurant.location || "Not specified"}</span>
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Right Side - 2x2 Image Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* Right Side - Image Grid */}
+        <div className="grid grid-cols-6 grid-rows-6 gap-4 h-[500px]">
           {Array.isArray(restaurant.photos) && restaurant.photos.length > 0 ? (
-            restaurant.photos.slice(0, 4).map((photo, index) => (
-              <img 
-                key={index} 
-                src={photo} 
-                className="w-full h-[180px] md:h-[220px] object-cover rounded-lg" 
-                alt={`${restaurant.name} photo ${index + 1}`} 
-              />
-            ))
+            <>
+              {restaurant.photos[0] && (
+                <motion.div
+                  className="col-span-6 row-span-3 overflow-hidden rounded-xl shadow-lg"
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <img
+                    src={restaurant.photos[0] || "/placeholder.svg"}
+                    className="w-full h-full object-cover"
+                    alt={`${restaurant.name} main photo`}
+                  />
+                </motion.div>
+              )}
+              <div className="col-span-6 row-span-3 grid grid-cols-3 gap-4">
+                {restaurant.photos.slice(1, 4).map((photo, index) => (
+                  <motion.div
+                    key={index}
+                    className="col-span-1 overflow-hidden rounded-xl shadow-lg"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <img
+                      src={photo || "/placeholder.svg"}
+                      className="w-full h-full object-cover"
+                      alt={`${restaurant.name} photo ${index + 2}`}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            </>
           ) : (
-            <div className="col-span-2 flex justify-center items-center h-[220px] bg-gray-200 rounded-lg">
-              No photos available
+            <div className="col-span-6 row-span-6 flex justify-center items-center bg-gray-100 rounded-xl">
+              <p className="text-gray-500">No photos available</p>
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
-  );
+  )
 }
+
