@@ -16,7 +16,7 @@ export default function RestaurantProfile({ restaurant }: RestaurantProfileProps
   const router = useRouter()
 
   return (
-    <div className="bg-white">
+    <div className="bg-white min-h-screen">
       <BannerSection restaurant={restaurant} />
       <AboutSection restaurant={restaurant} />
       <ServicesSection />

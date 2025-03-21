@@ -17,29 +17,29 @@ type AboutSectionProps = {
 
 export default function AboutSection({ restaurant }: AboutSectionProps) {
   return (
-    <div className="py-16 px-4 max-w-7xl mx-auto">
+    <div className="py-12 sm:py-16 px-4 max-w-7xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
-        className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start"
+        className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start"
       >
         {/* Left Side - About, Cuisine & Details */}
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-800 relative">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 text-gray-800 relative">
               About <span className="text-red-500">{restaurant.name}</span>
-              <div className="h-1 w-20 bg-red-500 mt-4 rounded-full"></div>
+              <div className="h-1 w-20 bg-red-500 mt-3 sm:mt-4 rounded-full"></div>
             </h2>
-            <p className="text-gray-600 leading-relaxed text-lg">{restaurant.about}</p>
+            <p className="text-gray-600 leading-relaxed text-base sm:text-lg">{restaurant.about}</p>
           </div>
 
           {/* Two Columns for Cuisine & Details */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mt-6 sm:mt-8">
             {/* Cuisine List */}
-            <div className="bg-gray-50 p-6 rounded-xl shadow-sm">
-              <h3 className="text-xl font-bold mb-4 flex items-center text-gray-800">
+            <div className="bg-gray-50 p-4 sm:p-6 rounded-xl shadow-sm">
+              <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center text-gray-800">
                 <Utensils className="mr-2 text-red-500" size={20} />
                 Cuisine
               </h3>
@@ -61,8 +61,8 @@ export default function AboutSection({ restaurant }: AboutSectionProps) {
             </div>
 
             {/* Restaurant Details */}
-            <div className="bg-gray-50 p-6 rounded-xl shadow-sm">
-              <h3 className="text-xl font-bold mb-4 flex items-center text-gray-800">
+            <div className="bg-gray-50 p-4 sm:p-6 rounded-xl shadow-sm">
+              <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center text-gray-800">
                 <MapPin className="mr-2 text-red-500" size={20} />
                 Details
               </h3>
@@ -88,7 +88,7 @@ export default function AboutSection({ restaurant }: AboutSectionProps) {
         </div>
 
         {/* Right Side - Image Grid */}
-        <div className="grid grid-cols-6 grid-rows-6 gap-4 h-[500px]">
+        <div className="grid grid-cols-6 grid-rows-6 gap-3 sm:gap-4 h-[300px] sm:h-[400px] md:h-[500px] mt-6 md:mt-0">
           {Array.isArray(restaurant.photos) && restaurant.photos.length > 0 ? (
             <>
               {restaurant.photos[0] && (
@@ -104,7 +104,7 @@ export default function AboutSection({ restaurant }: AboutSectionProps) {
                   />
                 </motion.div>
               )}
-              <div className="col-span-6 row-span-3 grid grid-cols-3 gap-4">
+              <div className="col-span-6 row-span-3 grid grid-cols-3 gap-3 sm:gap-4">
                 {restaurant.photos.slice(1, 4).map((photo, index) => (
                   <motion.div
                     key={index}

@@ -44,22 +44,22 @@ export default function FeaturedMenu({ featuredMenu }: FeaturedMenuProps) {
   const menuToDisplay = featuredMenu && featuredMenu.length > 0 ? featuredMenu : sampleMenu
 
   return (
-    <div className="py-16 px-4 max-w-7xl mx-auto">
+    <div className="py-12 sm:py-16 px-4 max-w-7xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         viewport={{ once: true }}
-        className="text-center mb-12"
+        className="text-center mb-8 sm:mb-12"
       >
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Featured Menu</h2>
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4">Featured Menu</h2>
         <div className="h-1 w-20 bg-red-500 mx-auto rounded-full"></div>
-        <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+        <p className="text-gray-600 mt-3 sm:mt-4 max-w-2xl mx-auto">
           Discover our chef's special selection of exquisite dishes
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
         {menuToDisplay.map((item, index) => (
           <motion.div
             key={index}
@@ -70,7 +70,7 @@ export default function FeaturedMenu({ featuredMenu }: FeaturedMenuProps) {
             whileHover={{ y: -5 }}
             className="bg-white rounded-xl shadow-md overflow-hidden group"
           >
-            <div className="relative h-60 overflow-hidden">
+            <div className="relative h-48 sm:h-60 overflow-hidden">
               <img
                 src={item.image || "/placeholder.svg"}
                 alt={item.name}
@@ -81,12 +81,12 @@ export default function FeaturedMenu({ featuredMenu }: FeaturedMenuProps) {
                 <p className="text-sm">{item.description || `Delicious ${item.name} prepared by our expert chefs`}</p>
               </div>
             </div>
-            <div className="p-5">
+            <div className="p-4 sm:p-5">
               <div className="flex justify-between items-center mb-2">
                 <h3 className="font-bold text-lg text-gray-800">{item.name}</h3>
                 {/* <span className="text-red-500 font-bold">${item.price.toFixed(2)}</span> */}
               </div>
-              <button className="mt-3 text-red-500 font-medium text-sm flex items-center group-hover:text-red-600">
+              <button className="mt-2 sm:mt-3 text-red-500 font-medium text-sm flex items-center group-hover:text-red-600">
                 View Details <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </button>
             </div>
@@ -94,8 +94,8 @@ export default function FeaturedMenu({ featuredMenu }: FeaturedMenuProps) {
         ))}
       </div>
 
-      <div className="text-center mt-10">
-        <button className="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-8 rounded-full transition-all duration-300 shadow-md hover:shadow-lg">
+      <div className="text-center mt-8 sm:mt-10">
+        <button className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 sm:py-3 px-6 sm:px-8 rounded-full transition-all duration-300 shadow-md hover:shadow-lg">
           View Full Menu
         </button>
       </div>
