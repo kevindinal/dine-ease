@@ -2,17 +2,16 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { CalendarIcon, Users, ChevronRight, Search } from "lucide-react"
+import { CalendarIcon, Clock, Users, ChevronRight } from "lucide-react"
 import { motion } from "framer-motion"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
-import { TimePicker } from "@/app/(restaurants)/components/timePicker" // Make sure this path is correct
 
 type BannerSectionProps = {
-  restaurant: {
+  restaurant?: {
     id: string
     name: string
     bannerImage: string
@@ -24,19 +23,9 @@ export default function BannerSection({ restaurant }: BannerSectionProps) {
   const router = useRouter()
   const [guestCount, setGuestCount] = useState(2)
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-  const [selectedTime, setSelectedTime] = useState("18:00")
-  const [isHovered, setIsHovered] = useState(false)
+  const [selectedTime, setSelectedTime] = useState("19:00")
 
-  // Helper function to get today's date in YYYY-MM-DD format
-  function getTodayDate() {
-    const today = new Date()
-    const year = today.getFullYear()
-    const month = String(today.getMonth() + 1).padStart(2, "0")
-    const day = String(today.getDate()).padStart(2, "0")
-    return `${year}-${month}-${day}`
-  }
-
-  // Format date for URL
+  // Format date for URL and display
   function formatDateForUrl(date: Date) {
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, "0")
@@ -44,160 +33,151 @@ export default function BannerSection({ restaurant }: BannerSectionProps) {
     return `${year}-${month}-${day}`
   }
 
+  function formatDateForDisplay(date: Date) {
+    const month = date.toLocaleString("default", { month: "long" })
+    const day = date.getDate()
+    const year = date.getFullYear()
+    return `${month} ${day}${getDaySuffix(day)}, ${year}`
+  }
+
+  function getDaySuffix(day: number) {
+    if (day > 3 && day < 21) return "th"
+    switch (day % 10) {
+      case 1:
+        return "st"
+      case 2:
+        return "nd"
+      case 3:
+        return "rd"
+      default:
+        return "th"
+    }
+  }
+
   const handleFindTable = () => {
     router.push(
-      `/table-reservation?name=${encodeURIComponent(restaurant.name)}&id=${encodeURIComponent(restaurant.id)}&guests=${guestCount}&date=${encodeURIComponent(formatDateForUrl(selectedDate))}&time=${encodeURIComponent(selectedTime)}`,
+      `/table-reservation?name=${encodeURIComponent(restaurant?.name || "Restaurant")}&id=${encodeURIComponent(restaurant?.id || "1")}&guests=${guestCount}&date=${encodeURIComponent(formatDateForUrl(selectedDate))}&time=${encodeURIComponent(selectedTime)}`,
     )
   }
 
   return (
     <div className="text-gray-900">
-      <div className="relative h-[450px] sm:h-[500px] md:h-[600px] overflow-hidden">
-        {/* Parallax Banner Image */}
+      <div className="relative h-[600px] sm:h-[650px] md:h-[700px] overflow-hidden">
+        {/* Background Image */}
         <div className="absolute inset-0 w-full h-full">
-          <motion.div
-            initial={{ scale: 1.1 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 10, ease: "easeOut" }}
-            className="w-full h-full"
-          >
-            <img
-              src={restaurant.bannerImage || "/placeholder.svg"}
-              alt={restaurant.name}
-              className="w-full h-full object-cover"
-            />
-          </motion.div>
+          <img
+            src={
+              restaurant?.bannerImage ||
+              "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" ||
+              "/placeholder.svg"
+            }
+            alt="Restaurant interior"
+            className="w-full h-full object-cover"
+          />
+          {/* Dark Overlay */}
+          <div className="absolute inset-0 bg-black/60"></div>
         </div>
 
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70"></div>
-
-        {/* Content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-4">
+        {/* Content Container */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-4 py-6">
+          {/* Header Text */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
+            className="w-full max-w-4xl mx-auto mb-8 sm:mb-10"
           >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 drop-shadow-lg">
-              {restaurant.name}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6">
+              {restaurant?.name || "Restaurant Name"}
             </h1>
-            <p className="text-base sm:text-lg md:text-xl max-w-2xl mx-auto mb-6 sm:mb-8 text-gray-100">
-              {restaurant.description}
+            <p className="text-lg sm:text-xl md:text-2xl max-w-2xl mx-auto">
+              {restaurant?.description || "Experience exceptional dining at our restaurant"}
             </p>
           </motion.div>
 
-          {/* Enhanced Reservation Box */}
+          {/* Reservation Card */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="bg-white/95 backdrop-blur-sm p-5 sm:p-6 md:p-8 rounded-2xl shadow-2xl mt-4 sm:mt-6 w-full max-w-3xl text-gray-800 border border-white/20"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            className="bg-white rounded-3xl shadow-2xl w-full max-w-xl text-gray-800 overflow-hidden"
           >
-            <motion.h3
-              className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center"
-              animate={{
-                scale: isHovered ? 1.05 : 1,
-                color: isHovered ? "#e11d48" : "#1f2937",
-              }}
-              transition={{ duration: 0.3 }}
-            >
-              Reserve Your Table
-            </motion.h3>
+            <div className="p-6 sm:p-8">
+              {/* Date Selection */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="w-full mb-4 p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center text-left">
+                    <CalendarIcon className="h-5 w-5 text-red-500 mr-3" />
+                    <span className="text-gray-800 font-medium">{formatDateForDisplay(selectedDate)}</span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="center">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && setSelectedDate(date)}
+                    initialFocus
+                    disabled={(date) => {
+                      const today = new Date()
+                      today.setHours(0, 0, 0, 0)
+                      return date < today
+                    }}
+                    className="rounded-md border"
+                  />
+                </PopoverContent>
+              </Popover>
 
-            {/* Fixed layout with flex instead of grid */}
-            <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
-              {/* Guests Selector */}
-              <div className="space-y-2 w-full md:w-1/4">
-                <label className="text-sm font-medium text-gray-600 block">Guests</label>
-                <div className="relative">
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-red-500">
-                    <Users size={18} />
+              {/* Time Selection */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="w-full mb-4 p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center text-left">
+                    <Clock className="h-5 w-5 text-red-500 mr-3" />
+                    <span className="text-gray-800 font-medium">
+                      {selectedTime === "19:00" ? "7:00 PM" : format(new Date(`2023-01-01T${selectedTime}`), "h:mm a")}
+                    </span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="center">
+                  <div className="p-4 w-[300px]">
+                    <div className="grid grid-cols-3 gap-2">
+                      {["17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00"].map((time) => (
+                        <Button
+                          key={time}
+                          variant="outline"
+                          className={cn("text-sm", selectedTime === time ? "bg-red-500 text-white border-red-500" : "")}
+                          onClick={() => setSelectedTime(time)}
+                        >
+                          {format(new Date(`2023-01-01T${time}`), "h:mm a")}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
-                  <select
-                    className="pl-10 w-full h-10 sm:h-12 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 appearance-none shadow-sm hover:border-red-300"
-                    value={guestCount}
-                    onChange={(e) => setGuestCount(Number(e.target.value))}
-                  >
-                    {[...Array(10)].map((_, i) => (
-                      <option key={i + 1} value={i + 1}>
-                        {i + 1} {i + 1 === 1 ? "Guest" : "Guests"}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+                </PopoverContent>
+              </Popover>
 
-              {/* Enhanced Date Selector */}
-              <div className="space-y-2 w-full md:w-1/3">
-                <label className="text-sm font-medium text-gray-600 block">Date</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal h-10 sm:h-12 border-gray-300 hover:border-red-300 shadow-sm",
-                        "pl-10 relative",
-                      )}
-                    >
-                      <CalendarIcon
-                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-red-500"
-                        size={18}
-                      />
-                      {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date) => date && setSelectedDate(date)}
-                      initialFocus
-                      disabled={(date) => {
-                        // Disable dates in the past
-                        const today = new Date()
-                        today.setHours(0, 0, 0, 0)
-                        return date < today
-                      }}
-                      className="rounded-md border"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+              {/* People Selection */}
+              <button
+                className="w-full mb-4 p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center text-left"
+                onClick={() => {
+                  // This would typically open a dropdown, but for simplicity we'll just cycle through options
+                  setGuestCount(guestCount === 10 ? 1 : guestCount + 1)
+                }}
+              >
+                <Users className="h-5 w-5 text-red-500 mr-3" />
+                <span className="text-gray-800 font-medium">
+                  {guestCount} {guestCount === 1 ? "person" : "people"}
+                </span>
+              </button>
 
-              {/* Enhanced Time Selector */}
-              <div className="space-y-2 w-full md:w-1/4">
-                <label className="text-sm font-medium text-gray-600 block">Time</label>
-                <TimePicker value={selectedTime} onChange={setSelectedTime} />
-              </div>
-
-              {/* Enhanced Find Table Button */}
-              <div className="space-y-2 w-full md:w-1/4">
-                <label className="text-sm font-medium text-transparent block">Find</label>
-                <motion.button
-                  className="w-full h-10 sm:h-12 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-md"
-                  onClick={handleFindTable}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Search className="h-4 w-4" />
-                  <span>Find Table</span>
-                  <ChevronRight size={16} />
-                </motion.button>
-              </div>
+              {/* Find Tables Button */}
+              <button
+                className="w-full p-4 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl flex items-center justify-center transition-colors duration-300"
+                onClick={handleFindTable}
+              >
+                <span>Find Tables</span>
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </button>
             </div>
-
-            {/* Additional Info */}
-            <motion.div
-              className="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-gray-500"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: isHovered ? 1 : 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <p>Special requests? Let us know when you complete your reservation.</p>
-            </motion.div>
           </motion.div>
         </div>
       </div>
