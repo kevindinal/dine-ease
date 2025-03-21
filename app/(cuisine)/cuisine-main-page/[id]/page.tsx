@@ -80,7 +80,7 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
   const renderFoodCard = (cuisine: any) => (
     <div key={cuisine.id}>
       <div className="h-full mb-4">
-        <FoodCard {...cuisine} id={id} onAddToPreOrder={addItemToPreOrder} />
+        <FoodCard {...cuisine} id={cuisine.id} restaurantId ={id} onAddToPreOrder={addItemToPreOrder} />
       </div>
     </div>
   );
