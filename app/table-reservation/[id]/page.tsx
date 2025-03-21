@@ -90,6 +90,12 @@ interface Table {
       to: string
     }>
   }
+  contactInfo?: {
+    phone?: string
+    email?: string
+    instagram?: string
+    facebook?: string
+  }
 }
 
 interface Review {
@@ -130,6 +136,13 @@ export default function TableDetailsPage() {
   const [showPaymentOptions, setShowPaymentOptions] = useState(false)
   const isMobile = useMediaQuery("(max-width: 768px)")
   const imageContainerRef = useRef<HTMLDivElement>(null)
+
+  const [contactInfo, setContactInfo] = useState({
+    phone: "(555) 123-4567",
+    email: "reservations@restaurant.com",
+    instagram: "@restaurantname",
+    facebook: "facebook.com/restaurantname",
+  })
 
   // Mock data for special offers
   const specialOffers: SpecialOffer[] = [
@@ -201,6 +214,8 @@ export default function TableDetailsPage() {
       { from: "17:30", to: "22:00" },
     ],
   }
+
+  
 
   useEffect(() => {
     const fetchTable = async () => {
@@ -334,6 +349,33 @@ export default function TableDetailsPage() {
         // Add mock availability if none exists
         const availability = tableData.availability || mockAvailability
 
+        // Fetch contact information if restaurantId exists
+        let contactInfo = {
+          phone: "(555) 123-4567",
+          email: "reservations@restaurant.com",
+          instagram: "@restaurantname",
+          facebook: "facebook.com/restaurantname",
+        }
+
+        if (tableData.restaurantId) {
+          try {
+            const restaurantDoc = await getDoc(doc(db, "restaurants", tableData.restaurantId))
+            if (restaurantDoc.exists()) {
+              const restaurantData = restaurantDoc.data()
+              contactInfo = {
+                phone: restaurantData.phone || contactInfo.phone,
+                email: restaurantData.email || contactInfo.email,
+                instagram: restaurantData.instagram || contactInfo.instagram,
+                facebook: restaurantData.facebook || contactInfo.facebook,
+              }
+            }
+          } catch (error) {
+            console.error("Error fetching restaurant contact info:", error)
+            // Use default contact info if there's an error
+          }
+        }
+
+
         setTable({
           id: tableDoc.id,
           ...tableData,
@@ -343,8 +385,9 @@ export default function TableDetailsPage() {
           reviews,
           features,
           availability,
+          contactInfo
         })
-
+        setContactInfo(contactInfo)
         setLoading(false)
       } catch (error) {
         console.error("Error fetching table:", error)
@@ -1122,19 +1165,19 @@ if (option === "payment") {
                     <ul className="space-y-3 text-gray-600">
                       <li className="flex items-center">
                         <Phone size={16} className="mr-2 text-gray-500" />
-                        <span>(555) 123-4567</span>
+                        <span>{table.contactInfo?.phone || contactInfo.phone}</span>
                       </li>
                       <li className="flex items-center">
                         <Mail size={16} className="mr-2 text-gray-500" />
-                        <span>reservations@restaurant.com</span>
+                        <span>{table.contactInfo?.email || contactInfo.email}</span>
                       </li>
                       <li className="flex items-center">
                         <Instagram size={16} className="mr-2 text-gray-500" />
-                        <span>@restaurantname</span>
+                        <span>{table.contactInfo?.instagram || contactInfo.instagram}</span>
                       </li>
                       <li className="flex items-center">
                         <Facebook size={16} className="mr-2 text-gray-500" />
-                        <span>facebook.com/restaurantname</span>
+                        <span>{table.contactInfo?.facebook || contactInfo.facebook}</span>
                       </li>
                     </ul>
                   </AccordionContent>
