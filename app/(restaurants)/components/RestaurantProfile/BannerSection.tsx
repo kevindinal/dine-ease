@@ -2,8 +2,14 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { CalendarIcon, Clock, Users, ChevronRight } from "lucide-react"
+import { CalendarIcon, Users, ChevronRight, Search } from "lucide-react"
 import { motion } from "framer-motion"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { TimePicker } from "@/app/(restaurants)/components/timePicker" 
 
 type BannerSectionProps = {
   restaurant: {
@@ -17,8 +23,9 @@ type BannerSectionProps = {
 export default function BannerSection({ restaurant }: BannerSectionProps) {
   const router = useRouter()
   const [guestCount, setGuestCount] = useState(2)
-  const [selectedDate, setSelectedDate] = useState(getTodayDate())
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [selectedTime, setSelectedTime] = useState("18:00")
+  const [isHovered, setIsHovered] = useState(false)
 
   // Helper function to get today's date in YYYY-MM-DD format
   function getTodayDate() {
@@ -29,15 +36,17 @@ export default function BannerSection({ restaurant }: BannerSectionProps) {
     return `${year}-${month}-${day}`
   }
 
-  // Format date for display
-  function formatDate(dateString: string) {
-    const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+  // Format date for URL
+  function formatDateForUrl(date: Date) {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    const day = String(date.getDate()).padStart(2, "0")
+    return `${year}-${month}-${day}`
   }
 
   const handleFindTable = () => {
     router.push(
-      `/table-reservation?name=${encodeURIComponent(restaurant.name)}&id=${encodeURIComponent(restaurant.id)}&guests=${guestCount}&date=${encodeURIComponent(selectedDate)}&time=${encodeURIComponent(selectedTime)}`,
+      `/table-reservation?name=${encodeURIComponent(restaurant.name)}&id=${encodeURIComponent(restaurant.id)}&guests=${guestCount}&date=${encodeURIComponent(formatDateForUrl(selectedDate))}&time=${encodeURIComponent(selectedTime)}`,
     )
   }
 
@@ -74,25 +83,37 @@ export default function BannerSection({ restaurant }: BannerSectionProps) {
             <p className="text-lg md:text-xl max-w-2xl mx-auto mb-8 text-gray-100">{restaurant.description}</p>
           </motion.div>
 
-          {/* Make a Reservation Box */}
+          {/* Enhanced Reservation Box */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="bg-white/95 backdrop-blur-sm p-6 rounded-xl shadow-2xl mt-6 w-full max-w-3xl text-gray-800"
+            className="bg-white/95 backdrop-blur-sm p-8 rounded-2xl shadow-2xl mt-6 w-full max-w-3xl text-gray-800 border border-white/20"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
           >
-            <h3 className="text-xl font-bold mb-4 text-center">Reserve Your Table</h3>
+            <motion.h3
+              className="text-2xl font-bold mb-6 text-center"
+              animate={{
+                scale: isHovered ? 1.05 : 1,
+                color: isHovered ? "#e11d48" : "#1f2937",
+              }}
+              transition={{ duration: 0.3 }}
+            >
+              Reserve Your Table
+            </motion.h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            {/* Fixed layout with flex instead of grid */}
+            <div className="flex flex-col md:flex-row gap-6">
               {/* Guests Selector */}
-              <div className="relative">
-                <label className="text-sm font-medium text-gray-600 mb-1 block">Guests</label>
+              <div className="space-y-2 w-full md:w-1/4">
+                <label className="text-sm font-medium text-gray-600 block">Guests</label>
                 <div className="relative">
                   <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-red-500">
                     <Users size={18} />
                   </div>
                   <select
-                    className="pl-10 w-full h-12 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 appearance-none"
+                    className="pl-10 w-full h-12 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 appearance-none shadow-sm hover:border-red-300"
                     value={guestCount}
                     onChange={(e) => setGuestCount(Number(e.target.value))}
                   >
@@ -105,58 +126,74 @@ export default function BannerSection({ restaurant }: BannerSectionProps) {
                 </div>
               </div>
 
-              {/* Date Selector */}
-              <div className="relative">
-                <label className="text-sm font-medium text-gray-600 mb-1 block">Date</label>
-                <div className="relative">
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-red-500">
-                    <CalendarIcon size={18} />
-                  </div>
-                  <input
-                    type="date"
-                    className="pl-10 w-full h-12 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    min={getTodayDate()}
-                  />
-                </div>
+              {/* Enhanced Date Selector */}
+              <div className="space-y-2 w-full md:w-1/3">
+                <label className="text-sm font-medium text-gray-600 block">Date</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal h-12 border-gray-300 hover:border-red-300 shadow-sm",
+                        "pl-10 relative",
+                      )}
+                    >
+                      <CalendarIcon
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-red-500"
+                        size={18}
+                      />
+                      {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date) => date && setSelectedDate(date)}
+                      initialFocus
+                      disabled={(date) => {
+                        // Disable dates in the past
+                        const today = new Date()
+                        today.setHours(0, 0, 0, 0)
+                        return date < today
+                      }}
+                      className="rounded-md border"
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
 
-              {/* Time Selector */}
-              <div className="relative">
-                <label className="text-sm font-medium text-gray-600 mb-1 block">Time</label>
-                <div className="relative">
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-red-500">
-                    <Clock size={18} />
-                  </div>
-                  <select
-                    className="pl-10 w-full h-12 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 appearance-none"
-                    value={selectedTime}
-                    onChange={(e) => setSelectedTime(e.target.value)}
-                  >
-                    {["17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"].map(
-                      (time) => (
-                        <option key={time} value={time}>
-                          {time}
-                        </option>
-                      ),
-                    )}
-                  </select>
-                </div>
+              {/* Enhanced Time Selector */}
+              <div className="space-y-2 w-full md:w-1/4">
+                <label className="text-sm font-medium text-gray-600 block">Time</label>
+                <TimePicker value={selectedTime} onChange={setSelectedTime} />
               </div>
 
-              {/* Find Table Button */}
-              <div className="relative">
-                <label className="text-sm font-medium text-transparent mb-1 block">Find</label>
-                <button
-                  className="w-full h-12 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-all duration-300"
+              {/* Enhanced Find Table Button */}
+              <div className="space-y-2 w-full md:w-1/4">
+                <label className="text-sm font-medium text-transparent block">Find</label>
+                <motion.button
+                  className="w-full h-12 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-md"
                   onClick={handleFindTable}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
                 >
+                  <Search className="h-4 w-4" />
                   <span>Find Table</span>
-                  <ChevronRight size={18} />
-                </button>
+                  <ChevronRight size={16} />
+                </motion.button>
               </div>
             </div>
+
+            {/* Additional Info */}
+            <motion.div
+              className="mt-6 text-center text-sm text-gray-500"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: isHovered ? 1 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <p>Special requests? Let us know when you complete your reservation.</p>
+            </motion.div>
           </motion.div>
         </div>
       </div>
