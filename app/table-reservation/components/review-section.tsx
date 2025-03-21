@@ -28,6 +28,7 @@ export default function ReviewSection({ reviews, rating, onSubmitReview }: Revie
   const [reviewRating, setReviewRating] = useState(5)
   const [reviewComment, setReviewComment] = useState("")
   const reviewFormRef = useRef<HTMLDivElement>(null)
+  const [showAllReviews, setShowAllReviews] = useState(false)
 
   const totalReviews = reviews?.length || 0
 
@@ -46,6 +47,9 @@ export default function ReviewSection({ reviews, rating, onSubmitReview }: Revie
   }
 
   const ratingDistribution = getRatingDistribution()
+
+  // Determine which reviews to display based on showAllReviews state
+  const displayedReviews = showAllReviews || (reviews?.length || 0) <= 4 ? reviews : reviews?.slice(0, 4)
 
   const handleSubmitReview = () => {
     if (reviewComment.trim()) {
@@ -161,7 +165,7 @@ export default function ReviewSection({ reviews, rating, onSubmitReview }: Revie
       {/* Reviews List */}
       {reviews && reviews.length > 0 ? (
         <div className="space-y-4">
-          {reviews.map((review) => (
+          {displayedReviews.map((review) => (
             <div key={review.id} className="border-b border-gray-100 pb-4">
               <div className="flex justify-between items-start">
                 <div className="flex items-center">
@@ -192,6 +196,24 @@ export default function ReviewSection({ reviews, rating, onSubmitReview }: Revie
               <p className="text-gray-600 text-sm mt-2">{review.comment}</p>
             </div>
           ))}
+
+          {/* Show "See All" button if there are more than 4 reviews and not all are shown */}
+          {reviews.length > 4 && !showAllReviews && (
+            <div className="text-center pt-2">
+              <Button variant="outline" size="sm" onClick={() => setShowAllReviews(true)} className="w-full max-w-xs">
+                See All {reviews.length} Reviews
+              </Button>
+            </div>
+          )}
+
+          {/* Show "Show Less" button if all reviews are shown and there are more than 4 */}
+          {reviews.length > 4 && showAllReviews && (
+            <div className="text-center pt-2">
+              <Button variant="outline" size="sm" onClick={() => setShowAllReviews(false)} className="w-full max-w-xs">
+                Show Less
+              </Button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="text-center py-8 bg-gray-50 rounded-lg">
