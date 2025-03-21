@@ -139,10 +139,10 @@ export default function AllRestaurants() {
                   </select>
                 </div>
 
-                {/* Search Button */}
-                <button
+               {/* Search Button */}
+               <button
                   type="submit"
-                  className="w-full h-12 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md flex items-center justify-center gap-2 transition-all duration-300"
+                  className="w-full h-12 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md flex items-center justify-center gap-2 transition-all duration-300 mb-4 sm:mb-0"
                 >
                   <span>Find Tables</span>
                   <ChevronRight className="h-5 w-5" />
