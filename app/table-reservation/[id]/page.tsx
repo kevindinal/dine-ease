@@ -51,6 +51,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { auth } from "@/lib/firebase/tables"
 
 // Import our components
 import ReviewSection from "@/app/table-reservation/components/review-section"
@@ -137,6 +138,13 @@ export default function TableDetailsPage() {
   const isMobile = useMediaQuery("(max-width: 768px)")
   const imageContainerRef = useRef<HTMLDivElement>(null)
 
+  const [user, setUser] = useState({
+    name: "Guest",
+    email: "",
+    avatar: "/placeholder.svg?height=40&width=40",
+  })
+
+
   const [contactInfo, setContactInfo] = useState({
     phone: "(555) 123-4567",
     email: "reservations@restaurant.com",
@@ -215,7 +223,22 @@ export default function TableDetailsPage() {
     ],
   }
 
+  useEffect(() => {
+    // Get current user from auth
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      if (currentUser) {
+        setUser({
+          name: currentUser.displayName || "Guest",
+          email: currentUser.email || "",
+          avatar: currentUser.photoURL || "/placeholder.svg?height=40&width=40",
+        })
+      }
+    })
+
+    return () => unsubscribe()
+  }, [])
   
+
 
   useEffect(() => {
     const fetchTable = async () => {
@@ -478,11 +501,11 @@ if (option === "payment") {
     // Add the new review to the table's reviews
     if (table && comment.trim()) {
       try {
-        // Create the review object
+        // Create the review object with the logged-in user's name
         const newReview: Review = {
           id: `rev${Date.now()}`,
-          userName: "You",
-          userAvatar: "/placeholder.svg?height=40&width=40",
+          userName: user.name, // Use the logged-in user's name
+          userAvatar: user.avatar, // Use the logged-in user's avatar
           rating,
           comment,
           date: new Date().toISOString().split("T")[0],
