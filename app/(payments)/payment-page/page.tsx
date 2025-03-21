@@ -8,6 +8,7 @@ import { db } from "@/lib/firebase";
 import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
 import { Dialog, Transition } from "@headlessui/react";
 import PaymentForm from "../components/PaymentForm";
+import { useRouter } from "next/navigation"; // Import useRouter hook
 
 // Define OrderItem type
 type OrderItem = {
@@ -20,12 +21,19 @@ type OrderItem = {
 };
 
 const SummaryPage = () => {
+  const router = useRouter(); // Initialize router
+  
   const [reservation, setReservation] = useState<{
     date: string;
     time: string;
     guests: string;
     table: string;
-  } | null>(null);
+  }>({
+    date: "2025-03-17",
+    time: "19:00",
+    guests: "4",
+    table: "12",
+  });
 
   // Fetching Pre-ordered Meals from Local Storage
   const [items, setItems] = useState<OrderItem[]>([]);
@@ -112,14 +120,34 @@ const SummaryPage = () => {
       // Also update localStorage when item is removed
       if (typeof window !== "undefined") {
         if (updatedItems.length === 0) {
-          localStorage.removeItem("preOrder");
-        } else if (updatedItems.length === 1) {
-          // If only one item remains, store as object
-          localStorage.setItem("preOrder", JSON.stringify(updatedItems[0]));
+          localStorage.removeItem("preOrders");
         } else {
           // Store as array
-          localStorage.setItem("preOrder", JSON.stringify(updatedItems));
+          localStorage.setItem("preOrders", JSON.stringify(updatedItems));
         }
+      }
+    }
+  };
+
+  // Function to update quantity (increment or decrement)
+  const updateQuantity = (id: string | number, action: 'increment' | 'decrement') => {
+    if (Array.isArray(items)) {
+      const updatedItems = items.map(item => {
+        if (item.id === id) {
+          if (action === 'increment' && item.quantity < 5) {
+            return { ...item, quantity: item.quantity + 1 };
+          } else if (action === 'decrement' && item.quantity > 1) {
+            return { ...item, quantity: item.quantity - 1 };
+          }
+        }
+        return item;
+      });
+  
+      setItems(updatedItems);
+  
+      // Update localStorage
+      if (typeof window !== "undefined") {
+        localStorage.setItem("preOrders", JSON.stringify(updatedItems));
       }
     }
   };
@@ -130,6 +158,31 @@ const SummaryPage = () => {
     setTotalPrice(totalPrice - discount);
     setPoints(points - discount);
     setDiscountApplied(true);
+  };
+
+  // Function to navigate to order status page
+  const navigateToOrderStatus = () => {
+    // Save payment method info to localStorage or your state management solution
+    if (typeof window !== "undefined") {
+      localStorage.setItem("paymentMethod", "pay_at_restaurant");
+    }
+    
+    // Navigate to order status page
+    router.push("/order-status");
+  };
+
+  // Function to handle payment completion
+  const handlePaymentComplete = () => {
+    // Close the payment modal
+    setIsOpen(false);
+    
+    // Save payment method info to localStorage or your state management solution
+    if (typeof window !== "undefined") {
+      localStorage.setItem("paymentMethod", "paid_online");
+    }
+    
+    // Navigate to order status page
+    router.push("/order-status");
   };
 
   // Helper function to safely render items
@@ -153,9 +206,22 @@ const SummaryPage = () => {
           <div>
             <p className="font-semibold text-gray-900">{item.name}</p>
             <div className="flex items-center space-x-2 mt-1">
-              <span className="px-2 py-0.5 bg-[#FFF0EF] text-[#FA4032] text-xs font-medium rounded-full">
-                x{item.quantity}
-              </span>
+              <div className="flex items-center px-2 py-0.5 bg-[#FFF0EF] text-[#FA4032] text-xs font-medium rounded-full">
+                <button 
+                  onClick={() => updateQuantity(item.id, 'decrement')}
+                  className="mr-2 hover:bg-[#FFD5D2] rounded-full w-4 h-4 flex items-center justify-center"
+                  disabled={item.quantity <= 1}
+                >
+                  -
+                </button>
+                <span>x{item.quantity}</span>
+                <button 
+                  onClick={() => updateQuantity(item.id, 'increment')}
+                  className="ml-2 hover:bg-[#FFD5D2] rounded-full w-4 h-4 flex items-center justify-center"
+                >
+                  +
+                </button>
+              </div>
               {item.portionSize && (
                 <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
                   {item.portionSize}
@@ -317,7 +383,10 @@ const SummaryPage = () => {
 
           {/* Payment Actions */}
           <div className="flex flex-col md:flex-row gap-4 mt-6">
-            <Button className="w-full h-14 bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-lg border border-gray-300 font-medium">
+            <Button 
+              className="w-full h-14 bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-lg border border-gray-300 font-medium"
+              onClick={navigateToOrderStatus} // Added onClick handler
+            >
               Pay at Restaurant <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
             <Button
@@ -394,11 +463,7 @@ const SummaryPage = () => {
                       >
                         Cancel
                       </Button>
-                      <Button 
-                        className="w-full bg-[#FA4032] text-white hover:bg-[#FB665B]"
-                      >
-                        Complete Payment
-                      </Button>
+                      
                     </div>
                   </Dialog.Panel>
                 </Transition.Child>
@@ -420,5 +485,5 @@ const DetailCard = ({ icon, label, value }: { icon: React.ReactNode; label: stri
   </div>
 );
 
-export default SummaryPage;
 
+export default SummaryPage;
