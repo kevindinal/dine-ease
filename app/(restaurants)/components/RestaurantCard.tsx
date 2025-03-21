@@ -1,3 +1,6 @@
+
+
+
 "use client"
 
 import { motion } from "framer-motion"
@@ -110,7 +113,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
         </div>
 
         <button
-          onClick={() => router.push(`/restaurant/${restaurant.id}`)}
+          onClick={() => router.push(`/restaurants-profile/${restaurant.id}`)}
           className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-300"
         >
           <span>Reserve a table</span>
@@ -120,4 +123,5 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
     </motion.div>
   )
 }
+
 
