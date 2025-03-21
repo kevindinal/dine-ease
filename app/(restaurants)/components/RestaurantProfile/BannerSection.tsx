@@ -7,7 +7,7 @@ import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
-import { TimePicker } from "@/app/(restaurants)/components/timePicker" // Using the TimePicker component
+import { TimePicker } from "@/app/(restaurants)/components/timePicker2" // Using the TimePicker component
 
 type BannerSectionProps = {
   restaurant?: {
@@ -68,6 +68,7 @@ export default function BannerSection({ restaurant }: BannerSectionProps) {
             src={
               restaurant?.bannerImage ||
               "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" ||
+              "/placeholder.svg" ||
               "/placeholder.svg"
             }
             alt="Restaurant interior"
@@ -127,8 +128,8 @@ export default function BannerSection({ restaurant }: BannerSectionProps) {
               </Popover>
 
               {/* Time Selector - Using the TimePicker component */}
-              <div className="flex-1 flex">
-                <TimePicker value={selectedTime} onChange={setSelectedTime} error={false} />
+              <div className="flex-1">
+                <TimePicker value={selectedTime} onChange={setSelectedTime} className="h-[56px] w-full" />
               </div>
 
               {/* People Selector */}
