@@ -14,7 +14,7 @@ export interface Restaurant {
   photos: string[];
   priceRange: string;
   rating: number;
-  reviews: Review[];
+  reviews: number;
   times: string[];
   bannerImage: string;
 }

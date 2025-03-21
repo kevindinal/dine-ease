@@ -12,7 +12,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
   return (
     <div
       className="bg-white text-black rounded-xl shadow-lg overflow-hidden border cursor-pointer transition hover:shadow-2xl"
-      onClick={() => router.push(/restaurants-profile/${restaurant.id})}
+      onClick={() => router.push(`/restaurants-profile/${restaurant.id}`)}
     >
       {/* Image */}
       <img 
@@ -31,14 +31,14 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
             <FaStar key={index} />
           ))}
           <span className="text-sm text-gray-500 ml-2">
-            {(restaurant.rating || 0).toFixed(1)} ({restaurant.reviews?.length || 0})
+            {(restaurant.rating || 0).toFixed(1)} ({restaurant.reviews || 0})
           </span>
         </div>
 
         <p className="text-sm text-gray-500 mt-1">{restaurant.category || 'Uncategorized'}</p>
         <p className="text-sm text-gray-600 mt-1">
           {restaurant.description?.length > 60
-            ? ${restaurant.description.substring(0, 60)}...
+            ? `${restaurant.description.substring(0, 60)}...`
             : restaurant.description || 'No description available'}
         </p>
 
@@ -64,7 +64,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
           className="mt-4 w-full text-purple-600 font-semibold py-2 rounded-lg hover:bg-purple-100 transition"
           onClick={(e) => {
             e.stopPropagation(); // Prevents parent div click
-            router.push(/restaurants-profile/${restaurant.id});
+            router.push(`/restaurants-profile/${restaurant.id}`);
           }}
         >
           RESERVE

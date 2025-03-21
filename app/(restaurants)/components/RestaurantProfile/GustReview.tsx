@@ -2,7 +2,7 @@ import { FaStar } from "react-icons/fa6";
 import { Review } from "../../types/restaurant";
 
 interface GuestReviewsProps {
-  reviews?: Review[] | null;  // Make the prop optional and allow null
+  reviews?: number | null;  // Make the prop optional and allow null
 }
 
 export default function GuestReviews({ reviews }: GuestReviewsProps) {
