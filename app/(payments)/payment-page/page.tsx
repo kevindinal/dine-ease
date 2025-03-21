@@ -463,12 +463,7 @@ const SummaryPage = () => {
                       >
                         Cancel
                       </Button>
-                      <Button 
-                        className="w-full bg-[#FA4032] text-white hover:bg-[#FB665B]"
-                        onClick={handlePaymentComplete} // Added onClick handler
-                      >
-                        Complete Payment
-                      </Button>
+                      
                     </div>
                   </Dialog.Panel>
                 </Transition.Child>
