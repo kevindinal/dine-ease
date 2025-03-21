@@ -110,7 +110,7 @@ export default function BannerSection({ restaurant }: BannerSectionProps) {
             {/* Fixed layout with flex instead of grid */}
             <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
               {/* Guests Selector */}
-              <div className="space-y-2 w-full md:w-1/6">
+              <div className="space-y-2 w-full md:w-1/4">
                 <label className="text-sm font-medium text-gray-600 block">Guests</label>
                 <div className="relative">
                   <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-red-500">

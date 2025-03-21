@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { motion } from "framer-motion"
 import { Star, Quote, User } from "lucide-react"
 import type { Review } from "../../types/restaurant"
@@ -8,40 +10,52 @@ interface GuestReviewsProps {
   reviews?: Review[] | null // Make the prop optional and allow null
 }
 
-export default function GuestReviews({ reviews }: GuestReviewsProps) {
-  // Check if reviews exists and is an array
-  const reviewsArray = Array.isArray(reviews) ? reviews : []
+// First, let's add a type definition for our local sample reviews that matches the structure we're using
+// This will be separate from the imported Review type
 
-  // Sample reviews if none provided
-  const sampleReviews: Review[] = [
-    {
-      id: "1",
-      username: "Sarah Johnson",
-      rating: 5,
-      date: "2023-05-15",
-      comment:
-        "Absolutely amazing experience! The food was delicious and the service was impeccable. Will definitely be coming back soon.",
-    },
-    {
-      id: "2",
-      username: "Michael Chen",
-      rating: 4,
-      date: "2023-06-22",
-      comment:
-        "Great atmosphere and excellent food. The chef's special was outstanding. Highly recommend for a nice evening out.",
-    },
-    {
-      id: "3",
-      username: "Emily Rodriguez",
-      rating: 5,
-      date: "2023-07-10",
-      comment:
-        "One of the best dining experiences I've had in a long time. The attention to detail in every dish was remarkable.",
-    },
-  ]
+// Add this right after the GuestReviewsProps interface
+type SampleReview = {
+  id: string
+  username: string
+  rating: number
+  date: string
+  comment: string
+}
 
-  // Use provided reviews or sample reviews
-  const reviewsToDisplay = reviewsArray.length > 0 ? reviewsArray : sampleReviews
+// Then change the sampleReviews declaration to use this type
+const sampleReviews: SampleReview[] = [
+  {
+    id: "1",
+    username: "Sarah Johnson",
+    rating: 5,
+    date: "2023-05-15",
+    comment:
+      "Absolutely amazing experience! The food was delicious and the service was impeccable. Will definitely be coming back soon.",
+  },
+  {
+    id: "2",
+    username: "Michael Chen",
+    rating: 4,
+    date: "2023-06-22",
+    comment:
+      "Great atmosphere and excellent food. The chef's special was outstanding. Highly recommend for a nice evening out.",
+  },
+  {
+    id: "3",
+    username: "Emily Rodriguez",
+    rating: 5,
+    date: "2023-07-10",
+    comment:
+      "One of the best dining experiences I've had in a long time. The attention to detail in every dish was remarkable.",
+  },
+]
+
+const GuestReviews: React.FC<GuestReviewsProps> = ({ reviews }) => {
+  // Use the reviews prop if it exists, otherwise use the sampleReviews
+  const reviewsArray = reviews || []
+
+  // Then modify the reviewsToDisplay line to handle the type difference
+  const reviewsToDisplay = reviewsArray.length > 0 ? reviewsArray : (sampleReviews as unknown as Review[])
 
   return (
     <div className="py-12 sm:py-16 bg-gray-50 px-4">
@@ -82,7 +96,21 @@ export default function GuestReviews({ reviews }: GuestReviewsProps) {
                 <div>
                   <h3 className="font-bold text-gray-800">{review.username}</h3>
                   <p className="text-gray-500 text-xs sm:text-sm">
-                    {new Date(review.date).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                    {(() => {
+                      // Safely check if date exists and is a string
+                      if (review.date && typeof review.date === "string") {
+                        try {
+                          const dateObj = new Date(review.date)
+                          // Check if date is valid
+                          if (!isNaN(dateObj.getTime())) {
+                            return dateObj.toLocaleDateString("en-US", { month: "long", year: "numeric" })
+                          }
+                        } catch (error) {
+                          // If any error occurs during date parsing, fall back to default
+                        }
+                      }
+                      return "Date not available"
+                    })()}
                   </p>
                 </div>
               </div>
@@ -107,4 +135,6 @@ export default function GuestReviews({ reviews }: GuestReviewsProps) {
     </div>
   )
 }
+
+export default GuestReviews
 
