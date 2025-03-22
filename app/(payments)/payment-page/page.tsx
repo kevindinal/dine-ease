@@ -294,14 +294,20 @@ const SummaryPage = () => {
         <div className="bg-[#FA4032] text-white p-6">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">Order Summary</h2>
-            <Button variant="ghost" size="sm" className="text-white hover:bg-[#FB665B]">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-white hover:bg-[#FB665B]"
+              onClick={() => router.push('/cuisine-main-page')}
+            >
               <Edit className="h-4 w-4 mr-1" /> Edit
             </Button>
           </div>
           <div className="mt-2 text-white/80">Complete your reservation details below</div>
         </div>
-
         <div className="p-6">
+          {/* Your content here */}
+        </div>
           {/* Points display */}
           <div className="bg-gradient-to-r from-[#FFE5E2] to-[#FFF5F4] rounded-lg p-4 mb-6 flex justify-between items-center">
             <div>
@@ -392,22 +398,71 @@ const SummaryPage = () => {
             </div>
           </div>
 
-          {/* Payment Actions */}
-          <div className="flex flex-col md:flex-row gap-4 mt-6">
-            <Button 
-              className="w-full h-14 bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-lg border border-gray-300 font-medium"
-              onClick={navigateToOrderStatus} // Added onClick handler
-            >
-              Pay at Restaurant <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-            <Button
-              className="w-full h-14 bg-[#FA4032] text-white hover:bg-[#FB665B] rounded-lg font-medium"
-              onClick={() => setIsOpen(true)}
-            >
-              Pay Now <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
+         {/* Payment Actions */}
+<div className="flex flex-col md:flex-row gap-4 mt-6">
+  <Button 
+    className="w-full h-14 bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-lg border border-gray-300 font-medium"
+    onClick={() => {
+      // Create a toast or notification message
+      const notification: HTMLDivElement = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 z-50 animate-fade-in flex items-center';
+      notification.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+      notification.innerHTML = `
+        <div class="bg-green-100 p-2 rounded-full mr-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
         </div>
+        <div>
+          <h3 class="font-bold text-gray-900">Thank you!</h3>
+          <p class="text-sm text-gray-600">You selected to pay at the restaurant</p>
+        </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // Add fade-in animation
+      if (typeof document !== 'undefined') {
+        const style: HTMLStyleElement = document.createElement('style');
+        style.innerHTML = `
+          @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(-20px); }
+            100% { opacity: 1; transform: translateY(0); }
+          }
+          .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+      
+      // Navigate to order status page after 4 seconds
+      setTimeout(() => {
+        // Optional: Add fade-out animation before navigating
+        notification.style.transition = 'opacity 0.3s, transform 0.3s';
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(-20px)';
+        
+        setTimeout(() => {
+          // Remove the notification before navigating
+          if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+          }
+          // Navigate to order status page
+          navigateToOrderStatus();
+        }, 300);
+      }, 4000);
+    }}
+  >
+    Pay at Restaurant <ChevronRight className="h-4 w-4 ml-1" />
+  </Button>
+  <Button
+    className="w-full h-14 bg-[#FA4032] text-white hover:bg-[#FB665B] rounded-lg font-medium"
+    onClick={() => setIsOpen(true)}
+  >
+    Pay Now <ChevronRight className="h-4 w-4 ml-1" />
+  </Button>
+</div>
 
         {/* Payment Form Modal */}
         <Transition appear show={isOpen} as={Fragment}>
