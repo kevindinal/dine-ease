@@ -454,11 +454,11 @@ export default function TableDetailsPage() {
    
 if (option === "payment") {
   if (table?.restaurantId){
-    router.push(`/payment-page?restaurantId=${encodeURIComponent(table?.restaurantId)}`)
+    router.push(`/payment-page/${encodeURIComponent(table?.restaurantId)}`)
   }
 } else {
   if (table?.restaurantId) {
-    router.push(`/cuisine-main-page?restaurantId=${encodeURIComponent(table.restaurantId)}`)
+    router.push(`/cuisine-main-page/${encodeURIComponent(table.restaurantId)}`)
   } 
 }
 
