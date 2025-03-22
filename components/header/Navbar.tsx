@@ -323,8 +323,7 @@ const Navbar = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer transition-colors duration-200 hover:bg-[#FA4032]/10 group"
-                  onClick={handleLogout}
-                >
+                  onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                   <span>Log out</span>
                 </DropdownMenuItem>
@@ -337,8 +336,7 @@ const Navbar = () => {
             <Button
               variant="ghost"
               className="text-white hover:bg-white/10 transition-colors duration-200 rounded-full relative"
-              onClick={toggleMobileMenu}
-            >
+              onClick={toggleMobileMenu}>
               <AnimatePresence mode="wait">
                 {isMobileMenuOpen ? (
                   <motion.div
@@ -374,8 +372,7 @@ const Navbar = () => {
                   duration: 2,
                   repeat: Number.POSITIVE_INFINITY,
                   repeatType: "reverse",
-                }}
-              />
+                }}/>
             </Button>
           </div>
         </div>
@@ -388,8 +385,7 @@ const Navbar = () => {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            >
+              transition={{ duration: 0.3, ease: "easeInOut" }}>
               {/* Decorative elements */}
               <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <svg width="100%" height="100%" className="opacity-10">
@@ -419,8 +415,7 @@ const Navbar = () => {
                       duration: 5 + Math.random() * 5,
                       repeat: Number.POSITIVE_INFINITY,
                       delay: i * 0.5,
-                    }}
-                  >
+                    }}>
                     {React.cloneElement(foodIcons[i % foodIcons.length], { size: 20 + (i % 10) })}
                   </motion.div>
                 ))}
@@ -432,8 +427,7 @@ const Navbar = () => {
                     key={link.title}
                     initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: index * 0.1, duration: 0.3 }}
-                  >
+                    transition={{ delay: index * 0.1, duration: 0.3 }}>
                     <Link
                       href={link.href}
                       className="block py-2 text-white hover:text-white hover:bg-[#FA4032]/50 px-3 rounded transition-colors duration-200 relative group"
@@ -444,8 +438,7 @@ const Navbar = () => {
                         <motion.div
                           initial={{ x: -5, opacity: 0 }}
                           whileHover={{ x: 0, opacity: 1 }}
-                          className="text-white/70"
-                        >
+                          className="text-white/70">
                           <ChevronRight size={16} />
                         </motion.div>
                       </div>

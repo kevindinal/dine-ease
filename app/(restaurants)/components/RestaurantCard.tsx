@@ -1,6 +1,3 @@
-
-
-
 "use client"
 
 import { motion } from "framer-motion"
@@ -27,7 +24,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
   const getRandomTimeSlots = () => {
     const slots = ["18:00", "19:00", "19:30", "20:00", "20:30", "21:00"]
     const randomSlots = []
-    const numSlots = Math.floor(Math.random() * 3) + 1 // 1-3 slots
+    const numSlots = Math.floor(Math.random() * 4) + 1 // 1-3 slots
 
     for (let i = 0; i < numSlots; i++) {
       const randomIndex = Math.floor(Math.random() * slots.length)

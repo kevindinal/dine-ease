@@ -15,7 +15,6 @@ export type Restaurant = {
     address: string;
     description: string;
     about: string;
-    comment:string;
   };
   
   export const restaurants: Restaurant[] = [
@@ -48,7 +47,6 @@ export type Restaurant = {
         "https://cdn.squaremeal.co.uk/restaurants/2747/images/waldorf-7_05012024112304.jpg?w=1200&h=800&fit=crop&auto=format%2Ccompress",
       ],
       times: ["12:00 PM", "12:15 PM", "12:30 PM"],
-      comment:"Hiii"
     },
 
     {
@@ -80,7 +78,6 @@ export type Restaurant = {
         "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/6c/3d/d9/the-lagoon.jpg?w=1200&h=-1&s=1",
       ],
       times: ["11:30 AM", "12:00 PM", "12:30 PM", "01:00 PM"],
-      comment:"byee",
     },
   ];
   
