@@ -85,7 +85,7 @@ const RestaurantCarousel = () => {
 
   return (
     <motion.div
-      className="relative w-full overflow-hidden py-16 px-4"
+      className="relative w-full overflow-hidden py-16 px-4 md:px-6"
       ref={containerRef}
       onMouseMove={handleMouseMove}
       animate={controls}
@@ -122,37 +122,7 @@ const RestaurantCarousel = () => {
           />
         ))}
 
-        {/* Food-themed icons */}
-        {[...Array(8)].map((_, i) => {
-          const icons = [<Utensils key={i} size={20} />, <Star key={i} size={20} />, <Heart key={i} size={20} />]
-          const IconComponent = icons[i % 3]
-
-          return (
-            <motion.div
-              key={`icon-${i}`}
-              className="absolute text-[#FA4032]/10"
-              initial={{
-                x: getRandomNumber(10, 90, `icon-x-${i}`),
-                y: -20,
-                rotate: getRandomNumber(-20, 20, `icon-r-${i}`),
-                scale: getRandomNumber(0.8, 1.5, `icon-s-${i}`),
-              }}
-              animate={{
-                y: ["0%", "100%"],
-                rotate: [getRandomNumber(-20, 20, `icon-r1-${i}`), getRandomNumber(-20, 20, `icon-r2-${i}`)],
-              }}
-              transition={{
-                duration: getRandomNumber(15, 25, `icon-d-${i}`),
-                repeat: Number.POSITIVE_INFINITY,
-                ease: "linear",
-                delay: i * 0.5,
-              }}
-              style={{ left: `${getRandomNumber(0, 100, `icon-pos-${i}`)}%` }}
-            >
-              {IconComponent}
-            </motion.div>
-          )
-        })}
+        {/* No floating food icons */}
       </div>
 
       {/* Interactive cursor effect */}
@@ -265,30 +235,30 @@ const RestaurantCarousel = () => {
           </p>
         </motion.div>
 
-        <div className="relative flex items-center justify-center">
+        <div className="relative flex items-center justify-center px-4 md:px-0">
           <Button
             variant="ghost"
             size="icon"
-            className="absolute left-4 z-10 bg-white/80 hover:bg-white shadow-lg rounded-full"
+            className="absolute left-0 z-10 bg-white/80 hover:bg-white shadow-lg rounded-full"
             onClick={prevSlide}
           >
             <ChevronLeft className="h-6 w-6" />
           </Button>
 
           <div
-            className="flex transition-transform duration-500 ease-in-out transform"
+            className="flex transition-transform duration-500 ease-in-out transform overflow-visible w-full"
             style={{ transform: `translateX(-${currentIndex * 100}%)` }}
           >
             {restaurants.map((restaurant, index) => (
               <div
                 key={restaurant.id}
-                className="min-w-full px-4 sm:min-w-[50%] md:min-w-[33.333%] lg:min-w-[25%]"
+                className="min-w-full px-2 sm:px-4 sm:min-w-[50%] md:min-w-[33.333%] lg:min-w-[25%]"
                 onMouseEnter={() => setActiveIndex(index)}
                 onMouseLeave={() => setActiveIndex(null)}
               >
                 <Link href={`/restaurants/${restaurant.id}`}>
                   <motion.div
-                    className="bg-white rounded-3xl overflow-hidden relative group"
+                    className="bg-white rounded-3xl overflow-hidden cursor-pointer relative group mx-auto max-w-[95%] sm:max-w-full"
                     whileHover={{
                       y: -10,
                       transition: { duration: 0.3, type: "spring" },
@@ -324,7 +294,7 @@ const RestaurantCarousel = () => {
                         className="relative z-10 h-full"
                       >
                         <img
-                          src={restaurant.mealPageImage || "/placeholder.svg?height=224&width=400"}
+                          src={restaurant.image || "/placeholder.svg?height=224&width=400"}
                           alt={restaurant.name}
                           className="w-full h-full object-cover"
                         />
@@ -455,7 +425,7 @@ const RestaurantCarousel = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute right-4 z-10 bg-white/80 hover:bg-white shadow-lg rounded-full"
+            className="absolute right-0 z-10 bg-white/80 hover:bg-white shadow-lg rounded-full"
             onClick={nextSlide}
           >
             <ChevronRight className="h-6 w-6" />
