@@ -11,6 +11,8 @@ export interface PreOrder {
   price: number;
   image: string;
   addOns?: any[];
+  // Add uniqueId for item identification
+  uniqueId?: string;
 }
 
 const usePreOrder = () => {
@@ -30,30 +32,44 @@ const usePreOrder = () => {
 
   const preOrderCount = preOrders.reduce((total, item) => total + item.quantity, 0);
 
+  const generateUniqueId = (item: PreOrder): string => {
+    // Create a consistent unique identifier based on the item and its customizations
+    const addOnsString = Array.isArray(item.addOns) 
+      ? item.addOns.join(",") 
+      : (typeof item.addOns === 'string' ? item.addOns : "");
+    
+    return `${item.id}-${item.portionSize || ""}-${item.spiceLevel || ""}-${item.drinkPairing || ""}-${addOnsString}`;
+  };
+
   const addItemToPreOrder = (newItem: PreOrder) => {
     setPreOrders((prevItems) => {
-      const existingItemIndex = prevItems.findIndex(
-        (item) => 
-          item.id === newItem.id &&
-          item.portionSize === newItem.portionSize &&
-          item.spiceLevel === newItem.spiceLevel &&
-          item.drinkPairing === newItem.drinkPairing &&
-          item.image === newItem.image &&
-          JSON.stringify(item.addOns) === JSON.stringify(newItem.addOns)
+      // Generate a unique ID for this specific item with its customizations
+      const uniqueId = generateUniqueId(newItem);
+      
+      const existingItemIndex = prevItems.findIndex(item => 
+        generateUniqueId(item) === uniqueId
       );
 
       if (existingItemIndex !== -1) {
+        // Update existing item quantity
         const updatedItems = [...prevItems];
         updatedItems[existingItemIndex].quantity += newItem.quantity;
         return updatedItems;
       } else {
-        return [...prevItems, newItem];
+        // Add new item with the uniqueId
+        return [...prevItems, {
+          ...newItem,
+          uniqueId
+        }];
       }
     });
   };
 
+  // Remove item by uniqueId or regular id 
   const removePreOrderItem = (itemId: string) => {
-    setPreOrders((prevItems) => prevItems.filter((item) => item.id !== itemId));
+    setPreOrders((prevItems) => prevItems.filter(item => 
+      (item.uniqueId || item.id) !== itemId
+    ));
   };
 
   const clearPreOrder = () => {
