@@ -264,7 +264,7 @@ const HighlyRatedRestaurants = () => {
                     onMouseEnter={() => setActiveIndex(index)}
                     onMouseLeave={() => setActiveIndex(null)}
                   >
-                    <Link href={`/restaurants/${restaurant.id}`}>
+                    <Link href={`/restaurants-profile/${restaurant.id}`}>
                       <motion.div
                         className="bg-white rounded-3xl overflow-hidden cursor-pointer relative group"
                         whileHover={{ y: -10, transition: { duration: 0.3, type: "spring" } }}

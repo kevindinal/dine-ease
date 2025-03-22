@@ -310,6 +310,15 @@ export default function HomePage() {
               </div>
             </motion.div>
           </div>
+
+          {/* Scroll Down Indicator */}
+          <motion.div
+            className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center"
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}>
+            <span className="text-sm text-gray-500 mb-2"></span>
+            <ChevronDown className="h-6 w-6 text-[#FA4032]" />
+          </motion.div>
         </div>
       </motion.section>
 
