@@ -8,12 +8,14 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { useState } from "react"
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth"
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth"
 import { auth, db } from "@/lib/firebase"
+import { GoogleAuthProvider } from "firebase/auth"
 import { doc, getDoc, setDoc } from "firebase/firestore"
 import { useRouter } from "next/navigation"
 import { FaGoogle } from "react-icons/fa"
 
+const provider = new GoogleAuthProvider()
 const AuthFormSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
@@ -76,6 +78,17 @@ export function AuthForm({ type }: AuthFormProps) {
         const userDoc = await getDoc(doc(db, "users", user.uid))
         const userData = userDoc.data()
 
+        // Save user data to localStorage
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            uid: user.uid,
+            name: userData?.firstName || user.displayName || "User",
+            email: user.email,
+            ...userData,
+          }),
+        )
+
         // Navigate to home with user data
         router.push(
           `/home-main?uid=${user.uid}&name=${userData?.firstName || user.displayName || "User"}&email=${user.email}`,
@@ -93,7 +106,6 @@ export function AuthForm({ type }: AuthFormProps) {
   }
 
   const handleGoogleSignIn = async () => {
-    const provider = new GoogleAuthProvider();
     try {
       setIsLoading(true)
       const result = await signInWithPopup(auth, provider)
@@ -111,6 +123,25 @@ export function AuthForm({ type }: AuthFormProps) {
           createdAt: new Date(),
         })
       }
+
+      // Get the user data (either existing or newly created)
+      const userData = userDoc.exists()
+        ? userDoc.data()
+        : {
+            firstName: user.displayName?.split(" ")[0] || "",
+            lastName: user.displayName?.split(" ")[1] || "",
+          }
+
+      // Save user data to localStorage
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          uid: user.uid,
+          name: userData.firstName || user.displayName || "User",
+          email: user.email,
+          ...userData,
+        }),
+      )
 
       // Navigate to home with user data
       router.push(`/home-main?uid=${user.uid}&name=${user.displayName || "User"}&email=${user.email}`)
