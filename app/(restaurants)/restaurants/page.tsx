@@ -1,6 +1,7 @@
 import { getUserData } from "@/lib/auth";
 import AllRestaurants from "../components/AllRestaurants";
 import Navbar from "@/components/header/Navbar";
+import Footer from "@/components/footer/Footer";
 
 export default function RestaurantBooking() {
   
@@ -10,8 +11,9 @@ export default function RestaurantBooking() {
 
     <div className="pt-20">
       <AllRestaurants />
+      <Footer />
     </div>
   </>
   )
-  
+
 }
