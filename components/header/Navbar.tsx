@@ -24,7 +24,7 @@ import Image from "next/image"
 
 const navLinks = [
   { title: "Home", href: "/home-main" },
-  { title: "Restaurants", href: "/restaurants" },
+  { title: "Restaurant", href: "/restaurant" },
   { title: "Contact", href: "/contact" },
 ]
 
@@ -263,6 +263,51 @@ const Navbar = () => {
               </Link>
             ))}
 
+            {/* For Businesses Button */}
+            <Link href="/business">
+              <Button
+                variant="ghost"
+                className="relative rounded-full bg-white/10 hover:bg-white/20 p-1 transition-all duration-300 hover:scale-105 group"
+              >
+                <motion.div
+                  className="flex items-center gap-2 px-2"
+                  whileHover={{ x: 3 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
+                  <div className="relative">
+                    <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center border-2 border-white transition-transform duration-300 group-hover:border-primary">
+                      <ChefHat className="h-4 w-4 text-white" />
+                    </div>
+
+                    {/* Animated ring */}
+                    <motion.div
+                      className="absolute -inset-1 rounded-full border border-white/30"
+                      initial={{ scale: 0, opacity: 0 }}
+                      whileHover={{ scale: 1.2, opacity: 1, rotate: 360 }}
+                      transition={{ duration: 0.8 }}
+                    />
+                  </div>
+                  <span className="text-white font-medium hidden sm:inline">For Businesses</span>
+
+                  {/* Animated sparkle */}
+                  <motion.div
+                    animate={{
+                      rotate: [0, 15, -15, 0],
+                      scale: [1, 1.2, 0.8, 1],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Number.POSITIVE_INFINITY,
+                      repeatType: "reverse",
+                    }}
+                    className="absolute -top-1 -right-1 text-yellow-300"
+                  >
+                    <Sparkles size={12} />
+                  </motion.div>
+                </motion.div>
+              </Button>
+            </Link>
+
             {/* User Profile Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -473,6 +518,22 @@ const Navbar = () => {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.5, duration: 0.3 }}
                   >
+                    <Link href="/business">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-white hover:bg-[#FA4032]/50 transition-colors duration-200 group"
+                      >
+                        <ChefHat className="mr-2 h-4 w-4 group-hover:rotate-12 transition-transform duration-300" />
+                        For Businesses
+                      </Button>
+                    </Link>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.6, duration: 0.3 }}
+                  >
                     <Button
                       variant="ghost"
                       className="w-full justify-start text-white hover:bg-[#FA4032]/50 transition-colors duration-200 group"
@@ -485,7 +546,7 @@ const Navbar = () => {
                   <motion.div
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.6, duration: 0.3 }}
+                    transition={{ delay: 0.7, duration: 0.3 }}
                   >
                     <Button
                       variant="ghost"
@@ -506,4 +567,5 @@ const Navbar = () => {
   )
 }
 
-export default Navbar;
+export default Navbar
+
