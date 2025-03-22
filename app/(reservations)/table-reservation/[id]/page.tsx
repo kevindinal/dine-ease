@@ -45,7 +45,7 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { useMediaQuery } from "@/hooks/use-media-query"
-import Fallback360Viewer from "@/app/table-reservation/fall-back-360"
+import Fallback360Viewer from "@/app/(reservations)/table-reservation/fall-back-360"
 import { motion, AnimatePresence } from "framer-motion"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -54,13 +54,13 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { auth } from "@/lib/firebase/tables"
 
 // Import our components
-import ReviewSection from "@/app/table-reservation/components/review-section"
-import ReservationForm from "@/app/table-reservation/components/reservation-form"
-import SpecialOffers from "@/app/table-reservation/components/special-offers"
-import FeaturesSection from "@/app/table-reservation/components/features-section"
-import AvailabilityCalendar from "@/app/table-reservation/components/availability-calendar"
+import ReviewSection from "@/app/(reservations)/table-reservation/components/review-section"
+import ReservationForm from "@/app/(reservations)/table-reservation/components/reservation-form"
+import SpecialOffers from "@/app/(reservations)/table-reservation/components/special-offers"
+import FeaturesSection from "@/app/(reservations)/table-reservation/components/features-section"
+import AvailabilityCalendar from "@/app/(reservations)/table-reservation/components/availability-calendar"
 // Add this import at the top of the file, which was missing
-import ThreeSixtyViewer from "@/app/table-reservation/thresixty"
+import ThreeSixtyViewer from "@/app/(reservations)/table-reservation/thresixty"
 
 interface Table {
   id: string
