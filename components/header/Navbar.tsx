@@ -82,7 +82,6 @@ const Navbar = () => {
         setIsScrolled(false)
       }
     }
-  })
 
     // Add scroll event listener
     window.addEventListener("scroll", handleScroll)
@@ -515,4 +514,3 @@ const Navbar = () => {
 }
 
 export default Navbar
-
