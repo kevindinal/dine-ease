@@ -392,7 +392,7 @@ if (option === "payment") {
   }
 } else {
   if (table?.restaurantId) {
-    router.push(`/cuisine-main-page?restaurantId=${encodeURIComponent(table.restaurantId)}`)
+    router.push(`/cuisine-main-page/${encodeURIComponent(table.restaurantId)}`)
   } 
 }
 
