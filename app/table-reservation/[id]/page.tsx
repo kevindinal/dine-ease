@@ -454,11 +454,11 @@ export default function TableDetailsPage() {
    
 if (option === "payment") {
   if (table?.restaurantId){
-    router.push(`/payment-page?restaurantId=${encodeURIComponent(table?.restaurantId)}`)
+    router.push(`/payment-page/${encodeURIComponent(table?.restaurantId)}`)
   }
 } else {
   if (table?.restaurantId) {
-    router.push(`/cuisine-main-page?restaurantId=${encodeURIComponent(table.restaurantId)}`)
+    router.push(`/cuisine-main-page/${encodeURIComponent(table.restaurantId)}`)
   } 
 }
 
@@ -1019,7 +1019,7 @@ if (option === "payment") {
                       <div className="w-full h-full">
                         {/* Use both components with a fallback mechanism */}
                         {process.env.NODE_ENV !== "production" ? (
-                          <ThreeSixtyViewer imageUrl={'/ff.jpg'} />
+                          <ThreeSixtyViewer imageUrl={'/ll.jpg'} />
                         ) : (
                           <Fallback360Viewer imageUrl={table.threeSixtyImageUrl} />
                         )}

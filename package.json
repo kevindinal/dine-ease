@@ -58,7 +58,6 @@
     "tailwind-merge": "^3.0.1",
     "tailwind-scrollbar-hide": "^2.0.0",
     "tailwindcss-animate": "^1.0.7",
-    "three": "^0.169.0",
     "three": "^0.174.0",
     "to-regex-range": "^5.0.1",
     "zod": "^3.24.2"
