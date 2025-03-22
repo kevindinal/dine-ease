@@ -7,6 +7,7 @@ import { motion } from "framer-motion"
 import { Star, MapPin, Clock, DollarSign, ChevronRight } from "lucide-react"
 import type { Restaurant } from "../types/restaurant"
 import { useRouter } from "next/navigation"
+import { FaStar } from "react-icons/fa"
 
 interface RestaurantCardProps {
   restaurant: Restaurant
@@ -84,6 +85,18 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
             </span>
           )}
         </div>
+        
+        <div className="flex items-center text-yellow-500 mt-1">
+          {[...Array(Math.floor(restaurant.rating || 0))].map((_, index) => (
+            <FaStar key={index} />
+          ))}
+          <span className="text-sm text-gray-500 ml-2">
+            {(restaurant.rating || 0).toFixed(1)} ({restaurant.reviews || 0})
+          </span>
+        </div>
+
+
+
 
         <p className="text-gray-600 text-sm line-clamp-2 mb-4">
           {restaurant.description || "Experience the authentic flavors and ambiance at this popular restaurant."}
