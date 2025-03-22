@@ -6,7 +6,6 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { useEffect, useState } from 'react';
 import { getUserData, logout } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { UserProp } from '@/types';
 
 export default function Home() {
