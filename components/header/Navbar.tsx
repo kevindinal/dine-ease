@@ -71,7 +71,7 @@ const Navbar = () => {
     const name = userData?.firstName;
     const email = userData?.email;
 
-  }, [searchParams])
+  }, [user, loading, router])
 
   const handleLogout = async () => {
     try {
