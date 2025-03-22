@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { Star, MapPin, Clock, DollarSign, ChevronRight } from "lucide-react"
 import type { Restaurant } from "../types/restaurant"
 import { useRouter } from "next/navigation"
+import { FaStar } from "react-icons/fa"
 
 interface RestaurantCardProps {
   restaurant: Restaurant
@@ -23,7 +24,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
   const getRandomTimeSlots = () => {
     const slots = ["18:00", "19:00", "19:30", "20:00", "20:30", "21:00"]
     const randomSlots = []
-    const numSlots = Math.floor(Math.random() * 3) + 1 // 1-3 slots
+    const numSlots = Math.floor(Math.random() * 4) + 1 // 1-3 slots
 
     for (let i = 0; i < numSlots; i++) {
       const randomIndex = Math.floor(Math.random() * slots.length)
@@ -37,15 +38,9 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
   const timeSlots = getRandomTimeSlots()
 
   return (
-<<<<<<< HEAD
-    <div
-      className="bg-white text-black rounded-xl shadow-lg overflow-hidden border cursor-pointer transition hover:shadow-2xl"
-      onClick={() => router.push(/restaurants-profile/${restaurant.id})}
-=======
     <motion.div
       whileHover={{ y: -5 }}
       className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col border border-gray-100"
->>>>>>> dev
     >
       <div className="relative h-48 overflow-hidden">
         <img
@@ -58,37 +53,6 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
           <div className="absolute top-3 left-3 bg-red-500 text-white text-xs px-3 py-1.5 rounded-full">Featured</div>
         )} */}
 
-<<<<<<< HEAD
-        {/* Star Ratings */}
-        <div className="flex items-center text-yellow-500 mt-1">
-          {[...Array(Math.floor(restaurant.rating || 0))].map((_, index) => (
-            <FaStar key={index} />
-          ))}
-          <span className="text-sm text-gray-500 ml-2">
-            {(restaurant.rating || 0).toFixed(1)} ({restaurant.reviews || 0})
-          </span>
-        </div>
-
-        <p className="text-sm text-gray-500 mt-1">{restaurant.category || 'Uncategorized'}</p>
-        <p className="text-sm text-gray-600 mt-1">
-          {restaurant.description?.length > 60
-            ? ${restaurant.description.substring(0, 60)}...
-            : restaurant.description || 'No description available'}
-        </p>
-
-        <hr className="my-3 border-gray-300" />
-
-        {/* Availability */}
-        <p className="text-md font-medium text-gray-700 mb-2">Today's availability</p>
-        <div className="flex gap-2 flex-wrap">
-          {(restaurant.times || []).map((time) => (
-            <button
-              key={time}
-              className="px-3 py-1 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 transition hover:bg-purple-500 hover:text-white"
-            >
-              {time}
-            </button>
-=======
         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-gray-800 text-xs px-3 py-1.5 rounded-full flex items-center shadow-md">
           <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400 mr-1" />
           <span>{restaurant.rating || "4.5"}</span>
@@ -111,7 +75,6 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
             <span key={index} className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full">
               {cuisine}
             </span>
->>>>>>> dev
           ))}
           {restaurant.cuisine.length > 3 && (
             <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full">
@@ -119,6 +82,18 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
             </span>
           )}
         </div>
+        
+        <div className="flex items-center text-yellow-500 mt-1">
+          {[...Array(Math.floor(restaurant.rating || 0))].map((_, index) => (
+            <FaStar key={index} />
+          ))}
+          <span className="text-sm text-gray-500 ml-2">
+            {(restaurant.rating || 0).toFixed(1)} ({restaurant.reviews || 0})
+          </span>
+        </div>
+
+
+
 
         <p className="text-gray-600 text-sm line-clamp-2 mb-4">
           {restaurant.description || "Experience the authentic flavors and ambiance at this popular restaurant."}
@@ -138,7 +113,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                 className="text-xs bg-gray-100 hover:bg-red-500 hover:text-white text-gray-700 px-4 py-2 rounded-full transition-colors duration-300"
                 onClick={(e) => {
                   e.stopPropagation()
-                  router.push(/restaurant/${restaurant.id}?time=${time})
+                  router.push(`/restaurant/${restaurant.id}?time=${time}`)
                 }}
               >
                 {time}
@@ -148,12 +123,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
         </div>
 
         <button
-          className="mt-4 w-full text-purple-600 font-semibold py-2 rounded-lg hover:bg-purple-100 transition"
-          onClick={(e) => {
-            e.stopPropagation(); // Prevents parent div click
-            router.push(/restaurants-profile/${restaurant.id});
-          }}
-          onClick={() => router.push(/restaurants-profile/${restaurant.id})}
+          onClick={() => router.push(`/restaurants-profile/${restaurant.id}`)}
           className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-300"
         >
           <span>Reserve a table</span>
@@ -163,3 +133,5 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
     </motion.div>
   )
 }
+
+
