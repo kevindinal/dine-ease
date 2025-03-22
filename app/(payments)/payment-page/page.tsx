@@ -3,7 +3,7 @@
 import { useEffect, useState, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Trash2, Edit, Calendar, Clock, Users, MapPin, ChevronRight } from "lucide-react";
+import { Trash2, Edit, Calendar, Clock, Users, MapPin, ChevronRight, Router } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
 import { Dialog, Transition } from "@headlessui/react";
@@ -49,12 +49,20 @@ const SummaryPage = () => {
 
           // If parsedData is an array, use it directly
           if (Array.isArray(parsedData)) {
-            setItems(parsedData);
+            // Ensure each item has a unique ID
+            const itemsWithUniqueIds = parsedData.map((item, index) => ({
+              ...item,
+              id: item.id || `item-${index}`
+            }));
+            setItems(itemsWithUniqueIds);
           }
           // If parsedData is an object (not null), convert it to an array with one item
           else if (parsedData && typeof parsedData === 'object') {
             console.log("Converting object to array:", parsedData);
-            setItems([parsedData]);
+            setItems([{
+              ...parsedData,
+              id: parsedData.id || "item-0"
+            }]);
           }
           else {
             console.error("preOrder data is not valid:", parsedData);
@@ -114,15 +122,19 @@ const SummaryPage = () => {
 
   const handleDelete = (id: string | number) => {
     if (Array.isArray(items)) {
+      // Filter out the item with the matching id
       const updatedItems = items.filter((item) => item.id !== id);
+
+      // Update the state
       setItems(updatedItems);
 
-      // Also update localStorage when item is removed
+      // Update localStorage consistently
       if (typeof window !== "undefined") {
         if (updatedItems.length === 0) {
+          // If no items left, remove the entry from localStorage
           localStorage.removeItem("preOrders");
         } else {
-          // Store as array
+          // Store the updated array in localStorage
           localStorage.setItem("preOrders", JSON.stringify(updatedItems));
         }
       }
@@ -192,15 +204,15 @@ const SummaryPage = () => {
         <div className="flex flex-col items-center justify-center py-8 bg-white/60 rounded-lg">
           <img src="/empty-plate.svg" alt="No meals" className="w-24 h-24 mb-4 opacity-40" />
           <p className="text-gray-500 text-center">No pre-ordered meals found.</p>
-          <Button variant="outline" className="mt-4 text-[#FA4032] border-[#FA4032] hover:bg-[#FFECEB]">
+          <Button variant="outline" className="mt-4 text-[#FA4032] border-[#FA4032] hover:bg-[#FFECEB]" onClick={() => window.history.back()}>
             Browse Menu
           </Button>
         </div>
       );
     }
 
-    return items.map((item) => (
-      <div key={item.id} className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm mb-3 hover:shadow-md transition-shadow">
+    return items.map((item, index) => (
+      <div key={`order-item-${item.id}-${index}`} className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm mb-3 hover:shadow-md transition-shadow">
         <div className="flex items-center space-x-4">
           <img src={item.image} alt={item.name} className="w-16 h-16 rounded-md object-cover shadow-sm" />
           <div>
@@ -242,10 +254,10 @@ const SummaryPage = () => {
         </div>
         <div className="flex flex-col items-end space-y-2">
           <span className="font-bold text-[#FA4032]">Rs.{(item.price * item.quantity).toFixed(2)}</span>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-gray-500 hover:text-[#FA4032] hover:bg-[#FFF0EF] p-1 h-auto" 
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-gray-500 hover:text-[#FA4032] hover:bg-[#FFF0EF] p-1 h-auto"
             onClick={() => handleDelete(item.id)}
           >
             <Trash2 className="h-4 w-4" />
@@ -261,8 +273,8 @@ const SummaryPage = () => {
       return <p className="text-gray-600">No pre-ordered meals.</p>;
     }
 
-    return items.map((item) => (
-      <div key={item.id} className="flex justify-between py-2 border-b border-gray-100 last:border-none">
+    return items.map((item, index) => (
+      <div key={`payment-item-${item.id}-${index}`} className="flex justify-between py-2 border-b border-gray-100 last:border-none">
         <div>
           <span className="font-medium">{item.name}</span>
           <div className="text-sm text-gray-600 flex items-center flex-wrap gap-1 mt-1">
@@ -288,7 +300,7 @@ const SummaryPage = () => {
           </div>
           <div className="mt-2 text-white/80">Complete your reservation details below</div>
         </div>
-        
+
         <div className="p-6">
           {/* Points display */}
           <div className="bg-gradient-to-r from-[#FFE5E2] to-[#FFF5F4] rounded-lg p-4 mb-6 flex justify-between items-center">
@@ -297,9 +309,8 @@ const SummaryPage = () => {
               <p className="text-2xl font-bold text-[#FA4032]">{points}</p>
             </div>
             <Button
-              className={`bg-[#FA4032] text-white hover:bg-[#FB665B] ${
-                discountApplied ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+              className={`bg-[#FA4032] text-white hover:bg-[#FB665B] ${discountApplied ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               onClick={applyPointsDiscount}
               disabled={discountApplied}
             >
@@ -310,7 +321,7 @@ const SummaryPage = () => {
           {/* Reservation Details */}
           <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
             <h3 className="text-lg font-semibold mb-4 text-gray-800">Reservation Details</h3>
-            
+
             {reservation ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <DetailCard
@@ -358,20 +369,20 @@ const SummaryPage = () => {
           {/* Payment Summary */}
           <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
             <h3 className="text-lg font-semibold mb-3 text-gray-800">Payment Summary</h3>
-            
+
             <div className="space-y-3">
               <div className="flex justify-between items-center text-gray-700">
                 <span>Subtotal</span>
                 <span>Rs.{(Array.isArray(items) ? items.reduce((sum, item) => sum + item.price * item.quantity, 0) : 0).toFixed(2)}</span>
               </div>
-              
+
               {discountApplied && (
                 <div className="flex justify-between items-center text-green-600">
                   <span>Points Discount</span>
                   <span>-Rs.{Math.min(points, totalPrice + (discountApplied ? Math.min(points, totalPrice) : 0)).toFixed(2)}</span>
                 </div>
               )}
-              
+
               <div className="border-t border-dashed border-gray-200 pt-3 mt-3">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold text-gray-800">Total:</span>
@@ -434,19 +445,19 @@ const SummaryPage = () => {
                       <h4 className="font-medium mb-3 text-gray-700">Pre-ordered Items:</h4>
                       <div className="bg-gray-50 rounded-lg p-4">
                         {renderPaymentSummaryItems()}
-                        
+
                         <div className="border-t border-gray-200 mt-3 pt-3 flex justify-between font-semibold">
                           <span>Subtotal:</span>
                           <span>Rs.{(Array.isArray(items) ? items.reduce((sum, item) => sum + item.price * item.quantity, 0) : 0).toFixed(2)}</span>
                         </div>
-                        
+
                         {discountApplied && (
                           <div className="flex justify-between text-green-600 mt-2">
                             <span>Points Discount:</span>
                             <span>-Rs.{Math.min(points, totalPrice + (discountApplied ? Math.min(points, totalPrice) : 0)).toFixed(2)}</span>
                           </div>
                         )}
-                        
+
                         <div className="flex justify-between font-bold text-[#FA4032] mt-2 text-lg">
                           <span>Total:</span>
                           <span>Rs.{totalPrice.toFixed(2)}</span>
@@ -455,10 +466,10 @@ const SummaryPage = () => {
                     </div>
 
                     <PaymentForm amount={totalPrice} />
-                    
+
                     <div className="mt-6 flex space-x-3">
-                      <Button 
-                        className="w-full bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300" 
+                      <Button
+                        className="w-full bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
                         onClick={() => setIsOpen(false)}
                       >
                         Cancel

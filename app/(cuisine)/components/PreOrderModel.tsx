@@ -1,18 +1,19 @@
 import React, { FC } from "react";
 import { XCircle, ShoppingBag, Trash2 } from "lucide-react";
-import { PreOrderItem } from "../types/preOrderTypes";
+import { PreOrder } from "../hooks/usePreOrder";
 
 interface PreOrderModalProps {
   isOpen: boolean;
   onClose: () => void;
-  preOrders: PreOrderItem[];
-  removeItem: (itemId: string, customizations: string) => void;
+  preOrders: PreOrder[];
+  removeItem: (itemId: string) => void;
 }
 
 const PreOrderModal: FC<PreOrderModalProps> = ({ isOpen, onClose, preOrders, removeItem }) => {
   if (!isOpen) return null;
 
-  const getItemCustomizationKey = (item: PreOrderItem) => {
+  // Helper function to generate a consistent customization key if needed for display
+  const getItemCustomizationKey = (item: PreOrder) => {
     const addOnsString = Array.isArray(item.addOns) 
       ? item.addOns.join(",") 
       : (typeof item.addOns === 'string' ? item.addOns : "");
@@ -55,9 +56,13 @@ const PreOrderModal: FC<PreOrderModalProps> = ({ isOpen, onClose, preOrders, rem
               const customizationKey = getItemCustomizationKey(item);
               const hasCustomizations = customizationKey.replace(/-/g, '').length > 0;
               
+              // Use uniqueId as the primary identifier for removing items
+              const itemIdentifier = item.uniqueId || item.id;
+              
               return (
                 <div 
-                  key={`${item.id}-${customizationKey}`} 
+                  // Use the uniqueId for the key if available, ensuring uniqueness in the list
+                  key={itemIdentifier} 
                   className="flex items-start justify-between border-b pb-4"
                 >
                   <div className="flex">
@@ -89,9 +94,10 @@ const PreOrderModal: FC<PreOrderModalProps> = ({ isOpen, onClose, preOrders, rem
                   </div>
                   
                   <div className="flex flex-col items-end">
-                    <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
+                    <span className="font-semibold">Rs. {(item.price * item.quantity).toFixed(2)}</span>
                     <button 
-                      onClick={() => removeItem(item.id, customizationKey)}
+                      // Just pass the uniqueId (or id as fallback) to removeItem function
+                      onClick={() => removeItem(itemIdentifier)}
                       className="text-red-500 hover:text-red-700 mt-2 flex items-center text-sm"
                       aria-label="Remove item"
                     >
@@ -106,12 +112,12 @@ const PreOrderModal: FC<PreOrderModalProps> = ({ isOpen, onClose, preOrders, rem
             <div className="mt-6 pt-4 border-t">
               <div className="flex justify-between text-gray-600 mb-2">
                 <span>Subtotal:</span>
-                <span>${totalAmount.toFixed(2)}</span>
+                <span>Rs. {totalAmount.toFixed(2)}</span>
               </div>
               
               <div className="flex justify-between font-bold text-lg">
                 <span>Total:</span>
-                <span>${totalAmount.toFixed(2)}</span>
+                <span>Rs. {totalAmount.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -124,14 +130,6 @@ const PreOrderModal: FC<PreOrderModalProps> = ({ isOpen, onClose, preOrders, rem
           >
             Continue Shopping
           </button>
-          
-          {preOrders.length > 0 && (
-            <button
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Checkout
-            </button>
-          )}
         </div>
       </div>
     </div>
