@@ -9,14 +9,14 @@ import { collection, query, where, orderBy, limit, getDocs } from "firebase/fire
 import { Dialog, Transition } from "@headlessui/react";
 import PaymentForm from "../components/PaymentForm";
 
-// Define OrderItem type
+
 type OrderItem = {
   id: string | number;
   name: string;
   price: number;
   quantity: number;
   image: string;
-  [key: string]: any; // Allow additional properties
+  [key: string]: any; 
 };
 
 const SummaryPage = () => {
