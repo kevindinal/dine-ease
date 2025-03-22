@@ -22,4 +22,3 @@ export interface UserOrder {
     isMealReady: boolean;
     isReservationReady: boolean;
 }
-

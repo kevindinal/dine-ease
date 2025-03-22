@@ -1,4 +1,3 @@
-// pages/payment-success.tsx
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
