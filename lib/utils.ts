@@ -1,18 +1,9 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { z } from "zod";
-import { 
-  collection, 
-  getDocs, 
-  writeBatch, 
-  doc,
-  serverTimestamp
-} from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import { Restaurant } from "@/app/(restaurants)/types/restaurant";
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+import { z } from "zod"
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs))
 }
 
 export const authformSchema = (type: string) => z.object({
@@ -28,7 +19,17 @@ export const authformSchema = (type: string) => z.object({
   // both sign-in and sign-up
   email: z.string().email(),
   password: z.string().min(8),
-});
+})
+
+import { 
+  collection, 
+  getDocs, 
+  writeBatch, 
+  doc,
+  serverTimestamp
+} from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { restaurants } from '@/data/restaurrants';
 
 // Seed the database with initial restaurant data
 export const seedRestaurants = async (): Promise<void> => {
@@ -42,11 +43,6 @@ export const seedRestaurants = async (): Promise<void> => {
     
     // Create a batch to write multiple documents
     const batch = writeBatch(db);
-    
-    // Define initial restaurant data
-    const restaurants: Restaurant[] = [
-      // Add more restaurants as needed
-    ];
     
     // Add each restaurant to the batch
     restaurants.forEach((restaurant) => {
@@ -127,3 +123,10 @@ export const clearCollection = async (collectionName: string): Promise<void> => 
     throw error;
   }
 };
+
+// import { ClassValue, clsx } from "clsx"
+// import { twMerge } from "tailwind-merge"
+
+// export function cn(...inputs: ClassValue[]) {
+//   return twMerge(clsx(inputs))
+// }

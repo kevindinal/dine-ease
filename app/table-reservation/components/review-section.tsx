@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
-import { Star, MessageSquare, ThumbsUp } from "lucide-react"
+import { Star, MessageSquare, ThumbsUp, ChevronRight, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -28,8 +28,10 @@ export default function ReviewSection({ reviews, rating, onSubmitReview }: Revie
   const [reviewRating, setReviewRating] = useState(5)
   const [reviewComment, setReviewComment] = useState("")
   const reviewFormRef = useRef<HTMLDivElement>(null)
+  const [showAllReviews, setShowAllReviews] = useState(false)
 
   const totalReviews = reviews?.length || 0
+  const hasMoreReviews = totalReviews > 4
 
   // Calculate rating distribution for reviews
   const getRatingDistribution = () => {
@@ -47,6 +49,9 @@ export default function ReviewSection({ reviews, rating, onSubmitReview }: Revie
 
   const ratingDistribution = getRatingDistribution()
 
+  // Determine which reviews to display based on showAllReviews state
+  const displayedReviews = showAllReviews || !hasMoreReviews ? reviews : reviews?.slice(0, 4)
+
   const handleSubmitReview = () => {
     if (reviewComment.trim()) {
       onSubmitReview(reviewRating, reviewComment)
@@ -56,10 +61,18 @@ export default function ReviewSection({ reviews, rating, onSubmitReview }: Revie
     }
   }
 
+  const toggleShowAllReviews = () => {
+    setShowAllReviews(!showAllReviews)
+  }
+
   return (
     <div className="pt-6" ref={reviewFormRef}>
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">Reviews</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-gray-800">Reviews</h3>
+          <span className="text-sm text-gray-500">({totalReviews})</span>
+        </div>
+
         <Button variant="outline" size="sm" onClick={() => setShowReviewForm(!showReviewForm)}>
           <MessageSquare className="h-4 w-4 mr-2" />
           Write a review
@@ -158,10 +171,35 @@ export default function ReviewSection({ reviews, rating, onSubmitReview }: Revie
         </div>
       </div>
 
+      {/* See All button before the first review card */}
+      {hasMoreReviews && (
+        <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-2">
+          <div className="text-sm text-gray-600">
+            Showing {showAllReviews ? "all" : "4 of"} {totalReviews} reviews
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleShowAllReviews}
+            className="text-primary hover:text-primary/90 flex items-center"
+          >
+            {showAllReviews ? (
+              <>
+                Show Less <ChevronDown className="h-4 w-4 ml-1" />
+              </>
+            ) : (
+              <>
+                See All <ChevronRight className="h-4 w-4 ml-1" />
+              </>
+            )}
+          </Button>
+        </div>
+      )}
+
       {/* Reviews List */}
       {reviews && reviews.length > 0 ? (
         <div className="space-y-4">
-          {reviews.map((review) => (
+          {displayedReviews.map((review) => (
             <div key={review.id} className="border-b border-gray-100 pb-4">
               <div className="flex justify-between items-start">
                 <div className="flex items-center">

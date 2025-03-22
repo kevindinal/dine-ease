@@ -28,6 +28,8 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
+  ViewIcon as View360,
+  RotateCw,
 } from "lucide-react"
 import { useMediaQuery } from "@/hooks/use-media-query"
 
@@ -77,7 +79,8 @@ interface Table {
   name: string
   seats: number
   location: string
-  imageUrl?: string
+  imageUrls?: string[] // Changed from imageUrl?: string
+  threeSixtyImageUrl?: string // Added for 360 image
   description?: string
   status?: string
   createdAt?: Date
@@ -149,7 +152,8 @@ const SeatingPlanEditor = () => {
     name: "",
     seats: 0,
     location: "",
-    imageUrl: "",
+    imageUrls: [], // Changed from imageUrl: ""
+    threeSixtyImageUrl: "", // Added for 360 image
     description: "",
     status: "available",
     features: [],
@@ -158,8 +162,10 @@ const SeatingPlanEditor = () => {
   const [formError, setFormError] = useState("")
   const [loading, setLoading] = useState(false)
   const [editingTableId, setEditingTableId] = useState<string | null>(null)
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const [threeSixtyImageFile, setThreeSixtyImageFile] = useState<File | null>(null)
+  const [threeSixtyImagePreview, setThreeSixtyImagePreview] = useState<string>("")
   const [selectedTable, setSelectedTable] = useState<Table | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
@@ -184,18 +190,50 @@ const SeatingPlanEditor = () => {
         const tablesData = await Promise.all(
           querySnapshot.docs.map(async (docSnap) => {
             const data = docSnap.data()
-            let imageUrl = data.imageUrl
+            let imageUrls = data.imageUrls || []
 
-            if (imageUrl && !imageUrl.startsWith("http")) {
+            // Handle legacy data with single imageUrl
+            if (data.imageUrl && !imageUrls.includes(data.imageUrl)) {
+              imageUrls = [data.imageUrl, ...imageUrls]
+            }
+
+            // Resolve any storage references to actual URLs
+            const resolvedImageUrls = await Promise.all(
+              imageUrls.map(async (url: string) => {
+                if (url && !url.startsWith("http")) {
+                  try {
+                    const storageRef = ref(storage, url)
+                    return await getDownloadURL(storageRef)
+                  } catch (error) {
+                    console.error("Error fetching image URL: ", error)
+                    return null
+                  }
+                }
+                return url
+              }),
+            )
+
+            // Filter out any null values from failed URL resolutions
+            const filteredImageUrls = resolvedImageUrls.filter(Boolean) as string[]
+
+            // Process 360 image URL if it exists
+            let threeSixtyImageUrl = data.threeSixtyImageUrl
+            if (threeSixtyImageUrl && !threeSixtyImageUrl.startsWith("http")) {
               try {
-                const storageRef = ref(storage, imageUrl)
-                imageUrl = await getDownloadURL(storageRef)
+                const storageRef = ref(storage, threeSixtyImageUrl)
+                threeSixtyImageUrl = await getDownloadURL(storageRef)
               } catch (error) {
-                console.error("Error fetching image URL: ", error)
+                console.error("Error fetching 360 image URL: ", error)
+                threeSixtyImageUrl = undefined
               }
             }
 
-            return { id: docSnap.id, ...data, imageUrl } as Table
+            return {
+              id: docSnap.id,
+              ...data,
+              imageUrls: filteredImageUrls,
+              threeSixtyImageUrl,
+            } as Table
           }),
         )
 
@@ -218,15 +256,67 @@ const SeatingPlanEditor = () => {
     }
   }, [])
 
-  // Upload image to Firebase Storage
-  const uploadImage = async (file: File): Promise<string | null> => {
+  // Handle image selection
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+
+    // Limit to 3 images total
+    const remainingSlots = 3 - imagePreviews.length
+    if (remainingSlots <= 0) {
+      return // Already have 3 images
+    }
+
+    const newFiles: File[] = []
+    const newPreviews: string[] = []
+
+    // Process only up to the remaining slots
+    for (let i = 0; i < Math.min(files.length, remainingSlots); i++) {
+      const file = files[i]
+      newFiles.push(file)
+      newPreviews.push(URL.createObjectURL(file))
+    }
+
+    setImageFiles([...imageFiles, ...newFiles])
+    setImagePreviews([...imagePreviews, ...newPreviews])
+  }
+
+  // Handle 360 image selection
+  const handle360ImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    const file = files[0]
+    setThreeSixtyImageFile(file)
+    setThreeSixtyImagePreview(URL.createObjectURL(file))
+  }
+
+  // Upload images to Firebase Storage
+  const uploadImages = async (files: File[]): Promise<string[]> => {
+    if (!files.length) return []
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const storageRef = ref(storage, `table-images/${Date.now()}-${file.name}`)
+        const snapshot = await uploadBytes(storageRef, file)
+        return await getDownloadURL(snapshot.ref)
+      })
+
+      return await Promise.all(uploadPromises)
+    } catch (error) {
+      console.error("Error in uploadImages function:", error)
+      return []
+    }
+  }
+
+  // Upload 360 image to Firebase Storage
+  const upload360Image = async (file: File): Promise<string | null> => {
     if (!file) return null
     try {
-      const storageRef = ref(storage, `table-images/${Date.now()}-${file.name}`)
+      const storageRef = ref(storage, `table-360-images/${Date.now()}-${file.name}`)
       const snapshot = await uploadBytes(storageRef, file)
       return await getDownloadURL(snapshot.ref)
     } catch (error) {
-      console.error("Error in uploadImage function:", error)
+      console.error("Error in upload360Image function:", error)
       return null
     }
   }
@@ -242,45 +332,69 @@ const SeatingPlanEditor = () => {
     setLoading(true)
 
     try {
-      let uploadedImageUrl = tableData.imageUrl
-      if (imageFile) {
+      let uploadedImageUrls = [...(tableData.imageUrls || [])]
+      let threeSixtyUrl = tableData.threeSixtyImageUrl || ""
+
+      // Upload regular images if any
+      if (imageFiles.length > 0) {
         try {
-          const url = await uploadImage(imageFile)
-          if (url) {
-            uploadedImageUrl = url
+          const urls = await uploadImages(imageFiles)
+          if (urls.length > 0) {
+            uploadedImageUrls = [...uploadedImageUrls, ...urls]
           } else {
-            console.error("Image upload returned null")
-            // Continue with existing image URL if upload fails
+            console.error("Image upload returned empty array")
+            // Continue with existing image URLs if upload fails
           }
         } catch (uploadError) {
-          console.error("Error uploading image:", uploadError)
-          // Continue with existing image URL if upload fails
+          console.error("Error uploading images:", uploadError)
+          // Continue with existing image URLs if upload fails
         }
       }
-      const tableWithImage = {
+
+      // Upload 360 image if any
+      if (threeSixtyImageFile) {
+        try {
+          const url = await upload360Image(threeSixtyImageFile)
+          if (url) {
+            threeSixtyUrl = url
+          } else {
+            console.error("360 image upload failed")
+            // Continue with existing 360 image URL if upload fails
+          }
+        } catch (uploadError) {
+          console.error("Error uploading 360 image:", uploadError)
+          // Continue with existing 360 image URL if upload fails
+        }
+      }
+
+      // Limit to 3 images
+      uploadedImageUrls = uploadedImageUrls.slice(0, 3)
+
+      const tableWithImages = {
         ...tableData,
-        imageUrl: uploadedImageUrl,
+        imageUrls: uploadedImageUrls,
+        threeSixtyImageUrl: threeSixtyUrl,
         seats: Number(tableData.seats),
       }
 
       if (editingTableId) {
         // Update existing table
         const tableRef = doc(db, "tables", editingTableId)
-        await updateDoc(tableRef, tableWithImage)
+        await updateDoc(tableRef, tableWithImages)
 
         setTables((prevTables) =>
-          prevTables.map((table) => (table.id === editingTableId ? { ...table, ...tableWithImage } : table)),
+          prevTables.map((table) => (table.id === editingTableId ? { ...table, ...tableWithImages } : table)),
         )
         setEditingTableId(null)
       } else {
         // Add new table
         const newTableRef = await addDoc(collection(db, "tables"), {
-          ...tableWithImage,
+          ...tableWithImages,
           status: "available",
           createdAt: new Date(),
         })
 
-        setTables([...tables, { id: newTableRef.id, ...tableWithImage, createdAt: new Date() }])
+        setTables([...tables, { id: newTableRef.id, ...tableWithImages, createdAt: new Date() }])
       }
 
       // Reset form
@@ -288,28 +402,22 @@ const SeatingPlanEditor = () => {
         name: "",
         seats: 0,
         location: "",
-        imageUrl: "",
+        imageUrls: [],
+        threeSixtyImageUrl: "",
         description: "",
         status: "available",
         features: [],
         availability: DEFAULT_AVAILABILITY,
       })
-      setImageFile(null)
-      setImagePreview(null)
+      setImageFiles([])
+      setImagePreviews([])
+      setThreeSixtyImageFile(null)
+      setThreeSixtyImagePreview("")
     } catch (error) {
       console.error("Error saving table:", error)
       setFormError("Failed to save table. Please try again.")
     } finally {
       setLoading(false)
-    }
-  }
-
-  // Handle image selection
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setImageFile(file)
-      setImagePreview(URL.createObjectURL(file))
     }
   }
 
@@ -333,7 +441,8 @@ const SeatingPlanEditor = () => {
       name: table.name,
       seats: table.seats,
       location: table.location,
-      imageUrl: table.imageUrl || "",
+      imageUrls: table.imageUrls || [],
+      threeSixtyImageUrl: table.threeSixtyImageUrl || "",
       description: table.description || "",
       status: table.status || "available",
       features: table.features || [],
@@ -341,11 +450,19 @@ const SeatingPlanEditor = () => {
     })
     setEditingTableId(table.id)
 
-    if (table.imageUrl) {
-      setImagePreview(table.imageUrl)
+    if (table.imageUrls && table.imageUrls.length > 0) {
+      setImagePreviews(table.imageUrls)
     } else {
-      setImagePreview(null)
+      setImagePreviews([])
     }
+    setImageFiles([])
+
+    if (table.threeSixtyImageUrl) {
+      setThreeSixtyImagePreview(table.threeSixtyImageUrl)
+    } else {
+      setThreeSixtyImagePreview("")
+    }
+    setThreeSixtyImageFile(null)
 
     // Scroll to form
     setTimeout(() => {
@@ -396,15 +513,18 @@ const SeatingPlanEditor = () => {
       name: "",
       seats: 0,
       location: "",
-      imageUrl: "",
+      imageUrls: [],
+      threeSixtyImageUrl: "",
       description: "",
       status: "available",
       features: [],
       availability: DEFAULT_AVAILABILITY,
     })
     setEditingTableId(null)
-    setImageFile(null)
-    setImagePreview(null)
+    setImageFiles([])
+    setImagePreviews([])
+    setThreeSixtyImageFile(null)
+    setThreeSixtyImagePreview("")
     setFormError("")
   }
 
@@ -469,6 +589,16 @@ const SeatingPlanEditor = () => {
         ...prev,
         features: features.includes(featureId) ? features.filter((id) => id !== featureId) : [...features, featureId],
       }
+    })
+  }
+
+  // Remove 360 image
+  const remove360Image = () => {
+    setThreeSixtyImageFile(null)
+    setThreeSixtyImagePreview("")
+    setTableData({
+      ...tableData,
+      threeSixtyImageUrl: "",
     })
   }
 
@@ -564,8 +694,6 @@ const SeatingPlanEditor = () => {
                 </div>
 
                 {/* Availability Section */}
-
-                {/* Availability Section */}
                 <div className="space-y-4 pt-2">
                   <div className="flex items-center">
                     <Calendar className="h-5 w-5 mr-2 text-primary" />
@@ -651,30 +779,48 @@ const SeatingPlanEditor = () => {
                   </div>
                 </div>
 
+                {/* Table Images Section */}
                 <div className="space-y-2">
-                  <Label>Table Image</Label>
+                  <Label>Table Images (Up to 3)</Label>
                   <div className="grid grid-cols-1 gap-4">
-                    {imagePreview && (
-                      <div className="relative rounded-md overflow-hidden aspect-video bg-gray-100">
-                        <img
-                          src={imagePreview || "/placeholder.svg"}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                        />
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2 h-8 w-8 rounded-full"
-                          onClick={() => {
-                            setImagePreview(null)
-                            setImageFile(null)
-                            if (editingTableId) {
-                              setTableData({ ...tableData, imageUrl: "" })
-                            }
-                          }}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                    {imagePreviews.length > 0 && (
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        {imagePreviews.map((preview, index) => (
+                          <div key={index} className="relative rounded-md overflow-hidden aspect-video bg-gray-100">
+                            <img
+                              src={preview || "/placeholder.svg"}
+                              alt={`Preview ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                              onClick={() => {
+                                const newPreviews = [...imagePreviews]
+                                newPreviews.splice(index, 1)
+                                setImagePreviews(newPreviews)
+
+                                const newFiles = [...imageFiles]
+                                if (index < newFiles.length) {
+                                  newFiles.splice(index, 1)
+                                  setImageFiles(newFiles)
+                                }
+
+                                if (editingTableId) {
+                                  // Remove from tableData.imageUrls if it's an existing image
+                                  const newImageUrls = [...(tableData.imageUrls || [])]
+                                  if (index < newImageUrls.length) {
+                                    newImageUrls.splice(index, 1)
+                                    setTableData({ ...tableData, imageUrls: newImageUrls })
+                                  }
+                                }
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
                       </div>
                     )}
 
@@ -686,14 +832,17 @@ const SeatingPlanEditor = () => {
                           accept="image/*"
                           onChange={handleImageChange}
                           className="hidden"
+                          multiple
+                          disabled={imagePreviews.length >= 3}
                         />
                         <Button
                           variant="outline"
                           className="w-full"
                           onClick={() => document.getElementById("image-upload")?.click()}
+                          disabled={imagePreviews.length >= 3}
                         >
                           <Upload className="h-4 w-4 mr-2" />
-                          Upload Image
+                          Upload Images {imagePreviews.length > 0 && `(${imagePreviews.length}/3)`}
                         </Button>
                       </div>
 
@@ -705,11 +854,13 @@ const SeatingPlanEditor = () => {
                           capture="environment"
                           onChange={handleImageChange}
                           className="hidden"
+                          disabled={imagePreviews.length >= 3}
                         />
                         <Button
                           variant="outline"
                           className="w-full"
                           onClick={() => document.getElementById("camera-input")?.click()}
+                          disabled={imagePreviews.length >= 3}
                         >
                           <Camera className="h-4 w-4 mr-2" />
                           Take Photo
@@ -717,6 +868,59 @@ const SeatingPlanEditor = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* 360° Image Upload Section */}
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-center">
+                    <View360 className="h-5 w-5 mr-2 text-primary" />
+                    <Label className="text-base font-medium">360° Image</Label>
+                  </div>
+
+                  {threeSixtyImagePreview ? (
+                    <div className="relative rounded-md overflow-hidden aspect-video bg-gray-100">
+                      <img
+                        src={threeSixtyImagePreview || "/placeholder.svg"}
+                        alt="360° View Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                        <Badge className="bg-primary/80 text-white px-3 py-1.5">
+                          <RotateCw className="h-4 w-4 mr-1.5 animate-spin-slow" />
+                          360° View
+                        </Badge>
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                        onClick={remove360Image}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <Input
+                        id="360-image-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handle360ImageChange}
+                        className="hidden"
+                      />
+                      <Button
+                        variant="outline"
+                        className="w-full flex items-center"
+                        onClick={() => document.getElementById("360-image-upload")?.click()}
+                      >
+                        <View360 className="h-4 w-4 mr-2" />
+                        Upload 360° Image
+                      </Button>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Upload a 360° panoramic image to provide an immersive view of the table.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -987,13 +1191,30 @@ const SeatingPlanEditor = () => {
           {selectedTable && (
             <div className="space-y-4 py-2">
               <div className="flex flex-col sm:flex-row gap-4">
-                {selectedTable.imageUrl ? (
-                  <div className="w-full sm:w-1/2 aspect-video rounded-md overflow-hidden bg-muted">
-                    <img
-                      src={selectedTable.imageUrl || "/placeholder.svg"}
-                      alt={selectedTable.name}
-                      className="w-full h-full object-cover"
-                    />
+                {selectedTable.imageUrls && selectedTable.imageUrls.length > 0 ? (
+                  <div className="w-full sm:w-1/2">
+                    <div className="grid grid-cols-1 gap-2">
+                      <div className="aspect-video rounded-md overflow-hidden bg-muted">
+                        <img
+                          src={selectedTable.imageUrls[0] || "/placeholder.svg"}
+                          alt={selectedTable.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      {selectedTable.imageUrls.length > 1 && (
+                        <div className="grid grid-cols-2 gap-2">
+                          {selectedTable.imageUrls.slice(1, 3).map((url, idx) => (
+                            <div key={idx} className="aspect-square rounded-md overflow-hidden bg-muted">
+                              <img
+                                src={url || "/placeholder.svg"}
+                                alt={`${selectedTable.name} ${idx + 2}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <div className="w-full sm:w-1/2 aspect-video rounded-md bg-muted flex items-center justify-center">
@@ -1006,6 +1227,13 @@ const SeatingPlanEditor = () => {
                     <Badge className={selectedTable.status === "available" ? "bg-green-500" : "bg-red-500"}>
                       {selectedTable.status}
                     </Badge>
+
+                    {selectedTable.threeSixtyImageUrl && (
+                      <Badge variant="outline" className="bg-primary/10 flex items-center gap-1">
+                        <View360 className="h-3.5 w-3.5 mr-1" />
+                        360° View Available
+                      </Badge>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2 text-muted-foreground">
@@ -1155,8 +1383,21 @@ const TableCard = ({
       onClick={onView}
     >
       <div className="relative h-48 bg-muted">
-        {table.imageUrl ? (
-          <img src={table.imageUrl || "/placeholder.svg"} alt={table.name} className="w-full h-full object-cover" />
+        {table.imageUrls && table.imageUrls.length > 0 ? (
+          <div className="relative w-full h-full">
+            <img
+              src={table.imageUrls[0] || "/placeholder.svg"}
+              alt={table.name}
+              className="w-full h-full object-cover"
+            />
+            {table.imageUrls.length > 1 && (
+              <div className="absolute bottom-2 right-2 flex gap-1">
+                {table.imageUrls.slice(1).map((_, idx) => (
+                  <div key={idx} className="w-2 h-2 rounded-full bg-white opacity-70" />
+                ))}
+              </div>
+            )}
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-muted">
             <ImageIcon className="h-12 w-12 text-muted-foreground/50" />
@@ -1173,6 +1414,12 @@ const TableCard = ({
             </span>
           )}
         </Badge>
+
+        {table.threeSixtyImageUrl && (
+          <Badge className="absolute top-3 left-3 bg-primary flex items-center gap-1">
+            <View360 className="h-3 w-3" /> 360°
+          </Badge>
+        )}
       </div>
 
       <CardContent className="p-4">
@@ -1291,8 +1538,29 @@ const TableRow = ({
       onClick={onView}
     >
       <div className="w-full sm:w-24 h-24 bg-muted flex-shrink-0">
-        {table.imageUrl ? (
-          <img src={table.imageUrl || "/placeholder.svg"} alt={table.name} className="w-full h-full object-cover" />
+        {table.imageUrls && table.imageUrls.length > 0 ? (
+          <div className="relative w-full h-full">
+            <img
+              src={table.imageUrls[0] || "/placeholder.svg"}
+              alt={table.name}
+              className="w-full h-full object-cover"
+            />
+            {table.imageUrls.length > 1 && (
+              <div className="absolute bottom-1 right-1 flex gap-1">
+                {table.imageUrls.slice(1).map((_, idx) => (
+                  <div key={idx} className="w-1.5 h-1.5 rounded-full bg-white opacity-70" />
+                ))}
+              </div>
+            )}
+
+            {table.threeSixtyImageUrl && (
+              <div className="absolute top-1 left-1">
+                <Badge className="bg-primary/80 text-xs px-1.5 py-0.5">
+                  <View360 className="h-3 w-3 mr-0.5" /> 360°
+                </Badge>
+              </div>
+            )}
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-muted">
             <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
@@ -1305,6 +1573,11 @@ const TableRow = ({
           <div className="flex items-center gap-2">
             <h3 className="font-semibold">{table.name}</h3>
             <Badge className={cn("ml-2", isAvailable ? "bg-green-500" : "bg-red-500")}>{table.status}</Badge>
+            {table.threeSixtyImageUrl && (
+              <Badge variant="outline" className="bg-primary/10 text-xs">
+                <View360 className="h-3 w-3 mr-1" /> 360° View
+              </Badge>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">

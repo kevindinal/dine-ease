@@ -1,18 +1,19 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import usePreOrder from "../hooks/usePreOrder";
-import FoodCategory from "../components/FoodCategory";
-import FoodCard from "../components/FoodCard";
-import FloatingButtons from "../components/FloatingButtons";
-import { recommendedForYou } from "../data/data";
-import PreOrderModal from "../components/PreOrderModel";
-import { useRestaurant } from "../hooks/useRestaurant";
-import { useCategories } from "../hooks/useCategories";
-import { useChefsSpecials } from "../hooks/useChefsSpecials";
-import { useTodaysSpecials } from "../hooks/useTodaysSpecials";
-import { useMeals } from "../hooks/useMeals";
-import { Category } from "../types/category";
+import { useParams } from "next/navigation";
+import usePreOrder from "../../hooks/usePreOrder";
+import FoodCategory from "../../components/FoodCategory";
+import FoodCard from "../../components/FoodCard";
+import FloatingButtons from "../../components/FloatingButtons";
+import { recommendedForYou } from "../../data/data";
+import PreOrderModal from "../../components/PreOrderModel";
+import { useRestaurant } from "../../hooks/useRestaurant";
+import { useCategories } from "../../hooks/useCategories";
+import { useChefsSpecials } from "../../hooks/useChefsSpecials";
+import { useTodaysSpecials } from "../../hooks/useTodaysSpecials";
+import { useMeals } from "../../hooks/useMeals";
+import { Category } from "../../types/category";
 import { Loader2, ArrowLeft, ChevronUp } from "lucide-react";
 
 interface MealPreOrderMainProps {
@@ -20,12 +21,12 @@ interface MealPreOrderMainProps {
 }
 
 export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) {
-  const restaurantId = "h36o6Km7wlFRtuL40p1d";
+  const {id} = useParams<{id:string}> ();
 
-  const { restaurant, loading: restaurantLoading, error: restaurantError } = useRestaurant(restaurantId || "");
-  const { categories, loading: categoriesLoading, error: categoriesError } = useCategories(restaurantId);
-  const { meals: todaysSpecials, loading: todaysLoading, error: todaysSpecialsError } = useTodaysSpecials(restaurantId);
-  const { meals: chefsSpecials, loading: chefsLoading, error: chefsError } = useChefsSpecials(restaurantId);
+  const { restaurant, loading: restaurantLoading, error: restaurantError } = useRestaurant(id || "");
+  const { categories, loading: categoriesLoading, error: categoriesError } = useCategories(id);
+  const { meals: todaysSpecials, loading: todaysLoading, error: todaysSpecialsError } = useTodaysSpecials(id);
+  const { meals: chefsSpecials, loading: chefsLoading, error: chefsError } = useChefsSpecials(id);
 
   const { preOrders, preOrderCount, addItemToPreOrder, removePreOrderItem, clearPreOrder } = usePreOrder();
 
@@ -34,7 +35,7 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  const { meals, loading: mealsLoading, error: mealsError } = useMeals(restaurantId, selectedCategory as string);
+  const { meals, loading: mealsLoading, error: mealsError } = useMeals(id, selectedCategory as string);
 
   const categoriesRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -79,7 +80,7 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
   const renderFoodCard = (cuisine: any) => (
     <div key={cuisine.id}>
       <div className="h-full mb-4">
-        <FoodCard {...cuisine} restaurantId={restaurantId} onAddToPreOrder={addItemToPreOrder} />
+        <FoodCard {...cuisine} id={cuisine.id} restaurantId ={id} onAddToPreOrder={addItemToPreOrder} />
       </div>
     </div>
   );

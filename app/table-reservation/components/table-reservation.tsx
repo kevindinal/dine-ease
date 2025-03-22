@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { db, storage } from "@/lib/firebase/tables"
-import { collection, getDocs } from "firebase/firestore"
+import { collection, getDocs, query, where } from "firebase/firestore"
 import { useRouter } from "next/navigation"
 import { ref, getDownloadURL } from "firebase/storage"
 import { motion } from "framer-motion"
@@ -10,7 +10,7 @@ import {
   Search,
   Filter,
   MapPin,
-  Calendar,
+  CalendarIcon,
   Clock,
   Users,
   CheckCircle,
@@ -47,7 +47,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
+import { Calendar } from "@/components/ui/calendar"
+import { format } from "date-fns"
+import { TimePicker } from "@/app/table-reservation/components/time-picker"
 
+// Update the Table interface to include reviews
 interface Table {
   id: string
   name: string
@@ -56,8 +60,11 @@ interface Table {
   restaurantId: string
   seats: number
   imageUrl?: string
+  imageUrls?: string[]
   price?: number
   features?: string[]
+  reviews?: Review[]
+  rating?: number
   availability?: {
     monday: boolean
     tuesday: boolean
@@ -71,6 +78,17 @@ interface Table {
       to: string
     }>
   }
+}
+
+// Add this interface after the Table interface
+interface Review {
+  id?: string
+  userName: string
+  userAvatar?: string
+  rating: number
+  comment?: string
+  date?: string
+  tableId?: string
 }
 
 // Define available features for filtering
@@ -104,8 +122,8 @@ export default function TableReservation() {
 
   // Date/time dialog state
   const [showDateTimeDialog, setShowDateTimeDialog] = useState(false)
-  const [newDate, setNewDate] = useState(reservationDate)
-  const [newTime, setNewTime] = useState(reservationTime)
+  const [newDate, setNewDate] = useState<Date | undefined>(undefined)
+  const [newTime, setNewTime] = useState("")
 
   // Additional filters state
   const [showFiltersPopover, setShowFiltersPopover] = useState(false)
@@ -118,16 +136,19 @@ export default function TableReservation() {
   // Function to handle date/time changes
   const handleDateTimeChange = () => {
     if (newDate && newTime) {
+      // Format the date to YYYY-MM-DD for URL
+      const formattedDate = format(newDate, "yyyy-MM-dd")
+
       // Update the URL with new parameters
       const currentUrl = new URL(window.location.href)
-      currentUrl.searchParams.set("date", newDate)
+      currentUrl.searchParams.set("date", formattedDate)
       currentUrl.searchParams.set("time", newTime)
 
       // Navigate to the updated URL
       router.push(currentUrl.toString())
 
       // Update local state
-      setReservationDate(newDate)
+      setReservationDate(formattedDate)
       setReservationTime(newTime)
       setShowDateTimeDialog(false)
     }
@@ -168,7 +189,14 @@ export default function TableReservation() {
         setGuestCount(Number.parseInt(guestCount, 10))
         setReservationDate(reservationDate)
         setReservationTime(reservationTime)
-        setNewDate(reservationDate)
+
+        // Set the date object for the calendar
+        try {
+          setNewDate(new Date(reservationDate))
+        } catch (e) {
+          console.error("Invalid date format:", e)
+        }
+
         setNewTime(reservationTime)
       }
     }
@@ -186,18 +214,49 @@ export default function TableReservation() {
         const tablesData = await Promise.all(
           querySnapshot.docs.map(async (docSnap) => {
             const data = docSnap.data()
-            let imageUrl = data.imageUrl
+            let imageUrls = data.imageUrls || []
 
-            if (imageUrl && !imageUrl.startsWith("http")) {
-              try {
-                const storageRef = ref(storage, imageUrl)
-                imageUrl = await getDownloadURL(storageRef)
-              } catch (error) {
-                console.error("Error fetching image URL: ", error)
-              }
+            // Process imageUrls array
+            if (imageUrls.length > 0) {
+              imageUrls = await Promise.all(
+                imageUrls.map(async (url: string) => {
+                  if (url && !url.startsWith("http")) {
+                    try {
+                      const storageRef = ref(storage, url)
+                      return await getDownloadURL(storageRef)
+                    } catch (error) {
+                      console.error("Error fetching image URL: ", error)
+                      return null
+                    }
+                  }
+                  return url
+                }),
+              ).then((urls) => urls.filter(Boolean))
             }
 
-            return { id: docSnap.id, ...data, imageUrl } as Table
+            // In the fetchTables function inside the useEffect, add this code to fetch reviews
+            // after the imageUrls processing but before returning the table data:
+            let tableReviews: Review[] = []
+            try {
+              const reviewsQuery = query(collection(db, "table-reviews"), where("tableId", "==", docSnap.id))
+              const reviewsSnapshot = await getDocs(reviewsQuery)
+              if (!reviewsSnapshot.empty) {
+                tableReviews = reviewsSnapshot.docs.map((doc) => ({
+                  id: doc.id,
+                  ...doc.data(),
+                })) as Review[]
+              }
+            } catch (error) {
+              console.error("Error fetching table reviews:", error)
+            }
+
+            // Then include reviews in the returned table data:
+            return {
+              id: docSnap.id,
+              ...data,
+              imageUrls,
+              reviews: tableReviews,
+            } as Table
           }),
         )
 
@@ -703,6 +762,7 @@ export default function TableReservation() {
           {minSeats > 0 || maxSeats < 20 ? (
             <Badge variant="secondary" className="bg-gray-100">
               Seats: {minSeats} - {maxSeats}
+              {/* Fix the onClick handler in the Badge component for minSeats/maxSeats: */}
               <button
                 className="ml-1 hover:text-red-500"
                 onClick={() => {
@@ -766,7 +826,7 @@ export default function TableReservation() {
               className="bg-primary hover:bg-primary/90"
               onClick={() => setShowDateTimeDialog(true)}
             >
-              <Calendar className="mr-2 h-4 w-4" />
+              <CalendarIcon className="mr-2 h-4 w-4" />
               Change Date & Time
             </Button>
           </div>
@@ -774,7 +834,7 @@ export default function TableReservation() {
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-white rounded-lg p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-shadow duration-200">
               <div className="bg-primary/10 p-3 rounded-full">
-                <Calendar className="text-primary h-6 w-6" />
+                <CalendarIcon className="text-primary h-6 w-6" />
               </div>
               <div>
                 <p className="text-sm text-gray-500 font-medium">Date</p>
@@ -849,32 +909,64 @@ export default function TableReservation() {
 
       {/* Date & Time Selection Dialog */}
       <Dialog open={showDateTimeDialog} onOpenChange={setShowDateTimeDialog}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] w-[90%] max-w-[350px] mx-auto rounded-xl overflow-hidden">
           <DialogHeader>
             <DialogTitle>Change Reservation Date & Time</DialogTitle>
             <DialogDescription>Select a new date and time for your table reservation.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="reservation-date">Date</Label>
-              <Input
-                id="reservation-date"
-                type="date"
-                value={newDate}
-                onChange={(e) => setNewDate(e.target.value)}
-                min={new Date().toISOString().split("T")[0]}
-              />
+              <Label htmlFor="date" className="flex items-center">
+                <CalendarIcon className="h-4 w-4 mr-2 text-gray-500" />
+                Date
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn("w-full justify-start text-left font-normal", !newDate && "text-muted-foreground")}
+                    id="date"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {newDate ? format(newDate, "PPP") : <span>Select a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={newDate}
+                    onSelect={setNewDate}
+                    initialFocus
+                    disabled={(date) => {
+                      // Disable dates in the past
+                      const today = new Date()
+                      today.setHours(0, 0, 0, 0)
+                      return date < today
+                    }}
+                    className="rounded-md border"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="reservation-time">Time</Label>
-              <Input id="reservation-time" type="time" value={newTime} onChange={(e) => setNewTime(e.target.value)} />
+              <Label htmlFor="time" className="flex items-center">
+                <Clock className="h-4 w-4 mr-2 text-gray-500" />
+                Time
+              </Label>
+              <TimePicker value={newTime} onChange={(time) => setNewTime(time)} error={false} />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDateTimeDialog(false)}>
+          <DialogFooter className="flex flex-col sm:flex-row gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowDateTimeDialog(false)}
+              className="sm:order-first order-last"
+            >
               Cancel
             </Button>
-            <Button onClick={handleDateTimeChange}>Update Reservation</Button>
+            <Button onClick={handleDateTimeChange} className="w-full sm:w-auto">
+              Update Reservation
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -891,11 +983,23 @@ function TableCard({ table, onClick }: TableCardProps) {
   const isAvailable = table.status && table.status.toLowerCase() === "available"
   const seats = table.seats || 0
 
-  // Generate a random rating between 4.0 and 5.0 for demo purposes
-  const rating = (4 + Math.random()).toFixed(1)
+  // Calculate the actual rating based on reviews
+  let rating: string
+  if (table.reviews && table.reviews.length > 0) {
+    // Calculate average from reviews
+    const averageRating = table.reviews.reduce((sum, review) => sum + review.rating, 0) / table.reviews.length
+    rating = averageRating.toFixed(1)
+  } else if (table.rating) {
+    // Use the table's rating field if available
+    rating = table.rating.toFixed(1)
+  } else {
+    // Default rating as fallback
+    rating = "4.5"
+  }
 
-  // Get a suitable background image if none is provided
-  const tableImage = table.imageUrl || `/placeholder.svg?height=300&width=400`
+  // Get a suitable background image from the imageUrls array if available
+  const tableImage =
+    table.imageUrls && table.imageUrls.length > 0 ? table.imageUrls[0] : `/placeholder.svg?height=300&width=400`
 
   // Get appropriate seat arrangement description
   const getSeatArrangement = (seats: number) => {
@@ -1168,7 +1272,7 @@ function TableCard({ table, onClick }: TableCardProps) {
             <Button
               className={cn(
                 "w-full transition-all",
-                isAvailable ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 hover:bg-gray-500 cursor-not-allowed",
+                isAvailable ? "bg-red-500 hover:bg-red-600" : "bg-gray-400 hover:bg-gray-500 cursor-not-allowed",
               )}
               disabled={!isAvailable}
             >

@@ -1,177 +1,99 @@
-"use client"
-
-import { CheckCircle, Coffee, Award, Zap, Sparkles, Users, Wind, Wifi, Cigarette, CigaretteOff } from "lucide-react"
+import {
+  CheckCircle,
+  Users,
+  Wifi,
+  Wind,
+  Zap,
+  Sparkles,
+  Coffee,
+  Award,
+  CigaretteOff,
+  Cigarette,
+  Lock,
+} from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface FeaturesSectionProps {
   features: string[]
   seats: number
 }
 
-// Map feature IDs to their display properties (icon, color, label)
-const FEATURE_MAP = {
-  "window-view": {
-    icon: <Coffee className="h-5 w-5 text-purple-500 mr-2" />,
-    color: "bg-purple-50 text-purple-700 hover:bg-purple-100",
-    label: "Window View",
-  },
-  "premium-service": {
-    icon: <Award className="h-5 w-5 text-amber-500 mr-2" />,
-    color: "bg-amber-50 text-amber-700 hover:bg-amber-100",
-    label: "Premium Service",
-  },
-  "charging-outlets": {
-    icon: <Zap className="h-5 w-5 text-blue-500 mr-2" />,
-    color: "bg-blue-50 text-blue-700 hover:bg-blue-100",
-    label: "Charging Outlets",
-  },
-  "ambient-lighting": {
-    icon: <Sparkles className="h-5 w-5 text-pink-500 mr-2" />,
-    color: "bg-pink-50 text-pink-700 hover:bg-pink-100",
-    label: "Ambient Lighting",
-  },
-  privacy: {
-    icon: <Users className="h-5 w-5 text-green-500 mr-2" />,
-    color: "bg-green-50 text-green-700 hover:bg-green-100",
-    label: "Privacy",
-  },
-  "air-conditioning": {
-    icon: <Wind className="h-5 w-5 text-cyan-500 mr-2" />,
-    color: "bg-cyan-50 text-cyan-700 hover:bg-cyan-100",
-    label: "Air Conditioning",
-  },
-  "smoking-allowed": {
-    icon: <Cigarette className="h-5 w-5 text-orange-500 mr-2" />,
-    color: "bg-orange-50 text-orange-700 hover:bg-orange-100",
-    label: "Smoking Allowed",
-  },
-  "non-smoking": {
-    icon: <CigaretteOff className="h-5 w-5 text-teal-500 mr-2" />,
-    color: "bg-teal-50 text-teal-700 hover:bg-teal-100",
-    label: "Non-Smoking",
-  },
-  wifi: {
-    icon: <Wifi className="h-5 w-5 text-indigo-500 mr-2" />,
-    color: "bg-indigo-50 text-indigo-700 hover:bg-indigo-100",
-    label: "Free WiFi",
-  },
-}
-
-// Helper function to get feature display properties
-const getFeatureDisplay = (featureId: string) => {
-  // Convert string like "Window View" to "window-view"
-  const normalizedId = featureId.toLowerCase().replace(/\s+/g, "-")
-
-  // Try to find the feature in our map
-  const mappedFeature = FEATURE_MAP[normalizedId as keyof typeof FEATURE_MAP]
-
-  if (mappedFeature) {
-    return mappedFeature
-  }
-
-  // Fallback for features not in our map
-  return {
-    icon: <CheckCircle className="h-5 w-5 text-gray-500 mr-2" />,
-    color: "bg-gray-50 text-gray-700 hover:bg-gray-100",
-    label: featureId,
-  }
-}
-
-// Get appropriate seat arrangement description
-const getSeatArrangement = (seats: number) => {
-  if (seats <= 2) return "Intimate setting for couples"
-  if (seats <= 4) return "Perfect for small groups"
-  if (seats <= 6) return "Great for medium-sized groups"
-  return "Ideal for large gatherings"
-}
-
 export default function FeaturesSection({ features, seats }: FeaturesSectionProps) {
+  // Helper function to get icon for a feature
+  const getFeatureIcon = (feature: string) => {
+    const featureId = feature.toLowerCase().replace(/\s+/g, "-")
+
+    switch (featureId) {
+      case "window-view":
+        return <Coffee className="h-4 w-4 text-purple-600" />
+      case "premium-service":
+        return <Award className="h-4 w-4 text-amber-600" />
+      case "charging-outlets":
+        return <Zap className="h-4 w-4 text-blue-600" />
+      case "ambient-lighting":
+        return <Sparkles className="h-4 w-4 text-pink-600" />
+      case "wifi":
+      case "free-wifi":
+        return <Wifi className="h-4 w-4 text-indigo-600" />
+      case "air-conditioning":
+        return <Wind className="h-4 w-4 text-cyan-600" />
+      case "privacy":
+        return <Lock className="h-4 w-4 text-green-600" />
+      case "smoking-allowed":
+        return <Cigarette className="h-4 w-4 text-orange-600" />
+      case "non-smoking":
+        return <CigaretteOff className="h-4 w-4 text-teal-600" />
+      default:
+        return <CheckCircle className="h-4 w-4 text-gray-600" />
+    }
+  }
+
+  // Helper function to get color for a feature
+  const getFeatureColor = (feature: string) => {
+    const featureId = feature.toLowerCase().replace(/\s+/g, "-")
+
+    switch (featureId) {
+      case "window-view":
+        return "bg-purple-100 text-purple-600 border-purple-200"
+      case "premium-service":
+        return "bg-amber-100 text-amber-600 border-amber-200"
+      case "charging-outlets":
+        return "bg-blue-100 text-blue-600 border-blue-200"
+      case "ambient-lighting":
+        return "bg-pink-100 text-pink-600 border-pink-200"
+      case "wifi":
+      case "free-wifi":
+        return "bg-indigo-100 text-indigo-600 border-indigo-200"
+      case "air-conditioning":
+        return "bg-cyan-100 text-cyan-600 border-cyan-200"
+      case "privacy":
+        return "bg-green-100 text-green-600 border-green-200"
+      case "smoking-allowed":
+        return "bg-orange-100 text-orange-600 border-orange-200"
+      case "non-smoking":
+        return "bg-teal-100 text-teal-600 border-teal-200"
+      default:
+        return "bg-gray-100 text-gray-600 border-gray-200"
+    }
+  }
+
   return (
     <div className="pt-4">
-      <h3 className="text-lg font-semibold mb-4 text-gray-800">Features & Amenities</h3>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {features?.map((feature, index) => {
-          const displayInfo = getFeatureDisplay(feature)
-          return (
-            <div key={index} className="flex items-center">
-              {displayInfo.icon}
-              <span className="text-gray-700">{displayInfo.label}</span>
-            </div>
-          )
-        })}
-      </div>
+      <h3 className="text-lg font-semibold mb-3 text-gray-800">Features & Amenities</h3>
+      <div className="flex flex-wrap gap-2">
+        {/* Seats badge */}
+        <Badge variant="outline" className="bg-gray-100 border-gray-200">
+          <Users className="h-4 w-4 mr-1.5 text-gray-600" />
+          {seats} {seats === 1 ? "seat" : "seats"}
+        </Badge>
 
-      <div className="flex flex-wrap gap-2 pt-6">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Badge variant="secondary" className="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100">
-                <Users size={14} className="mr-1.5" />
-                {getSeatArrangement(seats)}
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Table for {seats} people</p>
-            </TooltipContent>
-          </Tooltip>
-
-          {features.includes("Window View") && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant="secondary" className="px-3 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100">
-                  <Coffee size={14} className="mr-1.5" />
-                  Window View
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Enjoy a beautiful view while dining</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
-
-          {features.includes("Premium Service") && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant="secondary" className="px-3 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100">
-                  <Award size={14} className="mr-1.5" />
-                  Premium Service
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Enhanced dining experience with premium service</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
-
-          {features.includes("Smoking Allowed") && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant="secondary" className="px-3 py-1.5 bg-orange-50 text-orange-700 hover:bg-orange-100">
-                  <Cigarette size={14} className="mr-1.5" />
-                  Smoking Allowed
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Smoking is permitted in this area</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
-
-          {features.includes("Non-Smoking") && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant="secondary" className="px-3 py-1.5 bg-teal-50 text-teal-700 hover:bg-teal-100">
-                  <CigaretteOff size={14} className="mr-1.5" />
-                  Non-Smoking
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Smoking is not permitted in this area</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
-        </TooltipProvider>
+        {/* Feature badges */}
+        {features.map((feature, index) => (
+          <Badge key={index} variant="outline" className={getFeatureColor(feature)}>
+            {getFeatureIcon(feature)}
+            <span className="ml-1.5">{feature}</span>
+          </Badge>
+        ))}
       </div>
     </div>
   )
