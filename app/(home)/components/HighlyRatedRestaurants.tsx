@@ -151,20 +151,7 @@ const HighlyRatedRestaurants = () => {
           />
         ))}
 
-        {[...Array(10)].map((_, i) => {
-          const icons = [<Star key={i} size={20} />]
-          return (
-            <motion.div
-              key={`icon-${i}`}
-              className="absolute text-[#FA4032]/10"
-              initial={{ x: `${(i * 10) % 100}%`, y: -20, rotate: i * 10, scale: 0.8 + (i % 5) * 0.1 }}
-              animate={{ y: ["0%", "100%"], rotate: [i * 10, i * 10 + 180] }}
-              transition={{ duration: 15 + i * 2, repeat: Number.POSITIVE_INFINITY, ease: "linear", delay: i * 0.5 }}
-            >
-              {icons[0]}
-            </motion.div>
-          )
-        })}
+        {/* Removed floating star icons */}
       </div>
 
       {/* Cursor effect */}
@@ -277,7 +264,7 @@ const HighlyRatedRestaurants = () => {
                     onMouseEnter={() => setActiveIndex(index)}
                     onMouseLeave={() => setActiveIndex(null)}
                   >
-                    <Link href={`/restaurants/${restaurant.id}`}>
+                    <Link href={`/restaurants-profile/${restaurant.id}`}>
                       <motion.div
                         className="bg-white rounded-3xl overflow-hidden cursor-pointer relative group"
                         whileHover={{ y: -10, transition: { duration: 0.3, type: "spring" } }}
@@ -287,7 +274,7 @@ const HighlyRatedRestaurants = () => {
                         <div className="relative">
                           <div className="h-56 overflow-hidden">
                             <img
-                              src={restaurant.mealPageImage || "/placeholder.svg?height=224&width=400"}
+                              src={restaurant.image || "/placeholder.svg?height=224&width=400"}
                               alt={restaurant.name}
                               className="w-full h-full object-cover"
                             />

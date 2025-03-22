@@ -219,36 +219,6 @@ const Testimonials = () => {
         ))}
 
         {/* Floating quote icons */}
-        {[...Array(12)].map((_, i) => {
-          const icons = [<Quote key={i} size={24} />, <Star key={i} size={24} />, <Heart key={i} size={24} />]
-          const IconComponent = icons[i % 3]
-
-          return (
-            <motion.div
-              key={`icon-${i}`}
-              className="absolute text-[#FA4032]/10"
-              initial={{
-                x: getRandomNumber(10, 90, `icon-x-${i}`),
-                y: -20,
-                rotate: getRandomNumber(-20, 20, `icon-r-${i}`),
-                scale: getRandomNumber(0.8, 1.5, `icon-s-${i}`),
-              }}
-              animate={{
-                y: ["0%", "100%"],
-                rotate: [getRandomNumber(-20, 20, `icon-r1-${i}`), getRandomNumber(-20, 20, `icon-r2-${i}`)],
-              }}
-              transition={{
-                duration: getRandomNumber(15, 25, `icon-d-${i}`),
-                repeat: Number.POSITIVE_INFINITY,
-                ease: "linear",
-                delay: i * 0.5,
-              }}
-              style={{ left: `${getRandomNumber(0, 100, `icon-pos-${i}`)}%` }}
-            >
-              {IconComponent}
-            </motion.div>
-          )
-        })}
       </div>
 
       {/* Interactive cursor effect */}

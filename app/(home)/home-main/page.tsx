@@ -138,10 +138,10 @@ export default function HomePage() {
         </div>
 
         {/* Hero Content */}
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 relative z-10">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
             <motion.div
-              className="lg:w-1/2 text-center lg:text-left"
+              className="lg:w-1/2 text-center lg:text-left px-2 sm:px-0"
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
@@ -156,7 +156,7 @@ export default function HomePage() {
               </motion.div>
 
               <motion.h1
-                className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
+                className="text-4xl md:text-5xl lg:text-7xl font-bold mb-6 leading-tight"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
@@ -169,7 +169,7 @@ export default function HomePage() {
               </motion.h1>
 
               <motion.p
-                className="text-lg md:text-xl text-gray-600 mb-8 max-w-xl"
+                className="text-base md:text-lg text-gray-600 mb-8 max-w-xl mx-auto lg:mx-0 px-2 sm:px-0"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.5 }}
@@ -208,28 +208,28 @@ export default function HomePage() {
               </motion.div>
 
               <motion.div
-                className="mt-12 flex items-center justify-center lg:justify-start gap-8"
+                className="mt-12 flex items-center justify-center lg:justify-start gap-4 sm:gap-8 overflow-x-auto pb-4 px-2 sm:px-0"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.8 }}
               >
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-[#FA4032]">500+</div>
-                  <div className="text-sm text-gray-500">Restaurants</div>
+                <div className="text-center min-w-[80px]">
+                  <div className="text-2xl sm:text-3xl font-bold text-[#FA4032]">500+</div>
+                  <div className="text-xs sm:text-sm text-gray-500">Restaurants</div>
                 </div>
 
-                <div className="h-12 w-px bg-gray-200"></div>
+                <div className="h-12 w-px bg-gray-200 hidden sm:block"></div>
 
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-[#FA4032]">50k+</div>
-                  <div className="text-sm text-gray-500">Happy Customers</div>
+                <div className="text-center min-w-[80px]">
+                  <div className="text-2xl sm:text-3xl font-bold text-[#FA4032]">50k+</div>
+                  <div className="text-xs sm:text-sm text-gray-500">Happy Customers</div>
                 </div>
 
-                <div className="h-12 w-px bg-gray-200"></div>
+                <div className="h-12 w-px bg-gray-200 hidden sm:block"></div>
 
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-[#FA4032]">100+</div>
-                  <div className="text-sm text-gray-500">Cities</div>
+                <div className="text-center min-w-[80px]">
+                  <div className="text-2xl sm:text-3xl font-bold text-[#FA4032]">100+</div>
+                  <div className="text-xs sm:text-sm text-gray-500">Cities</div>
                 </div>
               </motion.div>
             </motion.div>
@@ -248,7 +248,7 @@ export default function HomePage() {
                   transition={{ duration: 6, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse" }}
                 >
                   <img
-                    src="https://cdn.vox-cdn.com/thumbor/qUPZWYVUM3qEhelFxDOowoh-6M8=/0x0:8256x5504/1200x900/filters:focal(3468x2092:4788x3412):no_upscale()/cdn.vox-cdn.com/uploads/chorus_image/image/69505012/Peak_Main_Dining_Room_Credit_CharissaFay__2_.0.jpg"
+                    src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
                     alt="Delicious food"
                     className="w-full h-auto rounded-3xl"
                   />
@@ -315,9 +315,8 @@ export default function HomePage() {
           <motion.div
             className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center"
             animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-          >
-            <span className="text-sm text-gray-500 mb-2">Scroll to explore</span>
+            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}>
+            <span className="text-sm text-gray-500 mb-2"></span>
             <ChevronDown className="h-6 w-6 text-[#FA4032]" />
           </motion.div>
         </div>

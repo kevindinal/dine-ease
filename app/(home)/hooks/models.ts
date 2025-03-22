@@ -2,7 +2,7 @@
 export interface Restaurant {
     id: string
     name: string
-    mealPageImage: string
+    image: string
     location: string
     rating: number | string
     reviews: number
