@@ -45,7 +45,7 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { useMediaQuery } from "@/hooks/use-media-query"
-import Fallback360Viewer from "@/app/table-reservation/fall-back-360"
+import Fallback360Viewer from "@/app/(reservations)/table-reservation/fall-back-360"
 import { motion, AnimatePresence } from "framer-motion"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -54,13 +54,13 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { auth } from "@/lib/firebase/tables"
 
 // Import our components
-import ReviewSection from "@/app/table-reservation/components/review-section"
-import ReservationForm from "@/app/table-reservation/components/reservation-form"
-import SpecialOffers from "@/app/table-reservation/components/special-offers"
-import FeaturesSection from "@/app/table-reservation/components/features-section"
-import AvailabilityCalendar from "@/app/table-reservation/components/availability-calendar"
+import ReviewSection from "@/app/(reservations)/table-reservation/components/review-section"
+import ReservationForm from "@/app/(reservations)/table-reservation/components/reservation-form"
+import SpecialOffers from "@/app/(reservations)/table-reservation/components/special-offers"
+import FeaturesSection from "@/app/(reservations)/table-reservation/components/features-section"
+import AvailabilityCalendar from "@/app/(reservations)/table-reservation/components/availability-calendar"
 // Add this import at the top of the file, which was missing
-import ThreeSixtyViewer from "@/app/table-reservation/thresixty"
+import ThreeSixtyViewer from "@/app/(reservations)/table-reservation/thresixty"
 
 interface Table {
   id: string
@@ -144,7 +144,6 @@ export default function TableDetailsPage() {
     avatar: "/placeholder.svg?height=40&width=40",
   })
 
-
   const [contactInfo, setContactInfo] = useState({
     phone: "(555) 123-4567",
     email: "reservations@restaurant.com",
@@ -224,9 +223,25 @@ export default function TableDetailsPage() {
   }
 
   useEffect(() => {
-    // Get current user from auth
+    // Try to get user from local storage first
+    const localStorageUser = localStorage.getItem("user")
+
+    if (localStorageUser) {
+      try {
+        const parsedUser = JSON.parse(localStorageUser)
+        setUser({
+          name: parsedUser.name || "Guest",
+          email: parsedUser.email || "",
+          avatar: parsedUser.avatar || "/placeholder.svg?height=40&width=40",
+        })
+      } catch (error) {
+        console.error("Error parsing user from localStorage:", error)
+      }
+    }
+
+    // Also listen for Firebase auth changes as fallback
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-      if (currentUser) {
+      if (currentUser && !localStorageUser) {
         setUser({
           name: currentUser.displayName || "Guest",
           email: currentUser.email || "",
@@ -237,8 +252,6 @@ export default function TableDetailsPage() {
 
     return () => unsubscribe()
   }, [])
-  
-
 
   useEffect(() => {
     const fetchTable = async () => {
@@ -398,7 +411,6 @@ export default function TableDetailsPage() {
           }
         }
 
-
         setTable({
           id: tableDoc.id,
           ...tableData,
@@ -408,7 +420,7 @@ export default function TableDetailsPage() {
           reviews,
           features,
           availability,
-          contactInfo
+          contactInfo,
         })
         setContactInfo(contactInfo)
         setLoading(false)
@@ -451,19 +463,15 @@ export default function TableDetailsPage() {
     setShowNotification(true)
     setTimeout(() => setShowNotification(false), 5000)
 
-   
-if (option === "payment") {
-  if (table?.restaurantId){
-    router.push(`/payment-page/${encodeURIComponent(table?.restaurantId)}`)
-  }
-} else {
-  if (table?.restaurantId) {
-    router.push(`/cuisine-main-page/${encodeURIComponent(table.restaurantId)}`)
-  } 
-}
-
-
-
+    if (option === "payment") {
+      if (table?.restaurantId) {
+        router.push(`/payment-page/${encodeURIComponent(table?.restaurantId)}`)
+      }
+    } else {
+      if (table?.restaurantId) {
+        router.push(`/cuisine-main-page/${encodeURIComponent(table.restaurantId)}`)
+      }
+    }
   }
 
   const handleToggleFavorite = () => {
@@ -748,9 +756,7 @@ if (option === "payment") {
             <Button variant="ghost" size="icon" className="mr-2" onClick={handleGoBack}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-bold truncate">
-              {table.name}
-            </h1>
+            <h1 className="text-xl font-bold truncate">{table.name}</h1>
           </div>
 
           <div className="flex gap-2">
@@ -1019,7 +1025,7 @@ if (option === "payment") {
                       <div className="w-full h-full">
                         {/* Use both components with a fallback mechanism */}
                         {process.env.NODE_ENV !== "production" ? (
-                          <ThreeSixtyViewer imageUrl={'/ll.jpg'} />
+                          <ThreeSixtyViewer imageUrl={"/ll.jpg"} />
                         ) : (
                           <Fallback360Viewer imageUrl={table.threeSixtyImageUrl} />
                         )}
@@ -1042,7 +1048,6 @@ if (option === "payment") {
               )}
             </div>
 
-          
             {/* Thumbnails - only show in gallery view */}
             {activeView === "gallery" && allImages.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -1053,7 +1058,7 @@ if (option === "payment") {
                       "cursor-pointer h-16 w-16 flex-shrink-0 p-0.5",
                       currentImageIndex === idx
                         ? "border-2 border-primary rounded-md"
-                        : "opacity-70 hover:opacity-100 border-2 border-transparent rounded-md"
+                        : "opacity-70 hover:opacity-100 border-2 border-transparent rounded-md",
                     )}
                     onClick={() => setCurrentImageIndex(idx)}
                   >

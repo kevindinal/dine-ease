@@ -38,8 +38,6 @@ export default function Home() {
     }
   };
 
-
-
   return (
     <div className='flex flex-col items-center justify-center h-screen gap-4'>
       <h1 className='font-black'>Welcome! This is a Temporary Home Page</h1>
