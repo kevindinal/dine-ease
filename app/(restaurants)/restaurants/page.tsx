@@ -5,10 +5,13 @@ import Navbar from "@/components/header/Navbar";
 export default function RestaurantBooking() {
   
   return (
-<>
-<Navbar />
-   <AllRestaurants />;
-</>
+    <>
+    <Navbar />
+
+    <div className="pt-20">
+      <AllRestaurants />
+    </div>
+  </>
   )
   
 }
