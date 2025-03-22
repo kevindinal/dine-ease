@@ -45,7 +45,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
         <hr className="my-3 border-gray-300" />
 
         {/* Availability */}
-        <p className="text-md font-medium text-gray-700 mb-2">Tonight's availability</p>
+        <p className="text-md font-medium text-gray-700 mb-2">Today's availability</p>
         <div className="flex gap-2 flex-wrap">
           {(restaurant.times || []).map((time) => (
             <button
