@@ -10,14 +10,14 @@ import { Dialog, Transition } from "@headlessui/react";
 import PaymentForm from "../components/PaymentForm";
 import { useRouter } from "next/navigation"; // Import useRouter hook
 
-// Define OrderItem type
+
 type OrderItem = {
   id: string | number;
   name: string;
   price: number;
   quantity: number;
   image: string;
-  [key: string]: any; // Allow additional properties
+  [key: string]: any; 
 };
 
 const SummaryPage = () => {

@@ -16,15 +16,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const router = useRouter();
     const [user, loading] = useAuthState(auth);
 
-    // useEffect(() => {
-    //     if (loading) {
-    //         return;
-    //     }
-    //     if (!user) {
-    //         toast.error("Please sign in first");
-    //         router.push('/sign-in');
-    //     }
-    // }, [user, loading, router]);
+    useEffect(() => {
+        if (loading) {
+            return;
+        }
+        if (!user) {
+            toast.error("Please sign in first");
+            router.push('/sign-in');
+        }
+    }, [user, loading, router]);
 
     if (loading) {
         return (
