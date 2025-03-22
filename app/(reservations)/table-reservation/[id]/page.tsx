@@ -762,7 +762,7 @@ export default function TableDetailsPage() {
             <h1 className="text-xl font-bold truncate">{table.name}</h1>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-20">
             {isMobile ? (
               <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setShowMobileMenu(true)}>
                 <Menu className="h-5 w-5" />
@@ -837,7 +837,7 @@ export default function TableDetailsPage() {
           <SheetHeader className="mb-4">
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>
-          <div className="grid gap-3">
+          <div className="grid gap-3 ">
             <Button
               variant="ghost"
               className="justify-start"
