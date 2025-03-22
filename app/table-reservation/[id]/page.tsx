@@ -1019,7 +1019,7 @@ if (option === "payment") {
                       <div className="w-full h-full">
                         {/* Use both components with a fallback mechanism */}
                         {process.env.NODE_ENV !== "production" ? (
-                          <ThreeSixtyViewer imageUrl={'/ff.jpg'} />
+                          <ThreeSixtyViewer imageUrl={'/ll.jpg'} />
                         ) : (
                           <Fallback360Viewer imageUrl={table.threeSixtyImageUrl} />
                         )}
