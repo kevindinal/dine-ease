@@ -750,7 +750,6 @@ export default function TableDetailsPage() {
   const rating = table?.rating || calculatedRating
 
   return (
-    <>
     <div className="bg-white min-h-screen">
       {/* Header with Navigation */}
       <div className="bg-white sticky top-0 z-50 shadow-sm">
