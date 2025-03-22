@@ -38,5 +38,5 @@ export default function RestaurantProfilePage() {
     );
   }
 
-  return <RestaurantProfile restaurant={restaurant} />;
+  return <><Navbar /><RestaurantProfile restaurant={restaurant} /></>;
 }
