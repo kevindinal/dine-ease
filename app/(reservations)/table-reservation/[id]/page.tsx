@@ -61,6 +61,7 @@ import FeaturesSection from "@/app/(reservations)/table-reservation/components/f
 import AvailabilityCalendar from "@/app/(reservations)/table-reservation/components/availability-calendar"
 // Add this import at the top of the file, which was missing
 import ThreeSixtyViewer from "@/app/(reservations)/table-reservation/thresixty"
+import Navbar from "@/components/header/Navbar"
 
 interface Table {
   id: string
