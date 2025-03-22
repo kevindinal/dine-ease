@@ -1,75 +1,127 @@
-import { FaStar } from "react-icons/fa";
-import { Restaurant } from "../types/restaurant"; // Updated import
-import { useRouter } from "next/navigation";
 
-type RestaurantCardProps = {
-  restaurant: Restaurant;
-};
+
+
+"use client"
+
+import { motion } from "framer-motion"
+import { Star, MapPin, Clock, DollarSign, ChevronRight } from "lucide-react"
+import type { Restaurant } from "../types/restaurant"
+import { useRouter } from "next/navigation"
+
+interface RestaurantCardProps {
+  restaurant: Restaurant
+}
 
 export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
-  const router = useRouter();
+  const router = useRouter()
+
+  // Function to determine price level
+  const getPriceLevel = (price = 2) => {
+    return Array(price)
+      .fill(0)
+      .map((_, i) => <DollarSign key={i} className="h-3.5 w-3.5 fill-current" />)
+  }
+
+  // Function to get a random time slot for demo purposes
+  const getRandomTimeSlots = () => {
+    const slots = ["18:00", "19:00", "19:30", "20:00", "20:30", "21:00"]
+    const randomSlots = []
+    const numSlots = Math.floor(Math.random() * 3) + 1 // 1-3 slots
+
+    for (let i = 0; i < numSlots; i++) {
+      const randomIndex = Math.floor(Math.random() * slots.length)
+      randomSlots.push(slots[randomIndex])
+      slots.splice(randomIndex, 1)
+    }
+
+    return randomSlots.sort()
+  }
+
+  const timeSlots = getRandomTimeSlots()
 
   return (
-    <div
-      className="bg-white text-black rounded-xl shadow-lg overflow-hidden border cursor-pointer transition hover:shadow-2xl"
-      onClick={() => router.push(`/restaurants-profile/${restaurant.id}`)}
+    <motion.div
+      whileHover={{ y: -5 }}
+      className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col border border-gray-100"
     >
-      {/* Image */}
-      <img 
-        src={restaurant.image || '/placeholder-restaurant.jpg'} 
-        alt={restaurant.name || 'Restaurant'} 
-        className="w-full h-48 object-cover" 
-      />
+      <div className="relative h-48 overflow-hidden">
+        <img
+          src={restaurant.image || "/placeholder-restaurant.jpg"}
+          alt={restaurant.name}
+          className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+        />
 
-      {/* Content */}
-      <div className="p-4">
-        <h3 className="text-xl font-semibold">{restaurant.name || 'Restaurant'}</h3>
+        {/* {restaurant.isPromoted && (
+          <div className="absolute top-3 left-3 bg-red-500 text-white text-xs px-3 py-1.5 rounded-full">Featured</div>
+        )} */}
 
-        {/* Star Ratings */}
-        <div className="flex items-center text-yellow-500 mt-1">
-          {[...Array(Math.floor(restaurant.rating || 0))].map((_, index) => (
-            <FaStar key={index} />
-          ))}
-          <span className="text-sm text-gray-500 ml-2">
-            {(restaurant.rating || 0).toFixed(1)} ({restaurant.reviews?.length || 0})
-          </span>
+        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-gray-800 text-xs px-3 py-1.5 rounded-full flex items-center shadow-md">
+          <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400 mr-1" />
+          <span>{restaurant.rating || "4.5"}</span>
+        </div>
+      </div>
+
+      <div className="p-5 flex-grow">
+        <div className="flex justify-between items-start">
+          <h3 className="text-lg font-bold text-gray-800 mb-1 line-clamp-1">{restaurant.name}</h3>
+          {/* <div className="flex text-yellow-500">{getPriceLevel(restaurant.priceLevel)}</div> */}
         </div>
 
-        <p className="text-sm text-gray-500 mt-1">{restaurant.category || 'Uncategorized'}</p>
-        <p className="text-sm text-gray-600 mt-1">
-          {restaurant.description?.length > 60
-            ? `${restaurant.description.substring(0, 60)}...`
-            : restaurant.description || 'No description available'}
-        </p>
+        <div className="flex items-center text-gray-500 text-sm mb-3">
+          <MapPin className="h-3.5 w-3.5 mr-1" />
+          <span className="line-clamp-1">{restaurant.location}</span>
+        </div>
 
-        <hr className="my-3 border-gray-300" />
-
-        {/* Availability */}
-        <p className="text-md font-medium text-gray-700 mb-2">Tonight's availability</p>
-        <div className="flex gap-2 flex-wrap">
-          {(restaurant.times || []).map((time) => (
-            <button
-              key={time}
-              className="px-3 py-1 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 transition hover:bg-purple-500 hover:text-white"
-            >
-              {time}
-            </button>
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {restaurant.cuisine.slice(0, 3).map((cuisine, index) => (
+            <span key={index} className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full">
+              {cuisine}
+            </span>
           ))}
-          {!(restaurant.times?.length) && (
-            <p className="text-sm text-gray-500">No times available</p>
+          {restaurant.cuisine.length > 3 && (
+            <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full">
+              +{restaurant.cuisine.length - 3}
+            </span>
           )}
         </div>
 
+        <p className="text-gray-600 text-sm line-clamp-2 mb-4">
+          {restaurant.description || "Experience the authentic flavors and ambiance at this popular restaurant."}
+        </p>
+      </div>
+
+      <div className="p-5 pt-0">
+        <div className="mb-4">
+          <div className="text-xs text-gray-500 mb-2 flex items-center">
+            <Clock className="h-3.5 w-3.5 mr-1" />
+            <span>Available times</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {timeSlots.map((time, index) => (
+              <button
+                key={index}
+                className="text-xs bg-gray-100 hover:bg-red-500 hover:text-white text-gray-700 px-4 py-2 rounded-full transition-colors duration-300"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  router.push(`/restaurant/${restaurant.id}?time=${time}`)
+                }}
+              >
+                {time}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <button
-          className="mt-4 w-full text-purple-600 font-semibold py-2 rounded-lg hover:bg-purple-100 transition"
-          onClick={(e) => {
-            e.stopPropagation(); // Prevents parent div click
-            router.push(`/restaurants-profile/${restaurant.id}`);
-          }}
+          onClick={() => router.push(`/restaurants-profile/${restaurant.id}`)}
+          className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-300"
         >
-          RESERVE
+          <span>Reserve a table</span>
+          <ChevronRight className="h-4 w-4" />
         </button>
       </div>
-    </div>
-  );
+    </motion.div>
+  )
 }
+
+

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { db, storage } from "@/lib/firebase/tables"
-import { collection, getDocs } from "firebase/firestore"
+import { collection, getDocs, query, where } from "firebase/firestore"
 import { useRouter } from "next/navigation"
 import { ref, getDownloadURL } from "firebase/storage"
 import { motion } from "framer-motion"
@@ -51,6 +51,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { format } from "date-fns"
 import { TimePicker } from "@/app/table-reservation/components/time-picker"
 
+// Update the Table interface to include reviews
 interface Table {
   id: string
   name: string
@@ -59,8 +60,11 @@ interface Table {
   restaurantId: string
   seats: number
   imageUrl?: string
+  imageUrls?: string[]
   price?: number
   features?: string[]
+  reviews?: Review[]
+  rating?: number
   availability?: {
     monday: boolean
     tuesday: boolean
@@ -74,6 +78,17 @@ interface Table {
       to: string
     }>
   }
+}
+
+// Add this interface after the Table interface
+interface Review {
+  id?: string
+  userName: string
+  userAvatar?: string
+  rating: number
+  comment?: string
+  date?: string
+  tableId?: string
 }
 
 // Define available features for filtering
@@ -199,18 +214,49 @@ export default function TableReservation() {
         const tablesData = await Promise.all(
           querySnapshot.docs.map(async (docSnap) => {
             const data = docSnap.data()
-            let imageUrl = data.imageUrl
+            let imageUrls = data.imageUrls || []
 
-            if (imageUrl && !imageUrl.startsWith("http")) {
-              try {
-                const storageRef = ref(storage, imageUrl)
-                imageUrl = await getDownloadURL(storageRef)
-              } catch (error) {
-                console.error("Error fetching image URL: ", error)
-              }
+            // Process imageUrls array
+            if (imageUrls.length > 0) {
+              imageUrls = await Promise.all(
+                imageUrls.map(async (url: string) => {
+                  if (url && !url.startsWith("http")) {
+                    try {
+                      const storageRef = ref(storage, url)
+                      return await getDownloadURL(storageRef)
+                    } catch (error) {
+                      console.error("Error fetching image URL: ", error)
+                      return null
+                    }
+                  }
+                  return url
+                }),
+              ).then((urls) => urls.filter(Boolean))
             }
 
-            return { id: docSnap.id, ...data, imageUrl } as Table
+            // In the fetchTables function inside the useEffect, add this code to fetch reviews
+            // after the imageUrls processing but before returning the table data:
+            let tableReviews: Review[] = []
+            try {
+              const reviewsQuery = query(collection(db, "table-reviews"), where("tableId", "==", docSnap.id))
+              const reviewsSnapshot = await getDocs(reviewsQuery)
+              if (!reviewsSnapshot.empty) {
+                tableReviews = reviewsSnapshot.docs.map((doc) => ({
+                  id: doc.id,
+                  ...doc.data(),
+                })) as Review[]
+              }
+            } catch (error) {
+              console.error("Error fetching table reviews:", error)
+            }
+
+            // Then include reviews in the returned table data:
+            return {
+              id: docSnap.id,
+              ...data,
+              imageUrls,
+              reviews: tableReviews,
+            } as Table
           }),
         )
 
@@ -716,6 +762,7 @@ export default function TableReservation() {
           {minSeats > 0 || maxSeats < 20 ? (
             <Badge variant="secondary" className="bg-gray-100">
               Seats: {minSeats} - {maxSeats}
+              {/* Fix the onClick handler in the Badge component for minSeats/maxSeats: */}
               <button
                 className="ml-1 hover:text-red-500"
                 onClick={() => {
@@ -936,11 +983,23 @@ function TableCard({ table, onClick }: TableCardProps) {
   const isAvailable = table.status && table.status.toLowerCase() === "available"
   const seats = table.seats || 0
 
-  // Generate a random rating between 4.0 and 5.0 for demo purposes
-  const rating = (4 + Math.random()).toFixed(1)
+  // Calculate the actual rating based on reviews
+  let rating: string
+  if (table.reviews && table.reviews.length > 0) {
+    // Calculate average from reviews
+    const averageRating = table.reviews.reduce((sum, review) => sum + review.rating, 0) / table.reviews.length
+    rating = averageRating.toFixed(1)
+  } else if (table.rating) {
+    // Use the table's rating field if available
+    rating = table.rating.toFixed(1)
+  } else {
+    // Default rating as fallback
+    rating = "4.5"
+  }
 
-  // Get a suitable background image if none is provided
-  const tableImage = table.imageUrl || `/placeholder.svg?height=300&width=400`
+  // Get a suitable background image from the imageUrls array if available
+  const tableImage =
+    table.imageUrls && table.imageUrls.length > 0 ? table.imageUrls[0] : `/placeholder.svg?height=300&width=400`
 
   // Get appropriate seat arrangement description
   const getSeatArrangement = (seats: number) => {
@@ -1213,7 +1272,7 @@ function TableCard({ table, onClick }: TableCardProps) {
             <Button
               className={cn(
                 "w-full transition-all",
-                isAvailable ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 hover:bg-gray-500 cursor-not-allowed",
+                isAvailable ? "bg-red-500 hover:bg-red-600" : "bg-gray-400 hover:bg-gray-500 cursor-not-allowed",
               )}
               disabled={!isAvailable}
             >

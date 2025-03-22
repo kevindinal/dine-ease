@@ -2,6 +2,9 @@
 import { useState, useEffect } from "react";
 import { Meal } from "../types/meal";
 import { mealService } from "../services/mealService";
+import { doc, getDoc, collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+
 
 interface UseMealsReturn {
   meals: Meal[] | null;

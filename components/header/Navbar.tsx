@@ -6,7 +6,14 @@ import { useState, useEffect, useRef } from "react"
 import { Menu, X, LogOut, Settings, ChevronRight, Sparkles, Coffee, ChefHat, Pizza } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { auth } from "@/lib/firebase"
@@ -17,7 +24,7 @@ import Image from "next/image"
 
 const navLinks = [
   { title: "Home", href: "/home-main" },
-  { title: "Restaurant", href: "/restaurant" },
+  { title: "Restaurants", href: "/restaurants" },
   { title: "Contact", href: "/contact" },
 ]
 
@@ -76,6 +83,18 @@ const Navbar = () => {
       }
     }
   })
+
+    // Add scroll event listener
+    window.addEventListener("scroll", handleScroll)
+
+    // Initial check
+    handleScroll()
+
+    // Cleanup function
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+    }
+  }, [])
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
