@@ -21,7 +21,7 @@ export type Restaurant = {
   export const restaurants: Restaurant[] = [
     {
       id: 1,
-      name: "Hilton Colombo Residences",
+      name: "FLOW - Hilton Colombo Residences",
       image: "https://hiltoncolombo1.com/uploads/poster/6881610003007Cover1.jpg",
       bannerImage: "https://resizer.otstatic.com/v2/photos/wide-xlarge/2/41686450.jpg",
       rating: 5,
@@ -30,7 +30,7 @@ export type Restaurant = {
       category: "Global, International - $$$",
       priceRange: "$$$",
       description: "Experience Modern Asian Fusion Dining",
-      about: "Restaurant at Hilton Colombo Residences offers an exceptional dining experience, featuring a diverse menu that spans Sri Lankan, Indian, Chinese, Japanese, and Western cuisines. Our casual elegant atmosphere provides the perfect setting for both intimate dinners and business meetings",
+      about: "FLOW Restaurant at Hilton Colombo Residences offers an exceptional dining experience, featuring a diverse menu that spans Sri Lankan, Indian, Chinese, Japanese, and Western cuisines. Our casual elegant atmosphere provides the perfect setting for both intimate dinners and business meetings",
       address: "279/6 Hospital Road",
       location: "Hilton Colombo, Sri Lanka",
       featuredMenu: [

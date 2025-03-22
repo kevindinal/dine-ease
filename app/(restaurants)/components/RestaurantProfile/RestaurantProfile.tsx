@@ -1,25 +1,22 @@
-"use client";
-
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { FaCalendar, FaClock, FaUsers, FaStar, FaBus, FaCar, FaCreditCard, FaWifi } from "react-icons/fa6";
-import BannerSection from "./BannerSection";
-import AboutSection from "./AboutSection";
-import ServicesSection from "./ServicesSection";
-import FeaturedMenu from "./FeaturedMenu";
-import GuestReviews from "./GustReview";
-import LocationSection from "./LocationSection";
-import { Restaurant } from "../../types/restaurant";
+"use client"
+import { useRouter } from "next/navigation"
+import BannerSection from "./BannerSection"
+import AboutSection from "./AboutSection"
+import ServicesSection from "./ServicesSection"
+import FeaturedMenu from "./FeaturedMenu"
+import GuestReviews from "./GustReview"
+import LocationSection from "./LocationSection"
+import type { Restaurant } from "../../types/restaurant"
 
 type RestaurantProfileProps = {
-  restaurant: Restaurant;
-};
+  restaurant: Restaurant
+}
 
 export default function RestaurantProfile({ restaurant }: RestaurantProfileProps) {
-  const router = useRouter();
+  const router = useRouter()
 
   return (
-    <div>
+    <div className="bg-white min-h-screen">
       <BannerSection restaurant={restaurant} />
       <AboutSection restaurant={restaurant} />
       <ServicesSection />
@@ -27,5 +24,6 @@ export default function RestaurantProfile({ restaurant }: RestaurantProfileProps
       <GuestReviews reviews={restaurant.reviews} />
       <LocationSection address={restaurant.address} location={restaurant.location} />
     </div>
-  );
+  )
 }
+

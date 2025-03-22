@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { doc, getDoc } from "firebase/firestore"
+// Import addDoc for adding reviews to Firebase
+import { doc, getDoc, collection, getDocs, query, where, addDoc } from "firebase/firestore"
 import { ref, getDownloadURL } from "firebase/storage"
 import { db, storage } from "@/lib/firebase/tables"
 import {
@@ -43,20 +44,23 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
-import ThreeSixtyViewer from "@/app/table-reservation/thresixty"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import Fallback360Viewer from "@/app/table-reservation/fall-back-360"
 import { motion, AnimatePresence } from "framer-motion"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { auth } from "@/lib/firebase/tables"
 
-// Import our new components
+// Import our components
 import ReviewSection from "@/app/table-reservation/components/review-section"
 import ReservationForm from "@/app/table-reservation/components/reservation-form"
 import SpecialOffers from "@/app/table-reservation/components/special-offers"
 import FeaturesSection from "@/app/table-reservation/components/features-section"
-
+import AvailabilityCalendar from "@/app/table-reservation/components/availability-calendar"
+// Add this import at the top of the file, which was missing
+import ThreeSixtyViewer from "@/app/table-reservation/thresixty"
 
 interface Table {
   id: string
@@ -67,11 +71,32 @@ interface Table {
   description?: string
   price?: number
   imageUrl?: string
+  imageUrls?: string[] // Add this line
   threeSixtyImageUrl?: string
   additionalImages?: string[]
   reviews?: Review[]
   rating?: number
   features?: string[]
+  restaurantId?: string // Added restaurantId property
+  availability?: {
+    monday: boolean
+    tuesday: boolean
+    wednesday: boolean
+    thursday: boolean
+    friday: boolean
+    saturday: boolean
+    sunday: boolean
+    timeRanges: Array<{
+      from: string
+      to: string
+    }>
+  }
+  contactInfo?: {
+    phone?: string
+    email?: string
+    instagram?: string
+    facebook?: string
+  }
 }
 
 interface Review {
@@ -81,6 +106,7 @@ interface Review {
   rating: number
   comment: string
   date: string
+  tableId?: string
 }
 
 interface SpecialOffer {
@@ -108,8 +134,23 @@ export default function TableDetailsPage() {
   const [showNotification, setShowNotification] = useState(false)
   const [isReminderSet, setIsReminderSet] = useState(false)
   const [promoDiscount, setPromoDiscount] = useState(0)
+  const [showPaymentOptions, setShowPaymentOptions] = useState(false)
   const isMobile = useMediaQuery("(max-width: 768px)")
   const imageContainerRef = useRef<HTMLDivElement>(null)
+
+  const [user, setUser] = useState({
+    name: "Guest",
+    email: "",
+    avatar: "/placeholder.svg?height=40&width=40",
+  })
+
+
+  const [contactInfo, setContactInfo] = useState({
+    phone: "(555) 123-4567",
+    email: "reservations@restaurant.com",
+    instagram: "@restaurantname",
+    facebook: "facebook.com/restaurantname",
+  })
 
   // Mock data for special offers
   const specialOffers: SpecialOffer[] = [
@@ -167,6 +208,38 @@ export default function TableDetailsPage() {
     },
   ]
 
+  // Mock availability data if none exists
+  const mockAvailability = {
+    monday: true,
+    tuesday: true,
+    wednesday: true,
+    thursday: true,
+    friday: true,
+    saturday: true,
+    sunday: false,
+    timeRanges: [
+      { from: "11:00", to: "15:00" },
+      { from: "17:30", to: "22:00" },
+    ],
+  }
+
+  useEffect(() => {
+    // Get current user from auth
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      if (currentUser) {
+        setUser({
+          name: currentUser.displayName || "Guest",
+          email: currentUser.email || "",
+          avatar: currentUser.photoURL || "/placeholder.svg?height=40&width=40",
+        })
+      }
+    })
+
+    return () => unsubscribe()
+  }, [])
+  
+
+
   useEffect(() => {
     const fetchTable = async () => {
       setLoading(true)
@@ -180,47 +253,111 @@ export default function TableDetailsPage() {
         }
 
         const tableData = tableDoc.data() as Omit<Table, "id">
-        let imageUrl = tableData.imageUrl
+        let imageUrls: string[] = []
         let threeSixtyImageUrl = tableData.threeSixtyImageUrl
-        const additionalImages = tableData.additionalImages || []
 
-        // Process image URLs
-        if (imageUrl && !imageUrl.startsWith("http")) {
+        // Check if table has imageUrls array (new format)
+        if (tableData.imageUrls && Array.isArray(tableData.imageUrls)) {
           try {
-            const storageRef = ref(storage, imageUrl)
-            imageUrl = await getDownloadURL(storageRef)
-          } catch (error) {
-            console.error("Error fetching image URL: ", error)
-          }
-        }
+            // Process imageUrls array
+            const processedUrls = await Promise.all(
+              tableData.imageUrls.map(async (imgUrl) => {
+                if (!imgUrl) return null
 
-        if (threeSixtyImageUrl && !threeSixtyImageUrl.startsWith("http")) {
-          try {
-            const storageRef = ref(storage, threeSixtyImageUrl)
-            threeSixtyImageUrl = await getDownloadURL(storageRef)
-          } catch (error) {
-            console.error("Error fetching 360 image URL: ", error)
-          }
-        }
+                if (imgUrl && !imgUrl.startsWith("http")) {
+                  try {
+                    const storageRef = ref(storage, imgUrl)
+                    return await getDownloadURL(storageRef)
+                  } catch (error) {
+                    console.error("Error fetching image URL: ", error)
+                    return null
+                  }
+                }
+                return imgUrl
+              }),
+            )
 
-        // Process additional images
-        const processedAdditionalImages = await Promise.all(
-          additionalImages.map(async (imgUrl) => {
-            if (imgUrl && !imgUrl.startsWith("http")) {
-              try {
-                const storageRef = ref(storage, imgUrl)
-                return await getDownloadURL(storageRef)
-              } catch (error) {
-                console.error("Error fetching additional image URL: ", error)
-                return null
-              }
+            // Filter out any null values
+            imageUrls = processedUrls.filter(Boolean) as string[]
+          } catch (error) {
+            console.error("Error processing imageUrls:", error)
+            // If there's an error processing the array, use an empty array
+            imageUrls = []
+          }
+        } else {
+          // Handle legacy format with imageUrl and additionalImages
+          let imageUrl = tableData.imageUrl
+          threeSixtyImageUrl = tableData.threeSixtyImageUrl
+          const additionalImages = tableData.additionalImages || []
+
+          // Process main image URL
+          if (imageUrl && !imageUrl.startsWith("http")) {
+            try {
+              const storageRef = ref(storage, imageUrl)
+              imageUrl = await getDownloadURL(storageRef)
+              imageUrls.push(imageUrl)
+            } catch (error) {
+              console.error("Error fetching image URL: ", error)
             }
-            return imgUrl
-          }),
-        )
+          } else if (imageUrl) {
+            imageUrls.push(imageUrl)
+          }
 
-        // Add mock reviews if none exist
-        const reviews = tableData.reviews || mockReviews
+          // Process 360 image URL
+          threeSixtyImageUrl = tableData.threeSixtyImageUrl
+          if (threeSixtyImageUrl && !threeSixtyImageUrl.startsWith("http")) {
+            try {
+              const storageRef = ref(storage, threeSixtyImageUrl)
+              threeSixtyImageUrl = await getDownloadURL(storageRef)
+              console.log("Successfully processed 360 image URL:", threeSixtyImageUrl)
+            } catch (error) {
+              console.error("Error fetching 360 image URL: ", error)
+              threeSixtyImageUrl = undefined
+            }
+          }
+
+          // Process additional images
+          const processedAdditionalImages = await Promise.all(
+            additionalImages.map(async (imgUrl) => {
+              if (imgUrl && !imgUrl.startsWith("http")) {
+                try {
+                  const storageRef = ref(storage, imgUrl)
+                  return await getDownloadURL(storageRef)
+                } catch (error) {
+                  console.error("Error fetching additional image URL: ", error)
+                  return null
+                }
+              }
+              return imgUrl
+            }),
+          )
+
+          // Add processed additional images to imageUrls array
+          imageUrls = [...imageUrls, ...(processedAdditionalImages.filter(Boolean) as string[])]
+        }
+
+        // Fetch reviews from table-reviews collection
+        let reviews: Review[] = []
+        try {
+          const reviewsQuery = query(collection(db, "table-reviews"), where("tableId", "==", id))
+          const reviewsSnapshot = await getDocs(reviewsQuery)
+
+          if (!reviewsSnapshot.empty) {
+            reviews = reviewsSnapshot.docs.map(
+              (doc) =>
+                ({
+                  id: doc.id,
+                  ...doc.data(),
+                }) as Review,
+            )
+          } else {
+            console.log("No reviews found in Firebase, using mock reviews")
+            reviews = mockReviews
+          }
+        } catch (error) {
+          console.error("Error fetching reviews:", error)
+          reviews = mockReviews
+        }
 
         // Add mock features if none exist
         const features = tableData.features || [
@@ -232,16 +369,48 @@ export default function TableDetailsPage() {
           "Air Conditioning",
         ]
 
+        // Add mock availability if none exists
+        const availability = tableData.availability || mockAvailability
+
+        // Fetch contact information if restaurantId exists
+        let contactInfo = {
+          phone: "(555) 123-4567",
+          email: "reservations@restaurant.com",
+          instagram: "@restaurantname",
+          facebook: "facebook.com/restaurantname",
+        }
+
+        if (tableData.restaurantId) {
+          try {
+            const restaurantDoc = await getDoc(doc(db, "restaurants", tableData.restaurantId))
+            if (restaurantDoc.exists()) {
+              const restaurantData = restaurantDoc.data()
+              contactInfo = {
+                phone: restaurantData.phone || contactInfo.phone,
+                email: restaurantData.email || contactInfo.email,
+                instagram: restaurantData.instagram || contactInfo.instagram,
+                facebook: restaurantData.facebook || contactInfo.facebook,
+              }
+            }
+          } catch (error) {
+            console.error("Error fetching restaurant contact info:", error)
+            // Use default contact info if there's an error
+          }
+        }
+
+
         setTable({
           id: tableDoc.id,
           ...tableData,
-          imageUrl,
+          imageUrl: imageUrls[0] || "",
           threeSixtyImageUrl,
-          additionalImages: processedAdditionalImages.filter(Boolean) as string[],
+          additionalImages: imageUrls.slice(1),
           reviews,
           features,
+          availability,
+          contactInfo
         })
-
+        setContactInfo(contactInfo)
         setLoading(false)
       } catch (error) {
         console.error("Error fetching table:", error)
@@ -273,9 +442,28 @@ export default function TableDetailsPage() {
   }
 
   const handleReservation = () => {
+    setShowPaymentOptions(true)
+  }
+
+  const handlePaymentOption = (option: "payment" | "preorder") => {
+    setShowPaymentOptions(false)
     setReservationSuccess(true)
     setShowNotification(true)
     setTimeout(() => setShowNotification(false), 5000)
+
+   
+if (option === "payment") {
+  if (table?.restaurantId){
+    router.push(`/payment-page?restaurantId=${encodeURIComponent(table?.restaurantId)}`)
+  }
+} else {
+  if (table?.restaurantId) {
+    router.push(`/cuisine-main-page?restaurantId=${encodeURIComponent(table.restaurantId)}`)
+  } 
+}
+
+
+
   }
 
   const handleToggleFavorite = () => {
@@ -308,38 +496,65 @@ export default function TableDetailsPage() {
     }
   }
 
-  const handleSubmitReview = (rating: number, comment: string) => {
+  // Replace the handleSubmitReview function with this updated version
+  const handleSubmitReview = async (rating: number, comment: string) => {
     // Add the new review to the table's reviews
     if (table && comment.trim()) {
-      const newReview: Review = {
-        id: `rev${Date.now()}`,
-        userName: "You",
-        userAvatar: "/placeholder.svg?height=40&width=40",
-        rating,
-        comment,
-        date: new Date().toISOString().split("T")[0],
+      try {
+        // Create the review object with the logged-in user's name
+        const newReview: Review = {
+          id: `rev${Date.now()}`,
+          userName: user.name, // Use the logged-in user's name
+          userAvatar: user.avatar, // Use the logged-in user's avatar
+          rating,
+          comment,
+          date: new Date().toISOString().split("T")[0],
+          tableId: table.id, // Add tableId to associate with the table
+        }
+
+        // Add the review to Firebase
+        const reviewsCollection = collection(db, "table-reviews")
+        const docRef = await addDoc(reviewsCollection, {
+          userName: newReview.userName,
+          userAvatar: newReview.userAvatar,
+          rating: newReview.rating,
+          comment: newReview.comment,
+          date: newReview.date,
+          tableId: table.id,
+        })
+
+        // Update the review ID with the Firebase document ID
+        newReview.id = docRef.id
+
+        // Update local state
+        setTable({
+          ...table,
+          reviews: [...(table.reviews || []), newReview],
+        })
+
+        // Show success notification
+        setShowNotification(true)
+        setTimeout(() => setShowNotification(false), 3000)
+      } catch (error) {
+        console.error("Error adding review:", error)
+        alert("Failed to submit review. Please try again.")
       }
-
-      setTable({
-        ...table,
-        reviews: [...(table.reviews || []), newReview],
-      })
-
-      // Show success notification
-      setShowNotification(true)
-      setTimeout(() => setShowNotification(false), 3000)
     }
   }
 
   const nextImage = () => {
-    if (table?.additionalImages?.length) {
-      setCurrentImageIndex((prev) => (prev === table.additionalImages!.length - 1 ? 0 : prev + 1))
+    const images = table?.imageUrls || [table?.imageUrl, ...(table?.additionalImages || [])].filter(Boolean)
+
+    if (images.length > 1) {
+      setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))
     }
   }
 
   const prevImage = () => {
-    if (table?.additionalImages?.length) {
-      setCurrentImageIndex((prev) => (prev === 0 ? table.additionalImages!.length - 1 : prev - 1))
+    const images = table?.imageUrls || [table?.imageUrl, ...(table?.additionalImages || [])].filter(Boolean)
+
+    if (images.length > 1) {
+      setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))
     }
   }
 
@@ -397,33 +612,96 @@ export default function TableDetailsPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="flex items-center mb-6">
-          <Button variant="ghost" size="icon" className="mr-2" onClick={handleGoBack}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <Skeleton className="h-8 w-48" />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div>
-            <Skeleton className="h-[400px] w-full rounded-xl mb-4" />
-            <div className="flex gap-2 mt-2">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-20 w-20 rounded-md" />
-              ))}
+      <div className="bg-white min-h-screen">
+        {/* Header with Navigation - Loading State */}
+        <div className="bg-white sticky top-0 z-50 shadow-sm">
+          <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div className="flex items-center">
+              <Button variant="ghost" size="icon" className="mr-2" disabled>
+                <ArrowLeft className="h-5 w-5 text-gray-300" />
+              </Button>
+              <Skeleton className="h-6 w-32" />
+            </div>
+            <div className="flex gap-2">
+              {isMobile ? (
+                <Skeleton className="h-10 w-10 rounded-full" />
+              ) : (
+                <>
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                </>
+              )}
             </div>
           </div>
+        </div>
 
-          <div>
-            <Skeleton className="h-10 w-36 mb-4" />
-            <Skeleton className="h-6 w-full mb-2" />
-            <Skeleton className="h-6 w-3/4 mb-6" />
+        {/* Main Content - Loading State */}
+        <div className="container mx-auto px-4 py-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column - Images and Details */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Status and Rating */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <Skeleton className="h-8 w-24 rounded-full" />
+                  <Skeleton className="h-8 w-32 rounded-full" />
+                </div>
+                <Skeleton className="h-6 w-20" />
+              </div>
 
-            <div className="grid gap-6">
-              <Skeleton className="h-24 w-full rounded-lg" />
-              <Skeleton className="h-24 w-full rounded-lg" />
-              <Skeleton className="h-12 w-full rounded-lg" />
+              {/* Main Image Gallery */}
+              <Skeleton className="w-full aspect-[16/9] rounded-xl" />
+
+              {/* Thumbnails */}
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-16 w-16 rounded-md flex-shrink-0" />
+                ))}
+              </div>
+
+              {/* Availability Calendar */}
+              <Skeleton className="w-full h-48 rounded-xl" />
+
+              {/* Special Offers */}
+              <Skeleton className="w-full h-40 rounded-xl" />
+
+              {/* Table Information */}
+              <div className="space-y-4">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-6 w-1/2" />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-40" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+
+              {/* Features */}
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-48" />
+                <div className="flex flex-wrap gap-2">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton key={i} className="h-8 w-24 rounded-full" />
+                  ))}
+                </div>
+              </div>
+
+              {/* Reviews */}
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-32 w-full rounded-lg" />
+              </div>
+            </div>
+
+            {/* Right Column - Reservation Form */}
+            <div>
+              <div className="sticky top-20">
+                <Skeleton className="h-[500px] w-full rounded-xl" />
+              </div>
             </div>
           </div>
         </div>
@@ -454,8 +732,12 @@ export default function TableDetailsPage() {
 
   const isAvailable = Boolean(table?.status?.toLowerCase() === "available")
   console.log("Table status:", table?.status, "isAvailable:", isAvailable)
-  const allImages = [table.imageUrl, ...(table.additionalImages || [])].filter(Boolean) as string[]
-  const rating = table?.rating || (4 + Math.random()).toFixed(1)
+  const allImages = table.imageUrls || ([table.imageUrl, ...(table.additionalImages || [])].filter(Boolean) as string[])
+  // Calculate the actual average rating from reviews if available
+  const calculatedRating = table?.reviews?.length
+    ? (table.reviews.reduce((sum, review) => sum + review.rating, 0) / table.reviews.length).toFixed(1)
+    : "4.0"
+  const rating = table?.rating || calculatedRating
 
   return (
     <div className="bg-white min-h-screen">
@@ -466,7 +748,9 @@ export default function TableDetailsPage() {
             <Button variant="ghost" size="icon" className="mr-2" onClick={handleGoBack}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-bold truncate">{table.name}</h1>
+            <h1 className="text-xl font-bold truncate">
+              {table.name}
+            </h1>
           </div>
 
           <div className="flex gap-2">
@@ -730,21 +1014,35 @@ export default function TableDetailsPage() {
                 </>
               ) : (
                 <>
-                  {process.env.NODE_ENV === "production" ? (
-                    <Fallback360Viewer imageUrl={table.threeSixtyImageUrl || ""} />
+                  {table.threeSixtyImageUrl ? (
+                    <>
+                      <div className="w-full h-full">
+                        {/* Use both components with a fallback mechanism */}
+                        {process.env.NODE_ENV !== "production" ? (
+                          <ThreeSixtyViewer imageUrl={'/ff.jpg'} />
+                        ) : (
+                          <Fallback360Viewer imageUrl={table.threeSixtyImageUrl} />
+                        )}
+                      </div>
+                      <div className="absolute bottom-2 left-2">
+                        <span className="bg-black/50 text-white text-xs px-2 py-1 rounded-md">
+                          360° View - Click and drag to explore
+                        </span>
+                      </div>
+                    </>
                   ) : (
-                    <ThreeSixtyViewer imageUrl={"/ff.jpg"} />
+                    <div className="flex items-center justify-center h-full w-full bg-gray-100">
+                      <div className="text-gray-500 text-center">
+                        <RotateCw className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p>360° view not available</p>
+                      </div>
+                    </div>
                   )}
-
-                  <div className="absolute bottom-2 left-2">
-                    <span className="bg-black/50 text-white text-xs px-2 py-1 rounded-md">
-                      360° View - Click and drag to explore
-                    </span>
-                  </div>
                 </>
               )}
             </div>
 
+          
             {/* Thumbnails - only show in gallery view */}
             {activeView === "gallery" && allImages.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -752,20 +1050,27 @@ export default function TableDetailsPage() {
                   <div
                     key={idx}
                     className={cn(
-                      "cursor-pointer rounded-md overflow-hidden h-16 w-16 flex-shrink-0",
-                      currentImageIndex === idx ? "ring-2 ring-primary ring-offset-2" : "opacity-70 hover:opacity-100",
+                      "cursor-pointer h-16 w-16 flex-shrink-0 p-0.5",
+                      currentImageIndex === idx
+                        ? "border-2 border-primary rounded-md"
+                        : "opacity-70 hover:opacity-100 border-2 border-transparent rounded-md"
                     )}
                     onClick={() => setCurrentImageIndex(idx)}
                   >
-                    <img
-                      src={img || "/placeholder.svg"}
-                      alt={`Thumbnail ${idx + 1}`}
-                      className="w-full h-full object-cover"
-                    />
+                    <div className="w-full h-full overflow-hidden rounded-sm">
+                      <img
+                        src={img || "/placeholder.svg"}
+                        alt={`Thumbnail ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
             )}
+
+            {/* Availability Calendar */}
+            <AvailabilityCalendar availability={table.availability} />
 
             {/* Special Offers */}
             <SpecialOffers offers={specialOffers} onApplyCode={handleApplyPromoCode} />
@@ -883,19 +1188,19 @@ export default function TableDetailsPage() {
                     <ul className="space-y-3 text-gray-600">
                       <li className="flex items-center">
                         <Phone size={16} className="mr-2 text-gray-500" />
-                        <span>(555) 123-4567</span>
+                        <span>{table.contactInfo?.phone || contactInfo.phone}</span>
                       </li>
                       <li className="flex items-center">
                         <Mail size={16} className="mr-2 text-gray-500" />
-                        <span>reservations@restaurant.com</span>
+                        <span>{table.contactInfo?.email || contactInfo.email}</span>
                       </li>
                       <li className="flex items-center">
                         <Instagram size={16} className="mr-2 text-gray-500" />
-                        <span>@restaurantname</span>
+                        <span>{table.contactInfo?.instagram || contactInfo.instagram}</span>
                       </li>
                       <li className="flex items-center">
                         <Facebook size={16} className="mr-2 text-gray-500" />
-                        <span>facebook.com/restaurantname</span>
+                        <span>{table.contactInfo?.facebook || contactInfo.facebook}</span>
                       </li>
                     </ul>
                   </AccordionContent>
@@ -913,10 +1218,37 @@ export default function TableDetailsPage() {
               onReservation={handleReservation}
               promoDiscount={promoDiscount}
               onApplyPromoCode={handleApplyPromoCode}
+              availability={table.availability}
             />
           </div>
         </div>
       </div>
+      {/* Payment Options Dialog */}
+      <Dialog open={showPaymentOptions} onOpenChange={setShowPaymentOptions}>
+        <DialogContent className="sm:max-w-[400px] w-[90%] max-w-[350px] mx-auto rounded-xl overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Complete Your Reservation</DialogTitle>
+            <DialogDescription>Would you like to proceed to payment or preorder your meals now?</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Button
+              onClick={() => handlePaymentOption("payment")}
+              className="w-full flex items-center justify-center gap-2"
+            >
+              <CreditCard className="h-5 w-5" />
+              Proceed to Payment
+            </Button>
+            <Button
+              onClick={() => handlePaymentOption("preorder")}
+              variant="outline"
+              className="w-full flex items-center justify-center gap-2"
+            >
+              <Utensils className="h-5 w-5" />
+              Preorder Meals
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
