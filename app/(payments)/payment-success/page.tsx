@@ -122,12 +122,12 @@ Thank you for your purchase!
           </button>
           
           {/* Return to Home Button */}
-          <button
-            onClick={() => router.push("/")}
-            className="w-full mt-3 bg-white text-gray-700 px-6 py-3 rounded-xl font-medium border border-gray-200 hover:bg-gray-50 transition-all"
-          >
-            Return to Home
-          </button>
+<button
+  onClick={() => router.push("/home-main")}
+  className="w-full mt-3 bg-white text-gray-700 px-6 py-3 rounded-xl font-medium border border-gray-200 hover:bg-gray-50 transition-all"
+>
+  Return to Home
+</button>
           
           {/* Additional Footer Information */}
           <div className="mt-8 text-center flex items-center justify-center text-sm text-gray-500">
