@@ -38,5 +38,13 @@ export default function RestaurantProfilePage() {
     );
   }
 
-  return <><Navbar /><RestaurantProfile restaurant={restaurant} /></>;
+  return (
+      <>
+      <Navbar />
+      <div className="pt-20">
+        <RestaurantProfile restaurant={restaurant} />
+      </div>
+    </>
+  
+  );
 }
