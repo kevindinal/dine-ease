@@ -9,4 +9,5 @@ export interface PreOrderItem {
     spiceLevel: string;
     drinkPairing: string;
     addOns?: any[];
+    uniqueId?: string;
   }
