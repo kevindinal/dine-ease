@@ -1,13 +1,11 @@
 'use client';
 
-import { auth, db } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useEffect, useState } from 'react';
 import { getUserData, logout } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
 import { UserProp } from '@/types';
 
 export default function Home() {
@@ -39,8 +37,6 @@ export default function Home() {
       console.error('Logout error:', error);
     }
   };
-
-
 
   return (
     <div className='flex flex-col items-center justify-center h-screen gap-4'>

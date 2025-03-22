@@ -45,7 +45,7 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { useMediaQuery } from "@/hooks/use-media-query"
-import Fallback360Viewer from "@/app/table-reservation/fall-back-360"
+import Fallback360Viewer from "@/app/(reservations)/table-reservation/fall-back-360"
 import { motion, AnimatePresence } from "framer-motion"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -54,13 +54,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { auth } from "@/lib/firebase/tables"
 
 // Import our components
-import ReviewSection from "@/app/table-reservation/components/review-section"
-import ReservationForm from "@/app/table-reservation/components/reservation-form"
-import SpecialOffers from "@/app/table-reservation/components/special-offers"
-import FeaturesSection from "@/app/table-reservation/components/features-section"
-import AvailabilityCalendar from "@/app/table-reservation/components/availability-calendar"
+import ReviewSection from "@/app/(reservations)/table-reservation/components/review-section"
+import ReservationForm from "@/app/(reservations)/table-reservation/components/reservation-form"
+import SpecialOffers from "@/app/(reservations)/table-reservation/components/special-offers"
+import FeaturesSection from "@/app/(reservations)/table-reservation/components/features-section"
+import AvailabilityCalendar from "@/app/(reservations)/table-reservation/components/availability-calendar"
 // Add this import at the top of the file, which was missing
-import ThreeSixtyViewer from "@/app/table-reservation/thresixty"
+import ThreeSixtyViewer from "@/app/(reservations)/table-reservation/thresixty"
+import Navbar from "@/components/header/Navbar"
+import Footer from "@/components/footer/Footer"
 
 interface Table {
   id: string
@@ -144,7 +146,6 @@ export default function TableDetailsPage() {
     avatar: "/placeholder.svg?height=40&width=40",
   })
 
-
   const [contactInfo, setContactInfo] = useState({
     phone: "(555) 123-4567",
     email: "reservations@restaurant.com",
@@ -224,9 +225,25 @@ export default function TableDetailsPage() {
   }
 
   useEffect(() => {
-    // Get current user from auth
+    // Try to get user from local storage first
+    const localStorageUser = localStorage.getItem("user")
+
+    if (localStorageUser) {
+      try {
+        const parsedUser = JSON.parse(localStorageUser)
+        setUser({
+          name: parsedUser.name || "Guest",
+          email: parsedUser.email || "",
+          avatar: parsedUser.avatar || "/placeholder.svg?height=40&width=40",
+        })
+      } catch (error) {
+        console.error("Error parsing user from localStorage:", error)
+      }
+    }
+
+    // Also listen for Firebase auth changes as fallback
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-      if (currentUser) {
+      if (currentUser && !localStorageUser) {
         setUser({
           name: currentUser.displayName || "Guest",
           email: currentUser.email || "",
@@ -237,8 +254,6 @@ export default function TableDetailsPage() {
 
     return () => unsubscribe()
   }, [])
-  
-
 
   useEffect(() => {
     const fetchTable = async () => {
@@ -398,7 +413,6 @@ export default function TableDetailsPage() {
           }
         }
 
-
         setTable({
           id: tableDoc.id,
           ...tableData,
@@ -408,7 +422,7 @@ export default function TableDetailsPage() {
           reviews,
           features,
           availability,
-          contactInfo
+          contactInfo,
         })
         setContactInfo(contactInfo)
         setLoading(false)
@@ -451,19 +465,15 @@ export default function TableDetailsPage() {
     setShowNotification(true)
     setTimeout(() => setShowNotification(false), 5000)
 
-   
-if (option === "payment") {
-  if (table?.restaurantId){
-    router.push(`/payment-page?restaurantId=${encodeURIComponent(table?.restaurantId)}`)
-  }
-} else {
-  if (table?.restaurantId) {
-    router.push(`/cuisine-main-page?restaurantId=${encodeURIComponent(table.restaurantId)}`)
-  } 
-}
-
-
-
+    if (option === "payment") {
+      if (table?.restaurantId) {
+        router.push(`/payment-page/${encodeURIComponent(table?.restaurantId)}`)
+      }
+    } else {
+      if (table?.restaurantId) {
+        router.push(`/cuisine-main-page/${encodeURIComponent(table.restaurantId)}`)
+      }
+    }
   }
 
   const handleToggleFavorite = () => {
@@ -744,13 +754,12 @@ if (option === "payment") {
       {/* Header with Navigation */}
       <div className="bg-white sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <div className="flex items-center">
+        <Navbar />
+          <div className="flex items-center pt-20">
             <Button variant="ghost" size="icon" className="mr-2" onClick={handleGoBack}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-bold truncate">
-              {table.name}
-            </h1>
+            <h1 className="text-xl font-bold truncate">{table.name}</h1>
           </div>
 
           <div className="flex gap-2">
@@ -835,7 +844,7 @@ if (option === "payment") {
               onClick={() => {
                 handleToggleFavorite()
                 setShowMobileMenu(false)
-              }}
+              } }
             >
               <Heart className={cn("h-5 w-5 mr-2", isFavorite ? "fill-red-500 text-red-500" : "")} />
               {isFavorite ? "Saved to favorites" : "Save to favorites"}
@@ -846,7 +855,7 @@ if (option === "payment") {
               onClick={() => {
                 setShowShareOptions(true)
                 setShowMobileMenu(false)
-              }}
+              } }
             >
               <Share2 className="h-5 w-5 mr-2" />
               Share this table
@@ -857,7 +866,7 @@ if (option === "payment") {
               onClick={() => {
                 setIsReminderSet(!isReminderSet)
                 setShowMobileMenu(false)
-              }}
+              } }
             >
               <Bell className={cn("h-5 w-5 mr-2", isReminderSet ? "fill-amber-500 text-amber-500" : "")} />
               {isReminderSet ? "Cancel reminder" : "Set reminder"}
@@ -907,7 +916,7 @@ if (option === "payment") {
                 <Badge
                   className={cn(
                     "px-3 py-1.5 text-sm font-medium",
-                    isAvailable ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600",
+                    isAvailable ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"
                   )}
                 >
                   {isAvailable ? (
@@ -930,7 +939,7 @@ if (option === "payment") {
                       size="sm"
                       className={cn(
                         "rounded-full px-3 text-xs h-8",
-                        activeView === "gallery" ? "bg-white shadow-sm" : "bg-transparent",
+                        activeView === "gallery" ? "bg-white shadow-sm" : "bg-transparent"
                       )}
                       onClick={() => setActiveView("gallery")}
                     >
@@ -941,7 +950,7 @@ if (option === "payment") {
                       size="sm"
                       className={cn(
                         "rounded-full px-3 text-xs h-8",
-                        activeView === "360" ? "bg-white shadow-sm" : "bg-transparent",
+                        activeView === "360" ? "bg-white shadow-sm" : "bg-transparent"
                       )}
                       onClick={() => setActiveView("360")}
                     >
@@ -972,8 +981,7 @@ if (option === "payment") {
                   <img
                     src={allImages[currentImageIndex] || "/placeholder.svg"}
                     alt={`${table.name} - Image ${currentImageIndex + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+                    className="w-full h-full object-cover" />
 
                   {allImages.length > 1 && (
                     <>
@@ -1019,7 +1027,7 @@ if (option === "payment") {
                       <div className="w-full h-full">
                         {/* Use both components with a fallback mechanism */}
                         {process.env.NODE_ENV !== "production" ? (
-                          <ThreeSixtyViewer imageUrl={'/ff.jpg'} />
+                          <ThreeSixtyViewer imageUrl={"/ll.jpg"} />
                         ) : (
                           <Fallback360Viewer imageUrl={table.threeSixtyImageUrl} />
                         )}
@@ -1042,7 +1050,6 @@ if (option === "payment") {
               )}
             </div>
 
-          
             {/* Thumbnails - only show in gallery view */}
             {activeView === "gallery" && allImages.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -1061,8 +1068,7 @@ if (option === "payment") {
                       <img
                         src={img || "/placeholder.svg"}
                         alt={`Thumbnail ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                        className="w-full h-full object-cover" />
                     </div>
                   </div>
                 ))}
@@ -1114,8 +1120,7 @@ if (option === "payment") {
             <ReviewSection
               reviews={table.reviews || []}
               rating={rating.toString()}
-              onSubmitReview={handleSubmitReview}
-            />
+              onSubmitReview={handleSubmitReview} />
 
             {/* Additional Information */}
             <div className="pt-4">
@@ -1218,8 +1223,7 @@ if (option === "payment") {
               onReservation={handleReservation}
               promoDiscount={promoDiscount}
               onApplyPromoCode={handleApplyPromoCode}
-              availability={table.availability}
-            />
+              availability={table.availability} />
           </div>
         </div>
       </div>
@@ -1249,7 +1253,8 @@ if (option === "payment") {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+      <Footer />
+    </div></>
   )
 }
 

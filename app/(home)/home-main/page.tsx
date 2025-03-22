@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Navbar from "@/components/header/Navbar"
 import HighlyRatedRestaurants from "../components/HighlyRatedRestaurants"
 import RestaurantCarousel from "../components/RestaurantCarousel"
@@ -11,6 +11,10 @@ import { ArrowRight, ChevronDown, Star, Clock, MapPin } from "lucide-react"
 import WeeklyOffers from "../components/WeeklyOffers"
 import { Button } from "@/components/ui/button"
 import { motion, useScroll, useTransform, useAnimation, useInView } from "framer-motion"
+import { useAuthState } from "react-firebase-hooks/auth"
+import { UserProp } from "@/types"
+import { getUserData } from "@/lib/auth"
+import { auth } from "@/lib/firebase"
 
 export default function HomePage() {
   const searchParams = useSearchParams()
@@ -25,10 +29,24 @@ export default function HomePage() {
   const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.9])
   const y = useTransform(scrollYProgress, [0, 0.2], [0, -50])
 
+    const router = useRouter();
+    const [user, loading] = useAuthState(auth);
+    const [userData, setUserData] = useState<UserProp>();
+
   useEffect(() => {
-    const uid = searchParams.get("uid")
-    const name = searchParams.get("name")
-    const email = searchParams.get("email")
+    const fetchData = async () => {
+      try {
+        setUserData(await getUserData());
+      } catch (error) {
+        console.log('Error fetching user data:', error);
+      }
+    };
+
+    fetchData();
+
+    const uid = userData?.uid;
+    const name = userData?.firstName;
+    const email = userData?.email;
 
     if (uid && name && email) {
       console.log("User logged in:", { uid, name, email })
@@ -40,7 +58,7 @@ export default function HomePage() {
 
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [searchParams])
+  }, [user, loading, router]);
 
   useEffect(() => {
     if (scrollInView) {
@@ -186,8 +204,7 @@ export default function HomePage() {
               >
                 <Button
                   size="lg"
-                  className="bg-[#FA4032] hover:bg-[#E63326] text-white rounded-full px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
-                >
+                  className="bg-[#FA4032] hover:bg-[#E63326] text-white rounded-full px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group">
                   Make a Reservation
                   <motion.span
                     className="inline-block ml-2"
@@ -310,6 +327,15 @@ export default function HomePage() {
               </div>
             </motion.div>
           </div>
+
+          {/* Scroll Down Indicator */}
+          <motion.div
+            className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center"
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}>
+            <span className="text-sm text-gray-500 mb-2"></span>
+            <ChevronDown className="h-6 w-6 text-[#FA4032]" />
+          </motion.div>
         </div>
       </motion.section>
 

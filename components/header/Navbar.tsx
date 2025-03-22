@@ -21,6 +21,9 @@ import { signOut } from "firebase/auth"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import Image from "next/image"
+import { useAuthState } from "react-firebase-hooks/auth"
+import { getUserData } from "@/lib/auth"
+import { UserProp } from "@/types"
 
 const navLinks = [
   { title: "Home", href: "/home-main" },
@@ -43,27 +46,32 @@ const Navbar = () => {
   const navScale = useTransform(scrollY, [0, 100], [1, 0.98])
   const navShadow = useTransform(scrollY, [0, 100], ["0 0 0 rgba(0,0,0,0)", "0 10px 30px rgba(0,0,0,0.1)"])
 
-  const [user, setUser] = useState({
-    uid: "",
-    name: "Guest",
-    email: "guest@example.com",
-    image: "/placeholder.svg?height=32&width=32",
-  })
+  // const [user, setUser] = useState({
+  //   uid: "",
+  //   name: "Guest",
+  //   email: "guest@example.com",
+  //   image: "/placeholder.svg?height=32&width=32",
+  // })
+
+    const [user, loading] = useAuthState(auth);
+    const [userData, setUserData] = useState<UserProp>();
 
   useEffect(() => {
-    const uid = searchParams.get("uid")
-    const name = searchParams.get("name")
-    const email = searchParams.get("email")
+    const fetchData = async () => {
+      try {
+        setUserData(await getUserData());
+      } catch (error) {
+        console.log('Error fetching user data:', error);
+      }
+    };
 
-    if (uid && name && email) {
-      setUser({
-        uid,
-        name,
-        email,
-        image: "/placeholder.svg?height=32&width=32",
-      })
-    }
-  }, [searchParams])
+    fetchData();
+
+    const uid = userData?.uid;
+    const name = userData?.firstName;
+    const email = userData?.email;
+
+  }, [user, loading, router])
 
   const handleLogout = async () => {
     try {
@@ -263,6 +271,51 @@ const Navbar = () => {
               </Link>
             ))}
 
+            {/* For Businesses Button */}
+            <Link href="/business">
+              <Button
+                variant="ghost"
+                className="relative rounded-full bg-white/10 hover:bg-white/20 p-1 transition-all duration-300 hover:scale-105 group"
+              >
+                <motion.div
+                  className="flex items-center gap-2 px-2"
+                  whileHover={{ x: 3 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
+                  <div className="relative">
+                    <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center border-2 border-white transition-transform duration-300 group-hover:border-primary">
+                      <ChefHat className="h-4 w-4 text-white" />
+                    </div>
+
+                    {/* Animated ring */}
+                    <motion.div
+                      className="absolute -inset-1 rounded-full border border-white/30"
+                      initial={{ scale: 0, opacity: 0 }}
+                      whileHover={{ scale: 1.2, opacity: 1, rotate: 360 }}
+                      transition={{ duration: 0.8 }}
+                    />
+                  </div>
+                  <span className="text-white font-medium hidden sm:inline">For Businesses</span>
+
+                  {/* Animated sparkle */}
+                  <motion.div
+                    animate={{
+                      rotate: [0, 15, -15, 0],
+                      scale: [1, 1.2, 0.8, 1],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Number.POSITIVE_INFINITY,
+                      repeatType: "reverse",
+                    }}
+                    className="absolute -top-1 -right-1 text-yellow-300"
+                  >
+                    <Sparkles size={12} />
+                  </motion.div>
+                </motion.div>
+              </Button>
+            </Link>
+
             {/* User Profile Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -277,8 +330,8 @@ const Navbar = () => {
                   >
                     <div className="relative">
                       <Avatar className="h-8 w-8 border-2 border-white transition-transform duration-300 group-hover:border-primary">
-                        <AvatarImage src={user.image} alt={user.name} />
-                        <AvatarFallback className="bg-primary text-white">{user.name.charAt(0)}</AvatarFallback>
+                        {/* <AvatarImage src={userData.image} alt={userData?.firstName} /> */}
+                        <AvatarFallback className="bg-primary text-white">{userData?.firstName.charAt(0)}</AvatarFallback>
                       </Avatar>
 
                       {/* Animated ring */}
@@ -289,7 +342,7 @@ const Navbar = () => {
                         transition={{ duration: 0.8 }}
                       />
                     </div>
-                    <span className="text-white font-medium hidden sm:inline">{user.name}</span>
+                    <span className="text-white font-medium hidden sm:inline">{userData?.firstName}</span>
 
                     {/* Animated sparkle */}
                     <motion.div
@@ -312,8 +365,8 @@ const Navbar = () => {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    <p className="text-sm font-medium leading-none">{userData?.firstName}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{userData?.email}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -323,8 +376,7 @@ const Navbar = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer transition-colors duration-200 hover:bg-[#FA4032]/10 group"
-                  onClick={handleLogout}
-                >
+                  onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                   <span>Log out</span>
                 </DropdownMenuItem>
@@ -337,8 +389,7 @@ const Navbar = () => {
             <Button
               variant="ghost"
               className="text-white hover:bg-white/10 transition-colors duration-200 rounded-full relative"
-              onClick={toggleMobileMenu}
-            >
+              onClick={toggleMobileMenu}>
               <AnimatePresence mode="wait">
                 {isMobileMenuOpen ? (
                   <motion.div
@@ -374,8 +425,7 @@ const Navbar = () => {
                   duration: 2,
                   repeat: Number.POSITIVE_INFINITY,
                   repeatType: "reverse",
-                }}
-              />
+                }}/>
             </Button>
           </div>
         </div>
@@ -388,8 +438,7 @@ const Navbar = () => {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            >
+              transition={{ duration: 0.3, ease: "easeInOut" }}>
               {/* Decorative elements */}
               <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <svg width="100%" height="100%" className="opacity-10">
@@ -419,8 +468,7 @@ const Navbar = () => {
                       duration: 5 + Math.random() * 5,
                       repeat: Number.POSITIVE_INFINITY,
                       delay: i * 0.5,
-                    }}
-                  >
+                    }}>
                     {React.cloneElement(foodIcons[i % foodIcons.length], { size: 20 + (i % 10) })}
                   </motion.div>
                 ))}
@@ -432,8 +480,7 @@ const Navbar = () => {
                     key={link.title}
                     initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: index * 0.1, duration: 0.3 }}
-                  >
+                    transition={{ delay: index * 0.1, duration: 0.3 }}>
                     <Link
                       href={link.href}
                       className="block py-2 text-white hover:text-white hover:bg-[#FA4032]/50 px-3 rounded transition-colors duration-200 relative group"
@@ -444,8 +491,7 @@ const Navbar = () => {
                         <motion.div
                           initial={{ x: -5, opacity: 0 }}
                           whileHover={{ x: 0, opacity: 1 }}
-                          className="text-white/70"
-                        >
+                          className="text-white/70">
                           <ChevronRight size={16} />
                         </motion.div>
                       </div>
@@ -468,10 +514,10 @@ const Navbar = () => {
                   transition={{ delay: 0.4, duration: 0.3 }}
                 >
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.image} alt={user.name} />
-                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                    {/* <AvatarImage src={user.image} alt={user.name} /> */}
+                    <AvatarFallback>{userData?.firstName.charAt(0)}</AvatarFallback>
                   </Avatar>
-                  <span className="text-white">{user.name}</span>
+                  <span className="text-white">{userData?.firstName}</span>
                 </motion.div>
 
                 <div className="mt-2 space-y-2">
@@ -479,6 +525,22 @@ const Navbar = () => {
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.5, duration: 0.3 }}
+                  >
+                    <Link href="/business">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-white hover:bg-[#FA4032]/50 transition-colors duration-200 group"
+                      >
+                        <ChefHat className="mr-2 h-4 w-4 group-hover:rotate-12 transition-transform duration-300" />
+                        For Businesses
+                      </Button>
+                    </Link>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.6, duration: 0.3 }}
                   >
                     <Button
                       variant="ghost"
@@ -492,7 +554,7 @@ const Navbar = () => {
                   <motion.div
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.6, duration: 0.3 }}
+                    transition={{ delay: 0.7, duration: 0.3 }}
                   >
                     <Button
                       variant="ghost"

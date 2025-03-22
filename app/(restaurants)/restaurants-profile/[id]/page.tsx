@@ -3,6 +3,8 @@
 import { useParams } from "next/navigation";
 import { useRestaurant } from "../../hooks/useRestaurants";
 import RestaurantProfile from "../../components/RestaurantProfile/RestaurantProfile";
+import Navbar from "@/components/header/Navbar";
+import Footer from "@/components/footer/Footer";
 
 export default function RestaurantProfilePage() {
   // Use the useParams hook to get the params object
@@ -29,12 +31,22 @@ export default function RestaurantProfilePage() {
   }
   
   if (!restaurant) {
+
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="text-xl">Restaurant not found</div>
       </div>
     );
   }
+
+  return (
+      <>
+      <Navbar />
+      <div className="pt-20">
+        <RestaurantProfile restaurant={restaurant} />
+        <Footer />
+      </div>
+    </>
   
-  return <RestaurantProfile restaurant={restaurant} />;
+  );
 }

@@ -1,12 +1,10 @@
-
-
-
 "use client"
 
 import { motion } from "framer-motion"
 import { Star, MapPin, Clock, DollarSign, ChevronRight } from "lucide-react"
 import type { Restaurant } from "../types/restaurant"
 import { useRouter } from "next/navigation"
+import { FaStar } from "react-icons/fa"
 
 interface RestaurantCardProps {
   restaurant: Restaurant
@@ -26,7 +24,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
   const getRandomTimeSlots = () => {
     const slots = ["18:00", "19:00", "19:30", "20:00", "20:30", "21:00"]
     const randomSlots = []
-    const numSlots = Math.floor(Math.random() * 3) + 1 // 1-3 slots
+    const numSlots = Math.floor(Math.random() * 4) + 1 // 1-3 slots
 
     for (let i = 0; i < numSlots; i++) {
       const randomIndex = Math.floor(Math.random() * slots.length)
@@ -84,6 +82,18 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
             </span>
           )}
         </div>
+        
+        <div className="flex items-center text-yellow-500 mt-1">
+          {[...Array(Math.floor(restaurant.rating || 0))].map((_, index) => (
+            <FaStar key={index} />
+          ))}
+          <span className="text-sm text-gray-500 ml-2">
+            {(restaurant.rating || 0).toFixed(1)} ({restaurant.reviews || 0})
+          </span>
+        </div>
+
+
+
 
         <p className="text-gray-600 text-sm line-clamp-2 mb-4">
           {restaurant.description || "Experience the authentic flavors and ambiance at this popular restaurant."}

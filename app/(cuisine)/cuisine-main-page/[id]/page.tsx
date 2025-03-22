@@ -15,6 +15,8 @@ import { useTodaysSpecials } from "../../hooks/useTodaysSpecials";
 import { useMeals } from "../../hooks/useMeals";
 import { Category } from "../../types/category";
 import { Loader2, ArrowLeft, ChevronUp } from "lucide-react";
+import Footer from "@/components/footer/Footer";
+import Navbar from "@/components/header/Navbar";
 
 interface MealPreOrderMainProps {
   hotelImage?: string;
@@ -105,23 +107,21 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
   const fallbackImage = hotelImage || "/default-restaurant-banner.jpg";
 
   return (
-    <div className="bg-[#F8F9FA] min-h-screen">
+    <><Navbar />
+    <div className="bg-[#F8F9FA] min-h-screen pt-20">
       {/* Fixed Header on Scroll */}
-      <div 
+      <div
         ref={headerRef}
-        className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${
-          isScrolled ? "bg-white shadow-md py-3" : "bg-transparent py-4"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${isScrolled ? "bg-white shadow-md py-3" : "bg-transparent py-4"}`}
       >
-        
+
       </div>
 
       <PreOrderModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         preOrders={preOrders}
-        removeItem={removePreOrderItem}
-      />
+        removeItem={removePreOrderItem} />
 
       <section
         className="relative bg-cover bg-center bg-no-repeat pt-24 pb-16 px-4 md:px-14 text-white"
@@ -130,8 +130,7 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
           <img
             src={backgroundImageUrl || fallbackImage}
             alt={restaurant.name}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+            className="absolute inset-0 w-full h-full object-cover" />
         ) : null}
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/30"></div>
@@ -155,11 +154,9 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
               className={`cursor-pointer flex-none snap-start flex flex-col items-center transition-all hover:scale-105 ${!selectedCategory ? 'scale-105' : ''}`}
               onClick={() => handleCategoryClick(null)}
             >
-              <FoodCategory 
-                imageSrc="/cate-all.jpg" 
-                foodType="All" 
-                
-              />
+              <FoodCategory
+                imageSrc="/cate-all.jpg"
+                foodType="All" />
             </div>
             {categoriesLoading ? (
               <div className="flex justify-center p-4 w-full">
@@ -172,10 +169,9 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
                   className={`cursor-pointer flex-none snap-start flex flex-col items-center transition-all hover:scale-105 ${selectedCategory === category.id ? 'scale-105' : ''}`}
                   onClick={() => handleCategoryClick(category)}
                 >
-                  <FoodCategory 
-                    imageSrc={category.categoryImage} 
-                    foodType={category.name} 
-                  />
+                  <FoodCategory
+                    imageSrc={category.categoryImage}
+                    foodType={category.name} />
                 </div>
               ))
             )}
@@ -293,9 +289,7 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
 
       <button
         onClick={scrollToTop}
-        className={`fixed right-6 bottom-28 bg-primary text-white p-3 rounded-full shadow-lg transition-opacity duration-300 z-30 ${
-          isScrolled ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed right-6 bottom-28 bg-primary text-white p-3 rounded-full shadow-lg transition-opacity duration-300 z-30 ${isScrolled ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         aria-label="Scroll to top"
       >
         <ChevronUp className="w-5 h-5" />
@@ -307,9 +301,9 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
           preOrders={preOrders}
           clearPreOrder={clearPreOrder}
           removePreOrderItem={removePreOrderItem}
-          onPreOrderCountClick={() => setIsModalOpen(true)}
-        />
+          onPreOrderCountClick={() => setIsModalOpen(true)} />
       </section>
-    </div>
+      <Footer />
+    </div></>
   );
 }

@@ -28,6 +28,8 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
+  ViewIcon as View360,
+  RotateCw,
 } from "lucide-react"
 import { useMediaQuery } from "@/hooks/use-media-query"
 
@@ -78,6 +80,7 @@ interface Table {
   seats: number
   location: string
   imageUrls?: string[] // Changed from imageUrl?: string
+  threeSixtyImageUrl?: string // Added for 360 image
   description?: string
   status?: string
   createdAt?: Date
@@ -150,6 +153,7 @@ const SeatingPlanEditor = () => {
     seats: 0,
     location: "",
     imageUrls: [], // Changed from imageUrl: ""
+    threeSixtyImageUrl: "", // Added for 360 image
     description: "",
     status: "available",
     features: [],
@@ -160,6 +164,8 @@ const SeatingPlanEditor = () => {
   const [editingTableId, setEditingTableId] = useState<string | null>(null)
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const [threeSixtyImageFile, setThreeSixtyImageFile] = useState<File | null>(null)
+  const [threeSixtyImagePreview, setThreeSixtyImagePreview] = useState<string>("")
   const [selectedTable, setSelectedTable] = useState<Table | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
@@ -210,10 +216,23 @@ const SeatingPlanEditor = () => {
             // Filter out any null values from failed URL resolutions
             const filteredImageUrls = resolvedImageUrls.filter(Boolean) as string[]
 
+            // Process 360 image URL if it exists
+            let threeSixtyImageUrl = data.threeSixtyImageUrl
+            if (threeSixtyImageUrl && !threeSixtyImageUrl.startsWith("http")) {
+              try {
+                const storageRef = ref(storage, threeSixtyImageUrl)
+                threeSixtyImageUrl = await getDownloadURL(storageRef)
+              } catch (error) {
+                console.error("Error fetching 360 image URL: ", error)
+                threeSixtyImageUrl = undefined
+              }
+            }
+
             return {
               id: docSnap.id,
               ...data,
               imageUrls: filteredImageUrls,
+              threeSixtyImageUrl,
             } as Table
           }),
         )
@@ -262,6 +281,16 @@ const SeatingPlanEditor = () => {
     setImagePreviews([...imagePreviews, ...newPreviews])
   }
 
+  // Handle 360 image selection
+  const handle360ImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    const file = files[0]
+    setThreeSixtyImageFile(file)
+    setThreeSixtyImagePreview(URL.createObjectURL(file))
+  }
+
   // Upload images to Firebase Storage
   const uploadImages = async (files: File[]): Promise<string[]> => {
     if (!files.length) return []
@@ -279,6 +308,19 @@ const SeatingPlanEditor = () => {
     }
   }
 
+  // Upload 360 image to Firebase Storage
+  const upload360Image = async (file: File): Promise<string | null> => {
+    if (!file) return null
+    try {
+      const storageRef = ref(storage, `table-360-images/${Date.now()}-${file.name}`)
+      const snapshot = await uploadBytes(storageRef, file)
+      return await getDownloadURL(snapshot.ref)
+    } catch (error) {
+      console.error("Error in upload360Image function:", error)
+      return null
+    }
+  }
+
   // Handle save/update table
   const handleSaveTable = async () => {
     if (!tableData.name || !tableData.seats || !tableData.location) {
@@ -291,7 +333,9 @@ const SeatingPlanEditor = () => {
 
     try {
       let uploadedImageUrls = [...(tableData.imageUrls || [])]
+      let threeSixtyUrl = tableData.threeSixtyImageUrl || ""
 
+      // Upload regular images if any
       if (imageFiles.length > 0) {
         try {
           const urls = await uploadImages(imageFiles)
@@ -307,12 +351,29 @@ const SeatingPlanEditor = () => {
         }
       }
 
+      // Upload 360 image if any
+      if (threeSixtyImageFile) {
+        try {
+          const url = await upload360Image(threeSixtyImageFile)
+          if (url) {
+            threeSixtyUrl = url
+          } else {
+            console.error("360 image upload failed")
+            // Continue with existing 360 image URL if upload fails
+          }
+        } catch (uploadError) {
+          console.error("Error uploading 360 image:", uploadError)
+          // Continue with existing 360 image URL if upload fails
+        }
+      }
+
       // Limit to 3 images
       uploadedImageUrls = uploadedImageUrls.slice(0, 3)
 
       const tableWithImages = {
         ...tableData,
         imageUrls: uploadedImageUrls,
+        threeSixtyImageUrl: threeSixtyUrl,
         seats: Number(tableData.seats),
       }
 
@@ -342,6 +403,7 @@ const SeatingPlanEditor = () => {
         seats: 0,
         location: "",
         imageUrls: [],
+        threeSixtyImageUrl: "",
         description: "",
         status: "available",
         features: [],
@@ -349,6 +411,8 @@ const SeatingPlanEditor = () => {
       })
       setImageFiles([])
       setImagePreviews([])
+      setThreeSixtyImageFile(null)
+      setThreeSixtyImagePreview("")
     } catch (error) {
       console.error("Error saving table:", error)
       setFormError("Failed to save table. Please try again.")
@@ -378,6 +442,7 @@ const SeatingPlanEditor = () => {
       seats: table.seats,
       location: table.location,
       imageUrls: table.imageUrls || [],
+      threeSixtyImageUrl: table.threeSixtyImageUrl || "",
       description: table.description || "",
       status: table.status || "available",
       features: table.features || [],
@@ -391,6 +456,13 @@ const SeatingPlanEditor = () => {
       setImagePreviews([])
     }
     setImageFiles([])
+
+    if (table.threeSixtyImageUrl) {
+      setThreeSixtyImagePreview(table.threeSixtyImageUrl)
+    } else {
+      setThreeSixtyImagePreview("")
+    }
+    setThreeSixtyImageFile(null)
 
     // Scroll to form
     setTimeout(() => {
@@ -442,6 +514,7 @@ const SeatingPlanEditor = () => {
       seats: 0,
       location: "",
       imageUrls: [],
+      threeSixtyImageUrl: "",
       description: "",
       status: "available",
       features: [],
@@ -450,6 +523,8 @@ const SeatingPlanEditor = () => {
     setEditingTableId(null)
     setImageFiles([])
     setImagePreviews([])
+    setThreeSixtyImageFile(null)
+    setThreeSixtyImagePreview("")
     setFormError("")
   }
 
@@ -514,6 +589,16 @@ const SeatingPlanEditor = () => {
         ...prev,
         features: features.includes(featureId) ? features.filter((id) => id !== featureId) : [...features, featureId],
       }
+    })
+  }
+
+  // Remove 360 image
+  const remove360Image = () => {
+    setThreeSixtyImageFile(null)
+    setThreeSixtyImagePreview("")
+    setTableData({
+      ...tableData,
+      threeSixtyImageUrl: "",
     })
   }
 
@@ -609,8 +694,6 @@ const SeatingPlanEditor = () => {
                 </div>
 
                 {/* Availability Section */}
-
-                {/* Availability Section */}
                 <div className="space-y-4 pt-2">
                   <div className="flex items-center">
                     <Calendar className="h-5 w-5 mr-2 text-primary" />
@@ -696,6 +779,7 @@ const SeatingPlanEditor = () => {
                   </div>
                 </div>
 
+                {/* Table Images Section */}
                 <div className="space-y-2">
                   <Label>Table Images (Up to 3)</Label>
                   <div className="grid grid-cols-1 gap-4">
@@ -784,6 +868,59 @@ const SeatingPlanEditor = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* 360° Image Upload Section */}
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-center">
+                    <View360 className="h-5 w-5 mr-2 text-primary" />
+                    <Label className="text-base font-medium">360° Image</Label>
+                  </div>
+
+                  {threeSixtyImagePreview ? (
+                    <div className="relative rounded-md overflow-hidden aspect-video bg-gray-100">
+                      <img
+                        src={threeSixtyImagePreview || "/placeholder.svg"}
+                        alt="360° View Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                        <Badge className="bg-primary/80 text-white px-3 py-1.5">
+                          <RotateCw className="h-4 w-4 mr-1.5 animate-spin-slow" />
+                          360° View
+                        </Badge>
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                        onClick={remove360Image}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <Input
+                        id="360-image-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handle360ImageChange}
+                        className="hidden"
+                      />
+                      <Button
+                        variant="outline"
+                        className="w-full flex items-center"
+                        onClick={() => document.getElementById("360-image-upload")?.click()}
+                      >
+                        <View360 className="h-4 w-4 mr-2" />
+                        Upload 360° Image
+                      </Button>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Upload a 360° panoramic image to provide an immersive view of the table.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -1090,6 +1227,13 @@ const SeatingPlanEditor = () => {
                     <Badge className={selectedTable.status === "available" ? "bg-green-500" : "bg-red-500"}>
                       {selectedTable.status}
                     </Badge>
+
+                    {selectedTable.threeSixtyImageUrl && (
+                      <Badge variant="outline" className="bg-primary/10 flex items-center gap-1">
+                        <View360 className="h-3.5 w-3.5 mr-1" />
+                        360° View Available
+                      </Badge>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2 text-muted-foreground">
@@ -1270,6 +1414,12 @@ const TableCard = ({
             </span>
           )}
         </Badge>
+
+        {table.threeSixtyImageUrl && (
+          <Badge className="absolute top-3 left-3 bg-primary flex items-center gap-1">
+            <View360 className="h-3 w-3" /> 360°
+          </Badge>
+        )}
       </div>
 
       <CardContent className="p-4">
@@ -1402,6 +1552,14 @@ const TableRow = ({
                 ))}
               </div>
             )}
+
+            {table.threeSixtyImageUrl && (
+              <div className="absolute top-1 left-1">
+                <Badge className="bg-primary/80 text-xs px-1.5 py-0.5">
+                  <View360 className="h-3 w-3 mr-0.5" /> 360°
+                </Badge>
+              </div>
+            )}
           </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-muted">
@@ -1415,6 +1573,11 @@ const TableRow = ({
           <div className="flex items-center gap-2">
             <h3 className="font-semibold">{table.name}</h3>
             <Badge className={cn("ml-2", isAvailable ? "bg-green-500" : "bg-red-500")}>{table.status}</Badge>
+            {table.threeSixtyImageUrl && (
+              <Badge variant="outline" className="bg-primary/10 text-xs">
+                <View360 className="h-3 w-3 mr-1" /> 360° View
+              </Badge>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">

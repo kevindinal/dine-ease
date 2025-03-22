@@ -49,7 +49,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 import { Calendar } from "@/components/ui/calendar"
 import { format } from "date-fns"
-import { TimePicker } from "@/app/table-reservation/components/time-picker"
+import { TimePicker } from "@/app/(reservations)/table-reservation/components/time-picker"
 
 // Update the Table interface to include reviews
 interface Table {

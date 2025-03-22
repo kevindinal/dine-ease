@@ -31,7 +31,7 @@ const RestaurantCarousel = () => {
         setLoading(false)
       }
     }
-
+    
     loadRestaurants()
     startBackgroundAnimation(controls)
   }, [controls])
@@ -256,7 +256,7 @@ const RestaurantCarousel = () => {
                 onMouseEnter={() => setActiveIndex(index)}
                 onMouseLeave={() => setActiveIndex(null)}
               >
-                <Link href={`/restaurants/${restaurant.id}`}>
+                <Link href={`/restaurants-profile/${restaurant.id}`}>
                   <motion.div
                     className="bg-white rounded-3xl overflow-hidden cursor-pointer relative group mx-auto max-w-[95%] sm:max-w-full"
                     whileHover={{

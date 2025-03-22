@@ -22,7 +22,7 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/seating-plan/page.js", "app/table-reservation/page.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/seating-plan/page.tsx", "app/(reservations)/table-reservation/page.tsx"],
   "exclude": ["node_modules"]
 
 
