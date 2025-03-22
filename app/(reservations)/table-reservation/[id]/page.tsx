@@ -1254,7 +1254,7 @@ export default function TableDetailsPage() {
         </DialogContent>
       </Dialog>
       <Footer />
-    </div></>
+    </div>
   )
 }
 
