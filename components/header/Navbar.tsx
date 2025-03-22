@@ -21,6 +21,9 @@ import { signOut } from "firebase/auth"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import Image from "next/image"
+import { useAuthState } from "react-firebase-hooks/auth"
+import { getUserData } from "@/lib/auth"
+import { UserProp } from "@/types"
 
 const navLinks = [
   { title: "Home", href: "/home-main" },
@@ -43,26 +46,31 @@ const Navbar = () => {
   const navScale = useTransform(scrollY, [0, 100], [1, 0.98])
   const navShadow = useTransform(scrollY, [0, 100], ["0 0 0 rgba(0,0,0,0)", "0 10px 30px rgba(0,0,0,0.1)"])
 
-  const [user, setUser] = useState({
-    uid: "",
-    name: "Guest",
-    email: "guest@example.com",
-    image: "/placeholder.svg?height=32&width=32",
-  })
+  // const [user, setUser] = useState({
+  //   uid: "",
+  //   name: "Guest",
+  //   email: "guest@example.com",
+  //   image: "/placeholder.svg?height=32&width=32",
+  // })
+
+    const [user, loading] = useAuthState(auth);
+    const [userData, setUserData] = useState<UserProp>();
 
   useEffect(() => {
-    const uid = searchParams.get("uid")
-    const name = searchParams.get("name")
-    const email = searchParams.get("email")
+    const fetchData = async () => {
+      try {
+        setUserData(await getUserData());
+      } catch (error) {
+        console.log('Error fetching user data:', error);
+      }
+    };
 
-    if (uid && name && email) {
-      setUser({
-        uid,
-        name,
-        email,
-        image: "/placeholder.svg?height=32&width=32",
-      })
-    }
+    fetchData();
+
+    const uid = userData?.uid;
+    const name = userData?.firstName;
+    const email = userData?.email;
+
   }, [searchParams])
 
   const handleLogout = async () => {
@@ -322,8 +330,8 @@ const Navbar = () => {
                   >
                     <div className="relative">
                       <Avatar className="h-8 w-8 border-2 border-white transition-transform duration-300 group-hover:border-primary">
-                        <AvatarImage src={user.image} alt={user.name} />
-                        <AvatarFallback className="bg-primary text-white">{user.name.charAt(0)}</AvatarFallback>
+                        {/* <AvatarImage src={userData.image} alt={userData?.firstName} /> */}
+                        <AvatarFallback className="bg-primary text-white">{userData?.firstName.charAt(0)}</AvatarFallback>
                       </Avatar>
 
                       {/* Animated ring */}
@@ -334,7 +342,7 @@ const Navbar = () => {
                         transition={{ duration: 0.8 }}
                       />
                     </div>
-                    <span className="text-white font-medium hidden sm:inline">{user.name}</span>
+                    <span className="text-white font-medium hidden sm:inline">{userData?.firstName}</span>
 
                     {/* Animated sparkle */}
                     <motion.div
@@ -357,8 +365,8 @@ const Navbar = () => {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    <p className="text-sm font-medium leading-none">{userData?.firstName}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{userData?.email}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -506,10 +514,10 @@ const Navbar = () => {
                   transition={{ delay: 0.4, duration: 0.3 }}
                 >
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.image} alt={user.name} />
-                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                    {/* <AvatarImage src={user.image} alt={user.name} /> */}
+                    <AvatarFallback>{userData?.firstName.charAt(0)}</AvatarFallback>
                   </Avatar>
-                  <span className="text-white">{user.name}</span>
+                  <span className="text-white">{userData?.firstName}</span>
                 </motion.div>
 
                 <div className="mt-2 space-y-2">
