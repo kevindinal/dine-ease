@@ -111,6 +111,16 @@ interface Review {
   tableId?: string
 }
 
+interface ReservationData {
+  date: Date | undefined
+  time: string
+  guests: number
+  occasion: string
+  specialRequests: string
+  promoCode?: string
+  promoDiscount?: number
+}
+
 interface SpecialOffer {
   id: string
   title: string
@@ -139,6 +149,12 @@ export default function TableDetailsPage() {
   const [showPaymentOptions, setShowPaymentOptions] = useState(false)
   const isMobile = useMediaQuery("(max-width: 768px)")
   const imageContainerRef = useRef<HTMLDivElement>(null)
+
+  const [reservationDate, setReservationDate] = useState("")
+  const [reservationTime, setReservationTime] = useState("")
+  const [guestCount, setGuestCount] = useState("")
+  const [occasion, setOccasion] = useState("")
+  const [specialR, setSpecialR] = useState("")
 
   const [user, setUser] = useState({
     name: "Guest",
@@ -455,7 +471,22 @@ export default function TableDetailsPage() {
     router.back()
   }
 
-  const handleReservation = () => {
+  const handleReservation = (reservationData: ReservationData) => {
+    // Store the reservation data in state
+    setReservationDate(reservationData.date ? reservationData.date.toISOString().split("T")[0] : "")
+    setReservationTime(reservationData.time)
+    setGuestCount(reservationData.guests.toString())
+    setOccasion(reservationData.occasion)
+    setSpecialR(reservationData.specialRequests)
+
+    // If there's a promo code applied in the form, update the discount
+    if (reservationData.promoDiscount) {
+      setPromoDiscount(reservationData.promoDiscount)
+    }
+
+    console.log("Reservation data received:", reservationData)
+
+    // Show payment options
     setShowPaymentOptions(true)
   }
 
@@ -465,13 +496,25 @@ export default function TableDetailsPage() {
     setShowNotification(true)
     setTimeout(() => setShowNotification(false), 5000)
 
+    // Create query parameters with reservation details
+    const queryParams = new URLSearchParams({
+      tableId: table?.id || "",
+      tableName: table?.name || "",
+      date: reservationDate,
+      time: reservationTime,
+      guests: guestCount,
+      occasion: occasion,
+      specialRequests: specialR,
+      promoDiscount: promoDiscount.toString(),
+    }).toString()
+
     if (option === "payment") {
       if (table?.restaurantId) {
-        router.push(`/payment-page/${encodeURIComponent(table?.restaurantId)}`)
+        router.push(`/payment-page?restaurantId=${encodeURIComponent(table?.restaurantId)}&${queryParams}`)
       }
     } else {
       if (table?.restaurantId) {
-        router.push(`/cuisine-main-page/${encodeURIComponent(table.restaurantId)}`)
+        router.push(`/cuisine-main-page/${encodeURIComponent(table.restaurantId)}?${queryParams}`)
       }
     }
   }
@@ -754,7 +797,7 @@ export default function TableDetailsPage() {
       {/* Header with Navigation */}
       <div className="bg-white sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        <Navbar />
+          <Navbar />
           <div className="flex items-center pt-20">
             <Button variant="ghost" size="icon" className="mr-2" onClick={handleGoBack}>
               <ArrowLeft className="h-5 w-5" />
@@ -844,7 +887,7 @@ export default function TableDetailsPage() {
               onClick={() => {
                 handleToggleFavorite()
                 setShowMobileMenu(false)
-              } }
+              }}
             >
               <Heart className={cn("h-5 w-5 mr-2", isFavorite ? "fill-red-500 text-red-500" : "")} />
               {isFavorite ? "Saved to favorites" : "Save to favorites"}
@@ -855,7 +898,7 @@ export default function TableDetailsPage() {
               onClick={() => {
                 setShowShareOptions(true)
                 setShowMobileMenu(false)
-              } }
+              }}
             >
               <Share2 className="h-5 w-5 mr-2" />
               Share this table
@@ -866,7 +909,7 @@ export default function TableDetailsPage() {
               onClick={() => {
                 setIsReminderSet(!isReminderSet)
                 setShowMobileMenu(false)
-              } }
+              }}
             >
               <Bell className={cn("h-5 w-5 mr-2", isReminderSet ? "fill-amber-500 text-amber-500" : "")} />
               {isReminderSet ? "Cancel reminder" : "Set reminder"}
@@ -916,7 +959,7 @@ export default function TableDetailsPage() {
                 <Badge
                   className={cn(
                     "px-3 py-1.5 text-sm font-medium",
-                    isAvailable ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"
+                    isAvailable ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600",
                   )}
                 >
                   {isAvailable ? (
@@ -939,7 +982,7 @@ export default function TableDetailsPage() {
                       size="sm"
                       className={cn(
                         "rounded-full px-3 text-xs h-8",
-                        activeView === "gallery" ? "bg-white shadow-sm" : "bg-transparent"
+                        activeView === "gallery" ? "bg-white shadow-sm" : "bg-transparent",
                       )}
                       onClick={() => setActiveView("gallery")}
                     >
@@ -950,7 +993,7 @@ export default function TableDetailsPage() {
                       size="sm"
                       className={cn(
                         "rounded-full px-3 text-xs h-8",
-                        activeView === "360" ? "bg-white shadow-sm" : "bg-transparent"
+                        activeView === "360" ? "bg-white shadow-sm" : "bg-transparent",
                       )}
                       onClick={() => setActiveView("360")}
                     >
@@ -981,7 +1024,8 @@ export default function TableDetailsPage() {
                   <img
                     src={allImages[currentImageIndex] || "/placeholder.svg"}
                     alt={`${table.name} - Image ${currentImageIndex + 1}`}
-                    className="w-full h-full object-cover" />
+                    className="w-full h-full object-cover"
+                  />
 
                   {allImages.length > 1 && (
                     <>
@@ -1060,7 +1104,7 @@ export default function TableDetailsPage() {
                       "cursor-pointer h-16 w-16 flex-shrink-0 p-0.5",
                       currentImageIndex === idx
                         ? "border-2 border-primary rounded-md"
-                        : "opacity-70 hover:opacity-100 border-2 border-transparent rounded-md"
+                        : "opacity-70 hover:opacity-100 border-2 border-transparent rounded-md",
                     )}
                     onClick={() => setCurrentImageIndex(idx)}
                   >
@@ -1068,7 +1112,8 @@ export default function TableDetailsPage() {
                       <img
                         src={img || "/placeholder.svg"}
                         alt={`Thumbnail ${idx + 1}`}
-                        className="w-full h-full object-cover" />
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   </div>
                 ))}
@@ -1120,7 +1165,8 @@ export default function TableDetailsPage() {
             <ReviewSection
               reviews={table.reviews || []}
               rating={rating.toString()}
-              onSubmitReview={handleSubmitReview} />
+              onSubmitReview={handleSubmitReview}
+            />
 
             {/* Additional Information */}
             <div className="pt-4">
@@ -1223,7 +1269,8 @@ export default function TableDetailsPage() {
               onReservation={handleReservation}
               promoDiscount={promoDiscount}
               onApplyPromoCode={handleApplyPromoCode}
-              availability={table.availability} />
+              availability={table.availability}
+            />
           </div>
         </div>
       </div>
