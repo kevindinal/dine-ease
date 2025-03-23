@@ -40,6 +40,13 @@ const FoodCard: FC<FoodCardProps> = ({
   const [drinkPairing, setDrinkPairing] = useState("No pairing");
   const [showTags, setShowTags] = useState(true);
 
+  /**
+ * Function to handle adding a meal to the pre-order list.
+ * - Prevents event propagation to avoid unintended side effects.
+ * - Generates a unique ID to differentiate pre-order items.
+ * - Stores pre-order details in `localStorage` for persistence.
+ * - Calls `onAddToPreOrder` to update the UI/state.
+ */
   const handleAddToPreOrder = (e: React.MouseEvent) => {
     e.stopPropagation();
     
@@ -61,6 +68,12 @@ const FoodCard: FC<FoodCardProps> = ({
     onAddToPreOrder(customizations);
   };
 
+  /**
+ * Function to handle click events on meal cards.
+ * - Constructs the navigation URL with required query parameters.
+ * - Logs click event details and generated URL for debugging.
+ * - Redirects the user to the cuisine details page.
+ */
   const handleCardClick = () => {
     const url = `/cuisine-details-page?id=${id}&restaurantId=${restaurantId}`;
     const fullUrl = categoryId ? `${url}&categoryId=${categoryId}` : url;
@@ -71,7 +84,6 @@ const FoodCard: FC<FoodCardProps> = ({
     router.push(fullUrl);
   };
   
-  // Format price with commas for thousands
   const formatPrice = (price: number) => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };

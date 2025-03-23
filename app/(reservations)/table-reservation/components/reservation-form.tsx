@@ -1,48 +1,72 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { CalendarIcon, Clock, Users, Tag, AlertCircle, GlassWater, MessageSquare } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { TimePicker } from "./time-picker"
+import { useState, useEffect } from "react";
+import {
+  CalendarIcon,
+  Clock,
+  Users,
+  Tag,
+  AlertCircle,
+  GlassWater,
+  MessageSquare,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { TimePicker } from "./time-picker";
 
 interface ReservationFormProps {
-  tablePrice: number
-  tableSeats: number
-  isAvailable: boolean
+  tablePrice: number;
+  tableSeats: number;
+  isAvailable: boolean;
   onReservation: (reservationData: {
-    date: Date | undefined
-    time: string
-    guests: number
-    occasion: string
-    specialRequests: string
-    promoCode?: string
-    promoDiscount?: number
-  }) => void
-  promoDiscount: number
-  onApplyPromoCode: (code: string) => void
+    date: Date | undefined;
+    time: string;
+    guests: number;
+    occasion: string;
+    specialRequests: string;
+    promoCode?: string;
+    promoDiscount?: number;
+  }) => void;
+  promoDiscount: number;
+  onApplyPromoCode: (code: string) => void;
   availability?: {
-    monday: boolean
-    tuesday: boolean
-    wednesday: boolean
-    thursday: boolean
-    friday: boolean
-    saturday: boolean
-    sunday: boolean
+    monday: boolean;
+    tuesday: boolean;
+    wednesday: boolean;
+    thursday: boolean;
+    friday: boolean;
+    saturday: boolean;
+    sunday: boolean;
     timeRanges: Array<{
-      from: string
-      to: string
-    }>
-  }
+      from: string;
+      to: string;
+    }>;
+  };
 }
 
 export default function ReservationForm({
@@ -54,24 +78,24 @@ export default function ReservationForm({
   onApplyPromoCode,
   availability,
 }: ReservationFormProps) {
-  const [date, setDate] = useState<Date | undefined>(undefined)
-  const [time, setTime] = useState("")
-  const [guests, setGuests] = useState(2)
-  const [promoCode, setPromoCode] = useState("")
-  const [showPromoInput, setShowPromoInput] = useState(false)
-  const [dateError, setDateError] = useState<string | null>(null)
-  const [timeError, setTimeError] = useState<string | null>(null)
-  const [occasion, setOccasion] = useState("none")
-  const [specialRequests, setSpecialRequests] = useState("")
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [time, setTime] = useState("");
+  const [guests, setGuests] = useState(2);
+  const [promoCode, setPromoCode] = useState("");
+  const [showPromoInput, setShowPromoInput] = useState(false);
+  const [dateError, setDateError] = useState<string | null>(null);
+  const [timeError, setTimeError] = useState<string | null>(null);
+  const [occasion, setOccasion] = useState("none");
+  const [specialRequests, setSpecialRequests] = useState("");
 
   // Calculate the total price with discount
-  const discountAmount = (tablePrice * promoDiscount) / 100
-  const totalPrice = tablePrice - discountAmount
+  const discountAmount = (tablePrice * promoDiscount) / 100;
+  const totalPrice = tablePrice - discountAmount;
 
   // Check if the selected date is available
   useEffect(() => {
     if (date && availability) {
-      const dayOfWeek = date.getDay() // 0 = Sunday, 1 = Monday, etc.
+      const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
 
       // Map JavaScript day to our availability object keys
       const dayMap: Record<number, keyof typeof availability> = {
@@ -82,64 +106,69 @@ export default function ReservationForm({
         4: "thursday",
         5: "friday",
         6: "saturday",
-      }
+      };
 
-      const dayKey = dayMap[dayOfWeek]
-      const isDayAvailable = availability[dayKey]
+      const dayKey = dayMap[dayOfWeek];
+      const isDayAvailable = availability[dayKey];
 
       if (!isDayAvailable) {
         setDateError(
           `This table is not available on ${
             dayKey.charAt(0).toUpperCase() + dayKey.slice(1)
-          }s. Please select another day.`,
-        )
+          }s. Please select another day.`
+        );
       } else {
-        setDateError(null)
+        setDateError(null);
       }
     } else {
-      setDateError(null)
+      setDateError(null);
     }
-  }, [date, availability])
+  }, [date, availability]);
 
   // Check if the selected time is within available time ranges
   useEffect(() => {
     if (time && availability && !dateError) {
-      const [hours, minutes] = time.split(":").map(Number)
-      const timeInMinutes = hours * 60 + minutes
+      const [hours, minutes] = time.split(":").map(Number);
+      const timeInMinutes = hours * 60 + minutes;
 
-      let isTimeAvailable = false
+      let isTimeAvailable = false;
 
       if (availability.timeRanges && availability.timeRanges.length > 0) {
         isTimeAvailable = availability.timeRanges.some((range) => {
-          const [fromHours, fromMinutes] = range.from.split(":").map(Number)
-          const [toHours, toMinutes] = range.to.split(":").map(Number)
+          const [fromHours, fromMinutes] = range.from.split(":").map(Number);
+          const [toHours, toMinutes] = range.to.split(":").map(Number);
 
-          const fromTimeInMinutes = fromHours * 60 + fromMinutes
-          const toTimeInMinutes = toHours * 60 + toMinutes
+          const fromTimeInMinutes = fromHours * 60 + fromMinutes;
+          const toTimeInMinutes = toHours * 60 + toMinutes;
 
-          return timeInMinutes >= fromTimeInMinutes && timeInMinutes <= toTimeInMinutes
-        })
+          return (
+            timeInMinutes >= fromTimeInMinutes &&
+            timeInMinutes <= toTimeInMinutes
+          );
+        });
       }
 
       if (!isTimeAvailable) {
-        setTimeError("The selected time is outside available hours. Please choose a time within the available ranges.")
+        setTimeError(
+          "The selected time is outside available hours. Please choose a time within the available ranges."
+        );
       } else {
-        setTimeError(null)
+        setTimeError(null);
       }
     } else {
-      setTimeError(null)
+      setTimeError(null);
     }
-  }, [time, availability, dateError])
+  }, [time, availability, dateError]);
 
   const handleReservation = () => {
     if (!date || !time) {
-      alert("Please select a date and time for your reservation.")
-      return
+      alert("Please select a date and time for your reservation.");
+      return;
     }
 
     if (dateError || timeError) {
-      alert("Please correct the errors before making a reservation.")
-      return
+      alert("Please correct the errors before making a reservation.");
+      return;
     }
 
     // Pass all the reservation data to the parent component
@@ -151,24 +180,38 @@ export default function ReservationForm({
       specialRequests,
       promoCode: promoCode.trim() ? promoCode : undefined,
       promoDiscount: promoDiscount > 0 ? promoDiscount : undefined,
-    })
-  }
+    });
+
+    // Save reservation data to localStorage
+    const reservationToSave = {
+      date,
+      time,
+      guests,
+      occasion,
+      specialRequests,
+      promoDiscount,
+    };
+
+    localStorage.setItem("reservation", JSON.stringify(reservationToSave));
+  };
 
   const handleApplyPromo = () => {
     if (promoCode.trim()) {
-      onApplyPromoCode(promoCode)
+      onApplyPromoCode(promoCode);
     }
-  }
+  };
 
   const handleTimeChange = (newTime: string) => {
-    setTime(newTime)
-  }
+    setTime(newTime);
+  };
 
   return (
     <Card className="sticky top-20">
       <CardHeader className="bg-primary/5 border-b">
         <CardTitle className="text-red-500">Make a Reservation</CardTitle>
-        <CardDescription>Reserve this table for your dining experience</CardDescription>
+        <CardDescription>
+          Reserve this table for your dining experience
+        </CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
         <div className="space-y-4">
@@ -185,7 +228,7 @@ export default function ReservationForm({
                   className={cn(
                     "w-full justify-start text-left font-normal",
                     !date && "text-muted-foreground",
-                    dateError && "border-red-500 text-red-500",
+                    dateError && "border-red-500 text-red-500"
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
@@ -200,9 +243,9 @@ export default function ReservationForm({
                   initialFocus
                   disabled={(date) => {
                     // Disable dates in the past
-                    const today = new Date()
-                    today.setHours(0, 0, 0, 0)
-                    return date < today
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    return date < today;
                   }}
                   className="rounded-md border"
                 />
@@ -211,7 +254,9 @@ export default function ReservationForm({
             {dateError && (
               <Alert variant="destructive" className="py-2 mt-1">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="text-xs ml-2">{dateError}</AlertDescription>
+                <AlertDescription className="text-xs ml-2">
+                  {dateError}
+                </AlertDescription>
               </Alert>
             )}
           </div>
@@ -222,11 +267,17 @@ export default function ReservationForm({
               <Clock className="h-4 w-4 mr-2 text-gray-500" />
               Time
             </Label>
-            <TimePicker value={time} onChange={handleTimeChange} error={!!timeError} />
+            <TimePicker
+              value={time}
+              onChange={handleTimeChange}
+              error={!!timeError}
+            />
             {timeError && (
               <Alert variant="destructive" className="py-2 mt-1">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="text-xs ml-2">{timeError}</AlertDescription>
+                <AlertDescription className="text-xs ml-2">
+                  {timeError}
+                </AlertDescription>
               </Alert>
             )}
           </div>
@@ -268,7 +319,9 @@ export default function ReservationForm({
                 +
               </Button>
             </div>
-            <p className="text-xs text-gray-500">This table can accommodate up to {tableSeats} guests</p>
+            <p className="text-xs text-gray-500">
+              This table can accommodate up to {tableSeats} guests
+            </p>
           </div>
 
           {/* Occasion */}
@@ -291,7 +344,9 @@ export default function ReservationForm({
                 <SelectItem value="other">Other Special Occasion</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-gray-500">Let us know if you're celebrating something special</p>
+            <p className="text-xs text-gray-500">
+              Let us know if you're celebrating something special
+            </p>
           </div>
 
           {/* Special Requests */}
@@ -308,7 +363,9 @@ export default function ReservationForm({
               className="resize-none"
               rows={3}
             />
-            <p className="text-xs text-gray-500">We'll do our best to accommodate your requests</p>
+            <p className="text-xs text-gray-500">
+              We'll do our best to accommodate your requests
+            </p>
           </div>
 
           {/* Promo Code */}
@@ -363,8 +420,13 @@ export default function ReservationForm({
 
           {/* Reservation Button */}
           <Button
-            className={cn("w-full mt-4", isAvailable ? "bg-red-500 hover:bg-red-600" : "bg-gray-400")}
-            disabled={!isAvailable || !date || !time || !!dateError || !!timeError}
+            className={cn(
+              "w-full mt-4",
+              isAvailable ? "bg-red-500 hover:bg-red-600" : "bg-gray-400"
+            )}
+            disabled={
+              !isAvailable || !date || !time || !!dateError || !!timeError
+            }
             onClick={handleReservation}
           >
             {isAvailable ? "Reserve Now" : "Not Available"}
@@ -372,6 +434,5 @@ export default function ReservationForm({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

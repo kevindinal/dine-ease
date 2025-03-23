@@ -1,13 +1,17 @@
-// hooks/usePoints.ts
-import { useState, useCallback } from 'react';
-import { getUserPoints, addPoints, awardPaymentPoints } from '../services/pointsService';
+import { useState, useCallback, useEffect } from "react";
+import { addPointsToUser, getUserPoints } from "@/lib/firebase/points";
 
+/**
+ * Hook for managing user points
+ * @param userId The user ID to manage points for
+ * @returns Object with points data and functions
+ */
 export const usePoints = (userId: string) => {
   const [points, setPoints] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch user points
+  // Fetch points function
   const fetchPoints = useCallback(async () => {
     if (!userId) return;
     
@@ -15,42 +19,52 @@ export const usePoints = (userId: string) => {
     setError(null);
     
     try {
-      const userPoints = await getUserPoints(userId);
-      setPoints(userPoints);
+      const currentPoints = await getUserPoints(userId);
+      setPoints(currentPoints);
     } catch (err) {
-      setError('Failed to fetch points');
-      console.error(err);
+      console.error("Error fetching points:", err);
+      setError("Failed to load points");
     } finally {
       setLoading(false);
     }
   }, [userId]);
 
-  // Award points for payment
-  const awardPointsForPayment = useCallback(async (amount: number) => {
-    if (!userId) return;
+  // Add points function
+  const addPoints = useCallback(async (pointsToAdd: number = 10) => {
+    if (!userId) return false;
     
     setLoading(true);
     setError(null);
     
     try {
-      await awardPaymentPoints(userId, amount);
-      // Refresh points after awarding
-      await fetchPoints();
-      return true;
+      const success = await addPointsToUser(userId, pointsToAdd);
+      if (success) {
+        // Refresh points after adding
+        await fetchPoints();
+        return true;
+      }
+      return false;
     } catch (err) {
-      setError('Failed to award points');
-      console.error(err);
+      console.error("Error adding points:", err);
+      setError("Failed to add points");
       return false;
     } finally {
       setLoading(false);
     }
   }, [userId, fetchPoints]);
 
-  return {
-    points,
-    loading,
-    error,
-    fetchPoints,
-    awardPointsForPayment
+  // Fetch points on initial load
+  useEffect(() => {
+    if (userId) {
+      fetchPoints();
+    }
+  }, [userId, fetchPoints]);
+
+  return { 
+    points, 
+    loading, 
+    error, 
+    fetchPoints, 
+    addPoints 
   };
 };

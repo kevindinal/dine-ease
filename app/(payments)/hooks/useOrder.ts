@@ -18,6 +18,25 @@ export const useOrder = () => {
     
     // Get the preOrder hook to access preOrders and clear them after successful order
     const { preOrders, clearPreOrder } = usePreOrder();
+
+    // Initialize orderId from localStorage if available
+    useEffect(() => {
+      // Only run in client side
+      if (typeof window !== 'undefined') {
+        const storedOrderId = localStorage.getItem('currentOrderId');
+        if (storedOrderId) {
+          setOrderId(storedOrderId);
+        }
+      }
+    }, []);
+  
+    // Update localStorage whenever orderId changes
+    useEffect(() => {
+      if (orderId && typeof window !== 'undefined') {
+        localStorage.setItem('currentOrderId', orderId);
+        console.log(`Updated localStorage with currentOrderId: ${orderId}`);
+      }
+    }, [orderId]);
   
     // Ensure collections exist when the hook is initialized
     useEffect(() => {
@@ -82,7 +101,13 @@ export const useOrder = () => {
         // Clear preOrders after successful order creation
         clearPreOrder();
         
+        // Update both state and localStorage with new orderId
         setOrderId(newOrderId);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('currentOrderId', newOrderId);
+          console.log(`Set new currentOrderId in localStorage: ${newOrderId}`);
+        }
+        
         setOrderSuccess(true);
         return newOrderId;
       } catch (err) {
@@ -94,7 +119,7 @@ export const useOrder = () => {
       } finally {
         setLoading(false);
       }
-    }, [user?.uid, collectionsReady, loading, preOrders, clearPreOrder, orderId]);
+    }, [user?.uid, collectionsReady, loading, preOrders, clearPreOrder]);
     
     return {
       processOrder,

@@ -11,7 +11,6 @@ export interface PreOrder {
   price: number;
   image: string;
   addOns?: any[];
-  // Add uniqueId for item identification
   uniqueId?: string;
 }
 
@@ -24,6 +23,14 @@ const usePreOrder = () => {
     return [];
   });
 
+/** 
+ * useEffect hook to synchronize the `preOrders` state with localStorage.
+ * - Whenever the `preOrders` state changes, the updated value is saved in the browser's localStorage.
+ * - This ensures that pre-order data persists across page reloads, making it available for the next session.
+ * 
+ * Dependencies:
+ * - `preOrders`: The effect will re-run every time `preOrders` changes.
+ */
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("preOrders", JSON.stringify(preOrders));
@@ -32,8 +39,13 @@ const usePreOrder = () => {
 
   const preOrderCount = preOrders.reduce((total, item) => total + item.quantity, 0);
 
+/** 
+ * Generates a unique identifier for a pre-order item based on its properties.
+ * - The function combines the item's `id`, `portionSize`, `spiceLevel`, `drinkPairing`, and `addOns` 
+ *   (if present) to create a string that uniquely identifies the item.
+ * - The result is a string formatted as: "item.id-portionSize-spiceLevel-drinkPairing-addOns".
+ */  
   const generateUniqueId = (item: PreOrder): string => {
-    // Create a consistent unique identifier based on the item and its customizations
     const addOnsString = Array.isArray(item.addOns) 
       ? item.addOns.join(",") 
       : (typeof item.addOns === 'string' ? item.addOns : "");
@@ -41,9 +53,14 @@ const usePreOrder = () => {
     return `${item.id}-${item.portionSize || ""}-${item.spiceLevel || ""}-${item.drinkPairing || ""}-${addOnsString}`;
   };
 
+  /** 
+ * Function to add a new item to the pre-order list or update the quantity of an existing item.
+ * - Checks if an item with the same unique ID already exists in the pre-orders list.
+ * - If an existing item is found, it increments its quantity by the quantity of the new item.
+ * - If the item is not found, it adds the new item to the list with a generated unique ID.
+ */
   const addItemToPreOrder = (newItem: PreOrder) => {
     setPreOrders((prevItems) => {
-      // Generate a unique ID for this specific item with its customizations
       const uniqueId = generateUniqueId(newItem);
       
       const existingItemIndex = prevItems.findIndex(item => 
@@ -51,12 +68,10 @@ const usePreOrder = () => {
       );
 
       if (existingItemIndex !== -1) {
-        // Update existing item quantity
         const updatedItems = [...prevItems];
         updatedItems[existingItemIndex].quantity += newItem.quantity;
         return updatedItems;
       } else {
-        // Add new item with the uniqueId
         return [...prevItems, {
           ...newItem,
           uniqueId
@@ -65,7 +80,11 @@ const usePreOrder = () => {
     });
   };
 
-  // Remove item by uniqueId or regular id 
+  /** 
+ * Function to remove an item from the pre-order list by its unique identifier or ID.
+ * - Filters out the item from the list that matches the provided itemId.
+ * - It checks for both `uniqueId` or `id` to ensure compatibility with different structures.
+ */
   const removePreOrderItem = (itemId: string) => {
     setPreOrders((prevItems) => prevItems.filter(item => 
       (item.uniqueId || item.id) !== itemId

@@ -5,6 +5,15 @@ import { Category } from "../types/category";
 import { Meal } from "../types/meal";
 
 export const todaysSpecialService = {
+
+/**
+Fetches today's special meals for a specific restaurant.
+ * This function retrieves all meals marked as "Today's Special" from the Firestore database 
+ * for the specified `restaurantId`. It iterates through all categories and meals within the 
+ * restaurant, filters the meals that are marked as "TodaysSpecial", and returns them as a list.
+ * If no special meals are found, it returns `null`. If an error occurs during the fetch process,
+ * such as Firestore connectivity issues, the function logs the error and throws it.
+ */
     getTodaysSpecials: async (restaurantId: string): Promise<Meal[] | null> => {
         try {
             const mealsRef = collection(db, "restaurants", restaurantId, "categories");

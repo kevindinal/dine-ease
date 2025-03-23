@@ -43,6 +43,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { db } from "@/lib/firebase/tables"
+import { doc, getDoc } from "firebase/firestore"
 
 // Mock data for the dashboard
 const userData = {
@@ -178,6 +180,7 @@ const pastReservations = [
   },
 ]
 
+// Mock data for favorite restaurants - will be replaced with data from Firebase
 const favoriteRestaurants = [
   {
     id: "REST-1234",
@@ -212,6 +215,20 @@ const favoriteRestaurants = [
     lastVisited: "April 20, 2023",
   },
 ]
+
+// Interface for favorite tables
+interface FavoriteTable {
+  id: string
+  name: string
+  location: string
+  seats: number
+  price?: number
+  status: string
+  imageUrl?: string
+  rating?: number
+  cuisine?: string
+  lastVisited?: string
+}
 
 const recentActivity = [
   {
@@ -330,6 +347,10 @@ export default function ProfileDashboard() {
   const [activeTab, setActiveTab] = useState("overview")
   const [isMobile, setIsMobile] = useState(false)
   const [showMobileNav, setShowMobileNav] = useState(false)
+  const [favoriteTables, setFavoriteTables] = useState<FavoriteTable[]>([])
+  const [loading, setLoading] = useState(true)
+  const [localUser, setLocalUser] = useState<any>(null)
+
   const router = useRouter()
 
   useEffect(() => {
@@ -345,8 +366,89 @@ export default function ProfileDashboard() {
     }
   }, [])
 
+   // Fetch user data from local storage
+   useEffect(() => {
+    const fetchUserData = () => {
+      try {
+        const storedUser = localStorage.getItem("user")
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser)
+          setLocalUser(parsedUser)
+        }
+      } catch (error) {
+        console.error("Error fetching user data from local storage:", error)
+      }
+    }
+
+    fetchUserData()
+  }, [])
+
+  // Fetch favorite tables from Firebase
+  useEffect(() => {
+    const fetchFavoriteTables = async () => {
+      setLoading(true)
+
+      try {
+        // Get user data from local storage
+        const localStorageUser = localStorage.getItem("user")
+
+        if (!localStorageUser) {
+          setLoading(false)
+          return
+        }
+
+        // Parse user data from local storage
+        const userData = JSON.parse(localStorageUser)
+
+        // Check if user has favorites
+        if (!userData.favorites || !Array.isArray(userData.favorites) || userData.favorites.length === 0) {
+          setLoading(false)
+          return
+        }
+
+        // Get the favorite table IDs from the user data
+        const favoriteIds = userData.favorites
+
+        // Fetch each table document from Firebase
+        const tables: FavoriteTable[] = []
+
+        for (const tableId of favoriteIds) {
+          try {
+            const tableDoc = await getDoc(doc(db, "tables", tableId))
+
+            if (tableDoc.exists()) {
+              const tableData = tableDoc.data()
+              tables.push({
+                id: tableDoc.id,
+                name: tableData.name || "Unknown Table",
+                location: tableData.location || "Unknown Location",
+                seats: tableData.seats || 0,
+                price: tableData.price,
+                status: tableData.status || "unknown",
+                imageUrl: tableData.imageUrls[0] || "/placeholder.svg?height=80&width=80",
+                rating: tableData.rating || 4.5,
+                cuisine: tableData.cuisine || "Various",
+                lastVisited: "Recently",
+              })
+            }
+          } catch (error) {
+            console.error(`Error fetching table ${tableId}:`, error)
+          }
+        }
+
+        setFavoriteTables(tables)
+        setLoading(false)
+      } catch (error) {
+        console.error("Error fetching favorite tables:", error)
+        setLoading(false)
+      }
+    }
+
+    fetchFavoriteTables()
+  }, [])
+
   const handleLogout = () => {
-    // Implement logout functionality
+    localStorage.removeItem('user')
     router.push("/sign-in")
   }
 
@@ -354,11 +456,8 @@ export default function ProfileDashboard() {
     { id: "overview", label: "Overview", icon: <Home className="h-5 w-5" /> },
     { id: "orders", label: "My Orders", icon: <Package className="h-5 w-5" /> },
     { id: "reservations", label: "Reservations", icon: <Calendar className="h-5 w-5" /> },
-    { id: "favorites", label: "Favorites", icon: <Heart className="h-5 w-5" /> },
-    { id: "activity", label: "Activity", icon: <History className="h-5 w-5" /> },
     { id: "notifications", label: "Notifications", icon: <Bell className="h-5 w-5" /> },
     { id: "payment", label: "Payment Methods", icon: <CreditCard className="h-5 w-5" /> },
-    { id: "addresses", label: "Addresses", icon: <MapPin className="h-5 w-5" /> },
     { id: "settings", label: "Account Settings", icon: <Settings className="h-5 w-5" /> },
   ]
 
@@ -382,6 +481,7 @@ export default function ProfileDashboard() {
         return "bg-gray-500"
     }
   }
+
 
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
@@ -409,13 +509,13 @@ export default function ProfileDashboard() {
       {/* Mobile Header */}
       <header className="md:hidden bg-white border-b sticky top-0 z-30 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Avatar className="h-9 w-9 border-2 border-primary">
-            <AvatarImage src={userData.avatar} alt={userData.name} />
-            <AvatarFallback>{userData.name.charAt(0)}</AvatarFallback>
+        <Avatar className="h-9 w-9 border-2 border-primary">
+            <AvatarImage src={localUser?.avatar || userData.avatar} alt={localUser?.firstName || userData.name} />
+            <AvatarFallback>{(localUser?.firstName || userData.name).charAt(0)}</AvatarFallback>
           </Avatar>
           <div>
-            <h2 className="font-semibold text-sm">{userData.name}</h2>
-            <p className="text-xs text-muted-foreground">{userData.level}</p>
+          <h2 className="font-semibold text-sm">{localUser?.firstName || userData.name}</h2>
+          <p className="text-xs text-muted-foreground">{userData.level}</p>
           </div>
         </div>
         <Button variant="outline" size="icon" onClick={() => setShowMobileNav(!showMobileNav)}>
@@ -430,13 +530,13 @@ export default function ProfileDashboard() {
         >
           <div className="p-4 md:p-6 border-b">
             <div className="flex items-center gap-3 mb-4">
-              <Avatar className="h-12 w-12 border-2 border-primary">
-                <AvatarImage src={userData.avatar} alt={userData.name} />
-                <AvatarFallback>{userData.name.charAt(0)}</AvatarFallback>
+            <Avatar className="h-12 w-12 border-2 border-primary">
+                <AvatarImage src={localUser?.avatar || userData.avatar} alt={localUser?.firstName || userData.name} />
+                <AvatarFallback>{(localUser?.firstName || userData.name).charAt(0)}</AvatarFallback>
               </Avatar>
               <div>
-                <h2 className="font-semibold">{userData.name}</h2>
-                <p className="text-sm text-muted-foreground">{userData.email}</p>
+              <h2 className="font-semibold">{localUser?.firstName || userData.name}</h2>
+              <p className="text-sm text-muted-foreground">{localUser?.email || userData.email}</p>
               </div>
             </div>
 
@@ -763,56 +863,97 @@ export default function ProfileDashboard() {
                   )}
                 </div>
 
+                {/* Favorite Tables */}
+
                 {/* Favorite Restaurants */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-semibold">Favorite Restaurants</h2>
+                    <h2 className="text-xl font-semibold">Favorite Tables</h2>
                     <Button variant="link" size="sm" onClick={() => setActiveTab("favorites")}>
                       View All <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {favoriteRestaurants.slice(0, 4).map((restaurant) => (
-                      <Card key={restaurant.id} className="overflow-hidden">
-                        <div className="relative h-32">
-                          <img
-                            src={restaurant.image || "/placeholder.svg"}
-                            alt={restaurant.name}
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute top-2 right-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 rounded-full bg-white/80 hover:bg-white"
-                            >
-                              <Heart className="h-4 w-4 fill-primary text-primary" />
-                            </Button>
-                          </div>
-                        </div>
-                        <CardContent className="p-3">
-                          <div className="flex justify-between items-start mb-1">
-                            <h3 className="font-medium">{restaurant.name}</h3>
-                            <div className="flex items-center">
-                              <Star className="h-3 w-3 fill-amber-500 text-amber-500 mr-1" />
-                              <span className="text-xs font-medium">{restaurant.rating}</span>
+                    {loading ? (
+                      // Loading state
+                      Array(4)
+                        .fill(0)
+                        .map((_, index) => (
+                          <Card key={`skeleton-${index}`} className="overflow-hidden">
+                            <div className="relative h-32 bg-gray-200 animate-pulse"></div>
+                            <CardContent className="p-3">
+                              <div className="h-5 bg-gray-200 rounded animate-pulse mb-2"></div>
+                              <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2 mb-2"></div>
+                              <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                            </CardContent>
+                          </Card>
+                        ))
+                    ) : favoriteTables.length > 0 ? (
+                      // Display fetched favorite tables
+                      favoriteTables
+                        .slice(0, 4)
+                        .map((table) => (
+                          <Card key={table.id} className="overflow-hidden">
+                            <div className="relative h-32">
+                              <img
+                                src={table.imageUrl || "/placeholder.svg?height=80&width=80"}
+                                alt={table.name}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute top-2 right-2">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 rounded-full bg-white/80 hover:bg-white"
+                                >
+                                  <Heart className="h-4 w-4 fill-primary text-primary" />
+                                </Button>
+                              </div>
                             </div>
+                            <CardContent className="p-3">
+                              <div className="flex justify-between items-start mb-1">
+                                <h3 className="font-medium">{table.name}</h3>
+                                <div className="flex items-center">
+                                  <Star className="h-3 w-3 fill-amber-500 text-amber-500 mr-1" />
+                                  <span className="text-xs font-medium">{table.rating}</span>
+                                </div>
+                              </div>
+                              <p className="text-xs text-muted-foreground mb-2">{table.location}</p>
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs text-muted-foreground">
+                                  {table.seats} seats • ${table.price?.toFixed(2) || "N/A"}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2"
+                                  onClick={() => handleViewTable(table.id)}
+                                >
+                                  View Table
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))
+                    ) : (
+                      // No favorites state
+                      <Card className="col-span-full bg-muted/50">
+                        <CardContent className="flex flex-col items-center justify-center py-8">
+                          <div className="rounded-full bg-primary/10 p-3 mb-3">
+                            <Heart className="h-6 w-6 text-primary" />
                           </div>
-                          <p className="text-xs text-muted-foreground mb-2">{restaurant.cuisine}</p>
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs text-muted-foreground">
-                              Last visited: {restaurant.lastVisited}
-                            </span>
-                            <Button variant="ghost" size="sm" className="h-7 px-2">
-                              Order Again
-                            </Button>
-                          </div>
+                          <h3 className="text-lg font-medium mb-1">No Favorite Tables</h3>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            You haven't added any tables to your favorites yet.
+                          </p>
+                          <Button onClick={() => router.push("/table-reservation")}>Browse Tables</Button>
                         </CardContent>
                       </Card>
-                    ))}
+                    )}
                   </div>
                 </div>
+
 
                 {/* Recent Activity */}
                 <div>
@@ -1009,7 +1150,7 @@ export default function ProfileDashboard() {
                   </TabsList>
 
                   <TabsContent value="upcoming">
-                    {upcomingReservations.length > 0 ? (
+                    {/* {upcomingReservations.length > 0 ? (
                       <div className="space-y-4">
                         {upcomingReservations.map((reservation) => (
                           <Card key={reservation.id} className="overflow-hidden">
@@ -1068,7 +1209,7 @@ export default function ProfileDashboard() {
                           <Button>Make a Reservation</Button>
                         </CardContent>
                       </Card>
-                    )}
+                    )} */}
                   </TabsContent>
 
                   <TabsContent value="past">
@@ -1134,49 +1275,83 @@ export default function ProfileDashboard() {
               <div className="space-y-6">
                 <h1 className="text-2xl font-bold">My Favorites</h1>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {favoriteRestaurants.map((restaurant) => (
-                    <Card key={restaurant.id} className="overflow-hidden">
-                      <div className="relative h-40">
-                        <img
-                          src={restaurant.image || "/placeholder.svg"}
-                          alt={restaurant.name}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute top-2 right-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 rounded-full bg-white/80 hover:bg-white"
-                          >
-                            <Heart className="h-4 w-4 fill-primary text-primary" />
-                          </Button>
-                        </div>
-                      </div>
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-medium">{restaurant.name}</h3>
-                          <div className="flex items-center">
-                            <Star className="h-3 w-3 fill-amber-500 text-amber-500 mr-1" />
-                            <span className="text-xs font-medium">{restaurant.rating}</span>
+                {loading ? (
+                  // Loading state
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Array(6)
+                      .fill(0)
+                      .map((_, index) => (
+                        <Card key={`skeleton-${index}`} className="overflow-hidden">
+                          <div className="relative h-40 bg-gray-200 animate-pulse"></div>
+                          <CardContent className="p-4">
+                            <div className="h-5 bg-gray-200 rounded animate-pulse mb-2"></div>
+                            <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2 mb-2"></div>
+                            <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                          </CardContent>
+                          <CardFooter className="bg-gray-50 border-t h-12"></CardFooter>
+                        </Card>
+                      ))}
+                  </div>
+                ) : favoriteTables.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {favoriteTables.map((table) => (
+                      <Card key={table.id} className="overflow-hidden">
+                        <div className="relative h-40">
+                          <img
+                            src={table.imageUrl || "/placeholder.svg?height=80&width=80"}
+                            alt={table.name}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute top-2 right-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 rounded-full bg-white/80 hover:bg-white"
+                            >
+                              <Heart className="h-4 w-4 fill-primary text-primary" />
+                            </Button>
                           </div>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-3">{restaurant.cuisine}</p>
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-muted-foreground">Last visited: {restaurant.lastVisited}</span>
-                        </div>
-                      </CardContent>
-                      <CardFooter className="bg-gray-50 border-t flex justify-between">
-                        <Button variant="ghost" size="sm">
-                          View Details
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          Order Now
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-medium">{table.name}</h3>
+                            <div className="flex items-center">
+                              <Star className="h-3 w-3 fill-amber-500 text-amber-500 mr-1" />
+                              <span className="text-xs font-medium">{table.rating}</span>
+                            </div>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-3">{table.location}</p>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-muted-foreground">
+                              {table.seats} seats • ${table.price?.toFixed(2) || "N/A"}
+                            </span>
+                          </div>
+                        </CardContent>
+                        <CardFooter className="bg-gray-50 border-t flex justify-between">
+                          <Button variant="ghost" size="sm">
+                            View Details
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => handleViewTable(table.id)}>
+                            Reserve Now
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Card className="bg-muted/50">
+                    <CardContent className="flex flex-col items-center justify-center py-8">
+                      <div className="rounded-full bg-primary/10 p-3 mb-3">
+                        <Heart className="h-6 w-6 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-medium mb-1">No Favorite Tables</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        You haven't added any tables to your favorites yet.
+                      </p>
+                      <Button onClick={() => router.push("/table-reservation")}>Browse Tables</Button>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             )}
 
@@ -1287,56 +1462,7 @@ export default function ProfileDashboard() {
               </div>
             )}
 
-            {/* Addresses Tab */}
-            {activeTab === "addresses" && (
-              <div className="space-y-6">
-                <h1 className="text-2xl font-bold">My Addresses</h1>
-
-                <div className="space-y-4">
-                  {addresses.map((address) => (
-                    <Card key={address.id}>
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center">
-                            <div className="rounded-full bg-primary/10 p-2 mr-3">
-                              <MapPin className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                              <div className="flex items-center">
-                                <p className="font-medium">{address.name}</p>
-                                {address.isDefault && (
-                                  <Badge className="ml-2 bg-primary/10 text-primary border-primary/20">Default</Badge>
-                                )}
-                              </div>
-                              <p className="text-sm text-muted-foreground">{address.street}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {address.city}, {address.state} {address.zip}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button variant="ghost" size="sm">
-                              Edit
-                            </Button>
-                            {!address.isDefault && (
-                              <Button variant="ghost" size="sm">
-                                Set Default
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-
-                <Button className="mt-4">
-                  <MapPin className="mr-2 h-4 w-4" />
-                  Add New Address
-                </Button>
-              </div>
-            )}
-
+            
             {/* Settings Tab */}
             {activeTab === "settings" && (
               <div className="space-y-6">

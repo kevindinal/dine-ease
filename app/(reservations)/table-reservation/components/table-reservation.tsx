@@ -51,6 +51,9 @@ import { Calendar } from "@/components/ui/calendar"
 import { format } from "date-fns"
 import { TimePicker } from "@/app/(reservations)/table-reservation/components/time-picker"
 
+// Add the import for TableVisualization at the top of the file with other imports
+import TableVisualization from "../components/table-visualization"
+
 // Update the Table interface to include reviews
 interface Table {
   id: string
@@ -124,6 +127,9 @@ export default function TableReservation() {
   const [showDateTimeDialog, setShowDateTimeDialog] = useState(false)
   const [newDate, setNewDate] = useState<Date | undefined>(undefined)
   const [newTime, setNewTime] = useState("")
+
+  // Add the following state variable inside the TableReservation component, after other state declarations
+  const [selectedTableId, setSelectedTableId] = useState<string | undefined>(undefined)
 
   // Additional filters state
   const [showFiltersPopover, setShowFiltersPopover] = useState(false)
@@ -375,6 +381,16 @@ export default function TableReservation() {
 
   const handleTableClick = (tableId: string) => {
     router.push(`/table-reservation/${tableId}?date=${reservationDate}&time=${reservationTime}&guests=${guestCount}`)
+  }
+
+  // Add a function to handle table selection in the visualization
+  const handleTableSelect = (tableId: string) => {
+    setSelectedTableId(tableId)
+    // Find the table in the tables array
+    const selectedTable = tables.find((table) => table.name === tableId)
+    if (selectedTable) {
+      handleTableClick(selectedTable.id)
+    }
   }
 
   // Helper function to format time
@@ -858,6 +874,14 @@ export default function TableReservation() {
           </div>
         </div>
       </motion.div>
+
+      {/* 2D Table Visualization */}
+      <TableVisualization
+        tables={tables}
+        onTableSelect={handleTableSelect}
+        selectedTableId={selectedTableId}
+        reservationTime={reservationTime}
+      />
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
