@@ -8,6 +8,12 @@ interface UseChefsSpecialsReturn {
     error: string | null;
 }
 
+/**
+ * Custom hook to fetch the chef's specials meals for a specific restaurant based on its ID.
+ * - Fetches meals using the `chefsSpecialsService.getChefsSpecials` method.
+ * - Handles loading state while the data is being fetched, and stores any error encountered.
+ * - Returns an object containing the fetched meals, loading status, and error message.
+ */
 export const useChefsSpecials = (restaurantId: string): UseChefsSpecialsReturn => {
     const [meals, setMeals] = useState<Meal[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
