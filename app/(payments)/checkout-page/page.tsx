@@ -67,19 +67,24 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
       setErrorMessage("Stripe has not loaded yet.");
       return;
     }
-
+  
     if (!elements) {
       setErrorMessage("Elements have not loaded yet.");
       return;
     }
-
+  
     if (!clientSecret) {
       setErrorMessage("Payment could not be initialized");
       return;
     }
-
+  
+    if (!user) {
+      setErrorMessage("You must be logged in to make a payment");
+      return;
+    }
+  
     setLoading(true);
-
+  
     // First, submit the payment form to validate inputs
     const { error: submitError } = await elements.submit();
     if (submitError) {
@@ -87,24 +92,29 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
       setLoading(false);
       return;
     }
-
+  
     // Then, confirm the payment with the client secret
-    const { error } = await stripe.confirmPayment({
-      elements: elements, // Ensure elements is not null
-      clientSecret: clientSecret, // Ensure clientSecret is not empty
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      elements: elements,
+      clientSecret: clientSecret,
+      redirect: 'if_required',
       confirmParams: {
         return_url: `${window.location.origin}/payment-success?amount=${amount}`,
       },
     });
-
+  
     if (error) {
       setErrorMessage(error.message || "Payment failed");
       setLoading(false);
+    } else if (paymentIntent && paymentIntent.status === "succeeded") {
+      // Instead of setting paymentSuccess to true, redirect to the success page
+      router.push(`/payment-success?amount=${amount}&payment_intent=${paymentIntent.id}`);
     } else {
-      setPaymentSuccess(true);
+      // Handle other payment intent statuses
       setLoading(false);
+      setErrorMessage("Payment is processing. Please wait...");
     }
-  };
+  };  
 
   // Handle profile navigation
   const handleProfileNavigation = () => {
