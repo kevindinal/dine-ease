@@ -3,41 +3,127 @@
 import { useEffect, useState, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Trash2, Edit, Calendar, Clock, Users, MapPin, ChevronRight, Router } from "lucide-react";
+import { Trash2, Edit, Calendar, Clock, Users, MapPin, ChevronRight } from "lucide-react";
 import { db } from "@/lib/firebase";
-import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import { collection, query, where, orderBy, limit, getDocs, doc, getDoc, updateDoc, DocumentData } from "firebase/firestore";
+import { auth } from "@/lib/firebase"; // Import auth from firebase
+import { onAuthStateChanged } from "firebase/auth"; // Import onAuthStateChanged
 import { Dialog, Transition } from "@headlessui/react";
 import PaymentForm from "../components/PaymentForm";
-import { useRouter } from "next/navigation"; // Import useRouter hook
+import { useRouter } from "next/navigation";
 
-
+// Define type for order items
 type OrderItem = {
   id: string | number;
   name: string;
   price: number;
   quantity: number;
   image: string;
-  [key: string]: any; 
+  portionSize?: string;
+  spiceLevel?: string;
+  drinkPairing?: string;
+  [key: string]: any;
 };
 
+// Define type for reservation
+type Reservation = {
+  date: string;
+  time: string;
+  guests: string;
+  table: string;
+};
+
+// Define type for DetailCard props
+interface DetailCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}
+
 const SummaryPage = () => {
-  const router = useRouter(); // Initialize router
+  const router = useRouter();
   
-  const [reservation, setReservation] = useState<{
-    date: string;
-    time: string;
-    guests: string;
-    table: string;
-  }>({
+  // User ID - Now using state with null as initial value
+  const [userId, setUserId] = useState<string | null>(null);
+  
+  // State for reservation details
+  const [reservation, setReservation] = useState<Reservation>({
     date: "2025-03-17",
     time: "19:00",
     guests: "4",
     table: "12",
   });
 
-  // Fetching Pre-ordered Meals from Local Storage
+  // State for order items and UI controls
   const [items, setItems] = useState<OrderItem[]>([]);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [points, setPoints] = useState<number>(0);
+  const [isLoadingPoints, setIsLoadingPoints] = useState<boolean>(true);
+  const [discountApplied, setDiscountApplied] = useState<boolean>(false);
+  const [totalPrice, setTotalPrice] = useState<number>(0);
+  const [pointsToDeduct, setPointsToDeduct] = useState<number>(0);
 
+  // Listen for authentication state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in
+        setUserId(user.uid);
+        console.log("User signed in with ID:", user.uid);
+      } else {
+        // User is signed out
+        setUserId(null);
+        console.log("User is signed out");
+        // Optionally redirect to login page
+        // router.push('/login');
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
+
+  // Fetch user points from Firebase - Now dependent on userId changes
+  useEffect(() => {
+    const fetchUserPoints = async (): Promise<void> => {
+      try {
+        if (!userId) {
+          console.log("No user ID available, cannot fetch points");
+          setIsLoadingPoints(false);
+          setPoints(0);
+          return;
+        }
+
+        setIsLoadingPoints(true);
+        console.log("Fetching points for user ID:", userId);
+        
+        // Get user document from Firebase
+        const userDocRef = doc(db, "users", userId);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          console.log("User data from Firebase:", userData);
+          // Set points from the user document
+          setPoints(userData.points || 0);
+        } else {
+          console.log("No user document found for ID:", userId);
+          setPoints(0);
+        }
+      } catch (error) {
+        console.error("Error fetching user points:", error);
+        setPoints(0);
+      } finally {
+        setIsLoadingPoints(false);
+      }
+    };
+
+    if (userId) {
+      fetchUserPoints();
+    }
+  }, [userId]); // This effect now runs when userId changes
+
+  // Load pre-order items from localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
@@ -78,15 +164,15 @@ const SummaryPage = () => {
     }
   }, []);
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [points, setPoints] = useState(100);
-  const [discountApplied, setDiscountApplied] = useState(false);
-  const [totalPrice, setTotalPrice] = useState(0);
-
+  // Fetch reservation data from Firebase - Also dependent on userId
   useEffect(() => {
-    const fetchReservation = async () => {
+    const fetchReservation = async (): Promise<void> => {
       try {
-        const userId = "user123";
+        if (!userId) {
+          console.log("No user ID available, cannot fetch reservations");
+          return;
+        }
+
         const q = query(
           collection(db, "reservations"),
           where("userId", "==", userId),
@@ -108,98 +194,137 @@ const SummaryPage = () => {
       }
     };
 
-    fetchReservation();
-  }, []);
-
-  useEffect(() => {
-    if (Array.isArray(items)) {
-      const calculatedTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      setTotalPrice(calculatedTotal);
-    } else {
-      setTotalPrice(0);
+    if (userId) {
+      fetchReservation();
     }
+  }, [userId]); // This effect now runs when userId changes
+
+  // Calculate total price when items change
+  useEffect(() => {
+    const calculatedTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    setTotalPrice(calculatedTotal);
   }, [items]);
 
-  const handleDelete = (id: string | number) => {
-    if (Array.isArray(items)) {
-      // Filter out the item with the matching id
-      const updatedItems = items.filter((item) => item.id !== id);
+  // Handle deletion of items
+  const handleDelete = (id: string | number): void => {
+    // Filter out the item with the matching id
+    const updatedItems = items.filter((item) => item.id !== id);
 
-      // Update the state
-      setItems(updatedItems);
+    // Update the state
+    setItems(updatedItems);
 
-      // Update localStorage consistently
-      if (typeof window !== "undefined") {
-        if (updatedItems.length === 0) {
-          // If no items left, remove the entry from localStorage
-          localStorage.removeItem("preOrders");
-        } else {
-          // Store the updated array in localStorage
-          localStorage.setItem("preOrders", JSON.stringify(updatedItems));
-        }
-      }
-    }
-  };
-
-  // Function to update quantity (increment or decrement)
-  const updateQuantity = (id: string | number, action: 'increment' | 'decrement') => {
-    if (Array.isArray(items)) {
-      const updatedItems = items.map(item => {
-        if (item.id === id) {
-          if (action === 'increment' && item.quantity < 5) {
-            return { ...item, quantity: item.quantity + 1 };
-          } else if (action === 'decrement' && item.quantity > 1) {
-            return { ...item, quantity: item.quantity - 1 };
-          }
-        }
-        return item;
-      });
-  
-      setItems(updatedItems);
-  
-      // Update localStorage
-      if (typeof window !== "undefined") {
+    // Update localStorage consistently
+    if (typeof window !== "undefined") {
+      if (updatedItems.length === 0) {
+        // If no items left, remove the entry from localStorage
+        localStorage.removeItem("preOrders");
+      } else {
+        // Store the updated array in localStorage
         localStorage.setItem("preOrders", JSON.stringify(updatedItems));
       }
     }
   };
 
-  const applyPointsDiscount = () => {
-    if (discountApplied || points <= 0) return;
-    const discount = Math.min(points, totalPrice);
-    setTotalPrice(totalPrice - discount);
-    setPoints(points - discount);
-    setDiscountApplied(true);
+  // Function to update quantity (increment or decrement)
+  const updateQuantity = (id: string | number, action: 'increment' | 'decrement'): void => {
+    const updatedItems = items.map(item => {
+      if (item.id === id) {
+        if (action === 'increment' && item.quantity < 5) {
+          return { ...item, quantity: item.quantity + 1 };
+        } else if (action === 'decrement' && item.quantity > 1) {
+          return { ...item, quantity: item.quantity - 1 };
+        }
+      }
+      return item;
+    });
+
+    setItems(updatedItems);
+
+    // Update localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("preOrders", JSON.stringify(updatedItems));
+    }
   };
 
-  // Function to navigate to order status page
-  const navigateToOrderStatus = () => {
-    // Save payment method info to localStorage or your state management solution
-    if (typeof window !== "undefined") {
-      localStorage.setItem("paymentMethod", "pay_at_restaurant");
+  // Function to update user points in Firebase
+  const updateUserPointsInFirebase = async (newPoints: number): Promise<void> => {
+    try {
+      if (!userId) {
+        console.error("Cannot update points: No user ID available");
+        return;
+      }
+
+      const userDocRef = doc(db, "users", userId);
+      await updateDoc(userDocRef, {
+        points: newPoints
+      });
+      console.log("User points updated successfully in Firebase:", newPoints);
+    } catch (error) {
+      console.error("Error updating user points in Firebase:", error);
     }
+  };
+
+  // Apply points discount to total
+  const applyPointsDiscount = async (): Promise<void> => {
+    if (discountApplied || points <= 0) return;
     
-    // Navigate to order status page
-    router.push("/order-status");
+    const discount = Math.min(points, totalPrice);
+    setPointsToDeduct(discount);
+    setTotalPrice(totalPrice - discount);
+    
+    // Update local state
+    const newPointsValue = points - discount;
+    setPoints(newPointsValue);
+    setDiscountApplied(true);
+    
+    // Update points in Firebase
+    await updateUserPointsInFirebase(newPointsValue);
+  };
+
+  // Function to add points after payment and navigate to order status page
+  const addPointsAndNavigate = async (paymentMethod: string): Promise<void> => {
+    try {
+      if (userId) {
+        // Add 10 points to the user's current points
+        const newPoints = points + 10;
+        setPoints(newPoints);
+        
+        // Update points in Firebase
+        await updateUserPointsInFirebase(newPoints);
+        console.log("Added 10 points for completing a payment");
+      }
+      
+      // Save payment method info to localStorage
+      if (typeof window !== "undefined") {
+        localStorage.setItem("paymentMethod", paymentMethod);
+      }
+      
+      // Navigate to order status page
+      router.push("/order-status");
+    } catch (error) {
+      console.error("Error adding points after payment:", error);
+      // Still navigate to order status even if points update fails
+      router.push("/order-status");
+    }
+  };
+
+  // Function to navigate to order status page after pay at restaurant
+  const navigateToOrderStatus = (): void => {
+    addPointsAndNavigate("pay_at_restaurant");
   };
 
   // Function to handle payment completion
-  const handlePaymentComplete = () => {
+  const handlePaymentComplete = (): void => {
     // Close the payment modal
     setIsOpen(false);
     
-    // Save payment method info to localStorage or your state management solution
-    if (typeof window !== "undefined") {
-      localStorage.setItem("paymentMethod", "paid_online");
-    }
-    
-    // Navigate to order status page
-    router.push("/order-status");
+    // Add points and navigate
+    addPointsAndNavigate("paid_online");
   };
 
   // Helper function to safely render items
-  const renderItems = () => {
-    if (!Array.isArray(items) || items.length === 0) {
+  const renderItems = (): React.ReactNode => {
+    if (items.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-8 bg-white/60 rounded-lg">
           <img src="/empty-plate.svg" alt="No meals" className="w-24 h-24 mb-4 opacity-40" />
@@ -268,8 +393,8 @@ const SummaryPage = () => {
   };
 
   // Helper function to safely render payment summary items
-  const renderPaymentSummaryItems = () => {
-    if (!Array.isArray(items) || items.length === 0) {
+  const renderPaymentSummaryItems = (): React.ReactNode => {
+    if (items.length === 0) {
       return <p className="text-gray-600">No pre-ordered meals.</p>;
     }
 
@@ -288,6 +413,18 @@ const SummaryPage = () => {
     ));
   };
 
+  // Show loading state if user authentication is still being determined
+  if (userId === null) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#FFF5F4] to-white">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FA4032]"></div>
+          <p className="mt-4 text-gray-600">Loading your information...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#FFF5F4] to-white px-4 py-8">
       <Card className="p-0 shadow-lg rounded-xl border border-[#FFE5E2] w-full max-w-4xl mx-auto overflow-hidden">
@@ -296,32 +433,45 @@ const SummaryPage = () => {
             <h2 className="text-2xl font-bold">Order Summary</h2>
             <Button 
               variant="ghost" 
-              size="lg" 
+              size="sm" 
               className="text-white hover:bg-[#FB665B]"
-              onClick={() => router.push('/home-main')}
+              onClick={() => router.push('/cuisine-main-page')}
             >
-              Cancel Order
+              <Edit className="h-4 w-4 mr-1" /> Edit
             </Button>
           </div>
           <div className="mt-2 text-white/80">Complete your reservation details below</div>
         </div>
         <div className="p-6">
-          {/* Your content here */}
-        </div>
           {/* Points display */}
           <div className="bg-gradient-to-r from-[#FFE5E2] to-[#FFF5F4] rounded-lg p-4 mb-6 flex justify-between items-center">
-            <div>
-              <span className="text-gray-700 font-medium">Available Points</span>
-              <p className="text-2xl font-bold text-[#FA4032]">{points}</p>
-            </div>
-            <Button
-              className={`bg-[#FA4032] text-white hover:bg-[#FB665B] ${discountApplied ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-              onClick={applyPointsDiscount}
-              disabled={discountApplied}
-            >
-              {discountApplied ? "Discount Applied" : "Apply Points"}
-            </Button>
+            {isLoadingPoints ? (
+              <div className="animate-pulse w-full">
+                <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
+                <div className="h-6 bg-gray-200 rounded w-1/6"></div>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <span className="text-gray-700 font-medium">Available Points</span>
+                  <p className="text-2xl font-bold text-[#FA4032]">{points}</p>
+                  {discountApplied && (
+                    <p className="text-xs text-green-600 mt-1">
+                      {pointsToDeduct} points applied as discount
+                    </p>
+                  )}
+                </div>
+                <Button
+                  className={`bg-[#FA4032] text-white hover:bg-[#FB665B] ${
+                    discountApplied || points <= 0 ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  onClick={applyPointsDiscount}
+                  disabled={discountApplied || points <= 0}
+                >
+                  {discountApplied ? "Discount Applied" : points <= 0 ? "No Points Available" : "Apply Points"}
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Reservation Details */}
@@ -379,13 +529,13 @@ const SummaryPage = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center text-gray-700">
                 <span>Subtotal</span>
-                <span>Rs.{(Array.isArray(items) ? items.reduce((sum, item) => sum + item.price * item.quantity, 0) : 0).toFixed(2)}</span>
+                <span>Rs.{items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}</span>
               </div>
 
               {discountApplied && (
                 <div className="flex justify-between items-center text-green-600">
                   <span>Points Discount</span>
-                  <span>-Rs.{Math.min(points, totalPrice + (discountApplied ? Math.min(points, totalPrice) : 0)).toFixed(2)}</span>
+                  <span>-Rs.{pointsToDeduct.toFixed(2)}</span>
                 </div>
               )}
 
@@ -394,75 +544,83 @@ const SummaryPage = () => {
                   <span className="text-lg font-semibold text-gray-800">Total:</span>
                   <span className="text-xl font-bold text-[#FA4032]">Rs.{totalPrice.toFixed(2)}</span>
                 </div>
+                
+                {!discountApplied && (
+                  <div className="text-sm text-gray-500 mt-1">
+                    Complete your order to earn 10 loyalty points!
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-         {/* Payment Actions */}
-<div className="flex flex-col md:flex-row gap-4 mt-6">
-  <Button 
-    className="w-full h-14 bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-lg border border-gray-300 font-medium"
-    onClick={() => {
-      // Create a toast or notification message
-      const notification: HTMLDivElement = document.createElement('div');
-      notification.className = 'fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 z-50 animate-fade-in flex items-center';
-      notification.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
-      notification.innerHTML = `
-        <div class="bg-green-100 p-2 rounded-full mr-3">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-          </svg>
+          {/* Payment Actions */}
+          <div className="flex flex-col md:flex-row gap-4 mt-6">
+            <Button 
+              className="w-full h-14 bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-lg border border-gray-300 font-medium"
+              onClick={() => {
+                // Create a toast or notification message
+                const notification: HTMLDivElement = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 z-50 animate-fade-in flex items-center';
+                notification.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+                notification.innerHTML = `
+                  <div class="bg-green-100 p-2 rounded-full mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-gray-900">Thank you!</h3>
+                    <p class="text-sm text-gray-600">You selected to pay at the restaurant</p>
+                    <p class="text-sm text-green-600">You earned 10 loyalty points!</p>
+                  </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Add fade-in animation
+                if (typeof document !== 'undefined') {
+                  const style: HTMLStyleElement = document.createElement('style');
+                  style.innerHTML = `
+                    @keyframes fadeIn {
+                      0% { opacity: 0; transform: translateY(-20px); }
+                      100% { opacity: 1; transform: translateY(0); }
+                    }
+                    .animate-fade-in {
+                      animation: fadeIn 0.3s ease-out forwards;
+                    }
+                  `;
+                  document.head.appendChild(style);
+                }
+                
+                // Navigate to order status page after 4 seconds
+                setTimeout(() => {
+                  // Optional: Add fade-out animation before navigating
+                  notification.style.transition = 'opacity 0.3s, transform 0.3s';
+                  notification.style.opacity = '0';
+                  notification.style.transform = 'translateY(-20px)';
+                  
+                  setTimeout(() => {
+                    // Remove the notification before navigating
+                    if (document.body.contains(notification)) {
+                      document.body.removeChild(notification);
+                    }
+                    // Navigate to order status page with points update
+                    navigateToOrderStatus();
+                  }, 300);
+                }, 4000);
+              }}
+            >
+              Pay at Restaurant <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+            <Button
+              className="w-full h-14 bg-[#FA4032] text-white hover:bg-[#FB665B] rounded-lg font-medium"
+              onClick={() => setIsOpen(true)}
+            >
+              Pay Now <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
         </div>
-        <div>
-          <h3 class="font-bold text-gray-900">Thank you!</h3>
-          <p class="text-sm text-gray-600">You selected to pay at the restaurant</p>
-        </div>
-      `;
-      
-      document.body.appendChild(notification);
-      
-      // Add fade-in animation
-      if (typeof document !== 'undefined') {
-        const style: HTMLStyleElement = document.createElement('style');
-        style.innerHTML = `
-          @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(-20px); }
-            100% { opacity: 1; transform: translateY(0); }
-          }
-          .animate-fade-in {
-            animation: fadeIn 0.3s ease-out forwards;
-          }
-        `;
-        document.head.appendChild(style);
-      }
-      
-      // Navigate to order status page after 4 seconds
-      setTimeout(() => {
-        // Optional: Add fade-out animation before navigating
-        notification.style.transition = 'opacity 0.3s, transform 0.3s';
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateY(-20px)';
-        
-        setTimeout(() => {
-          // Remove the notification before navigating
-          if (document.body.contains(notification)) {
-            document.body.removeChild(notification);
-          }
-          // Navigate to order status page
-          navigateToOrderStatus();
-        }, 300);
-      }, 4000);
-    }}
-  >
-    Pay at Restaurant <ChevronRight className="h-4 w-4 ml-1" />
-  </Button>
-  <Button
-    className="w-full h-14 bg-[#FA4032] text-white hover:bg-[#FB665B] rounded-lg font-medium"
-    onClick={() => setIsOpen(true)}
-  >
-    Pay Now <ChevronRight className="h-4 w-4 ml-1" />
-  </Button>
-</div>
 
         {/* Payment Form Modal */}
         <Transition appear show={isOpen} as={Fragment}>
@@ -503,13 +661,13 @@ const SummaryPage = () => {
 
                         <div className="border-t border-gray-200 mt-3 pt-3 flex justify-between font-semibold">
                           <span>Subtotal:</span>
-                          <span>Rs.{(Array.isArray(items) ? items.reduce((sum, item) => sum + item.price * item.quantity, 0) : 0).toFixed(2)}</span>
+                          <span>Rs.{items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}</span>
                         </div>
 
                         {discountApplied && (
                           <div className="flex justify-between text-green-600 mt-2">
                             <span>Points Discount:</span>
-                            <span>-Rs.{Math.min(points, totalPrice + (discountApplied ? Math.min(points, totalPrice) : 0)).toFixed(2)}</span>
+                            <span>-Rs.{pointsToDeduct.toFixed(2)}</span>
                           </div>
                         )}
 
@@ -517,10 +675,14 @@ const SummaryPage = () => {
                           <span>Total:</span>
                           <span>Rs.{totalPrice.toFixed(2)}</span>
                         </div>
+                        
+                        <div className="bg-green-50 rounded-lg p-2 mt-3 text-green-700 text-sm">
+                          <p className="font-medium">Complete payment to earn 10 loyalty points!</p>
+                        </div>
                       </div>
                     </div>
 
-                    <PaymentForm amount={totalPrice} />
+                    <PaymentForm amount={totalPrice} onPaymentComplete={handlePaymentComplete} />
 
                     <div className="mt-6 flex space-x-3">
                       <Button
@@ -529,7 +691,6 @@ const SummaryPage = () => {
                       >
                         Cancel
                       </Button>
-                      
                     </div>
                   </Dialog.Panel>
                 </Transition.Child>
@@ -542,8 +703,8 @@ const SummaryPage = () => {
   );
 };
 
-// Define DetailCard component - a more visual version of DetailRow
-const DetailCard = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
+// DetailCard component with TypeScript props
+const DetailCard = ({ icon, label, value }: DetailCardProps) => (
   <div className="flex flex-col items-center bg-gray-50 p-3 rounded-lg">
     <div className="mb-1">{icon}</div>
     <span className="text-xs text-gray-500">{label}</span>
@@ -551,5 +712,5 @@ const DetailCard = ({ icon, label, value }: { icon: React.ReactNode; label: stri
   </div>
 );
 
-
 export default SummaryPage;
+
