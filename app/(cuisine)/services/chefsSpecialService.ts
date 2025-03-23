@@ -5,6 +5,13 @@ import { Category } from "../types/category";
 import { Meal } from "../types/meal";
 
 export const chefsSpecialsService = {
+/**
+Fetches the chef's specials for a specific restaurant from the Firestore database.
+ * This function queries the "categories" collection for a given restaurant and retrieves all meals within each category. 
+ * It then filters out the meals that are marked as chef's specials and returns a flat list of these meals.
+ * If no chef's specials are found, it returns `null`.
+ * If an error occurs during the fetch operation, it logs the error and rethrows it.
+ */
     getChefsSpecials: async (restaurantId: string): Promise<Meal[] | null> => {
         try {
             const mealsRef = collection(db, "restaurants", restaurantId, "categories");

@@ -33,27 +33,52 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
   const [modelViewerLoading, setModelViewerLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
+  // Destructure values returned from the useMealsById custom hook
   const { meal, loading, error, categoryId: resolvedCategoryId } = useMealsById(mealId, restaurantId, categoryIdFromUrl);
 
+  /**
+ * Effect to reset meal-related UI states when a new meal is loaded.
+ * - Ensures the first image is shown.
+ * - Clears any image loading errors.
+ * - Hides the AR (Augmented Reality) view.
+ * - Resets the quantity to default (1).
+ * 
+ * Dependencies:
+ * - Runs when 'meal' changes, ensuring state is reset upon meal selection/update.
+ */
   useEffect(() => {
     setCurrentImageIndex(0);
     setImageError(null);
-    // Reset AR view when meal changes
     setShowAR(false);
     setQuantity(1);
   }, [meal]);
 
+  /**
+ * Effect to check if the category ID from the URL matches the resolved category ID.
+ * - Logs a message if there is a mismatch between the categoryIdFromUrl and resolvedCategoryId.
+ * 
+ * Dependencies:
+ * - Runs whenever mealId, restaurantId, categoryIdFromUrl, or resolvedCategoryId changes.
+ * - Ensures the check is performed when any of these values update.
+ */
   useEffect(() => {
     if (categoryIdFromUrl && resolvedCategoryId !== categoryIdFromUrl) {
       console.log("Category ID from URL does not match resolved category ID");
-    } 
+    }
   }, [mealId, restaurantId, categoryIdFromUrl, resolvedCategoryId]);
 
-  // Handle model viewer loading state
+  /**
+ * Effect to handle AR model loading state.
+ * - When 'showAR' is enabled, it triggers a loading state.
+ * - Uses a timeout to simulate model loading for 1 second.
+ * - Cleans up the timer on unmount or when 'showAR' changes to prevent memory leaks.
+ * 
+ * Dependencies:
+ * - Runs only when 'showAR' changes, ensuring loading state updates accordingly.
+ */ 
   useEffect(() => {
     if (showAR) {
       setModelViewerLoading(true);
-      // Simulate loading completion after components are mounted
       const timer = setTimeout(() => {
         setModelViewerLoading(false);
       }, 1000);
@@ -95,7 +120,7 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
           </div>
           <div className="text-lg font-medium text-gray-700 mb-2">Meal Not Found</div>
           <div className="text-gray-500">We couldn't find the meal you're looking for.</div>
-          <button 
+          <button
             onClick={() => window.history.back()}
             className="mt-6 px-4 py-2 bg-red-500 text-white rounded-lg flex items-center"
           >
@@ -105,7 +130,16 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
       </div>
     );
   }
-
+/**
+ * Function to retrieve carousel images for a meal.
+ * - If 'meal.carouselImages' is available and valid, it returns the array.
+ * - If only a single meal image exists, it wraps it in an array.
+ * - If no images exist, it falls back to a default placeholder image.
+ * - Handles errors gracefully and updates the image error state.
+ * 
+ * Return:
+ * - An array of image URLs.
+ */
   const getCarouselImages = () => {
     let images: string[] = [];
 
@@ -133,11 +167,18 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
     setCurrentImageIndex(0);
   }
 
+  /**
+ * Function to handle adding a meal to the pre-order list.
+ * - Collects and structures meal details, including selected customizations.
+ * - Ensures a valid meal image is assigned (either main image or fallback).
+ * - Logs the customization details for debugging purposes.
+ * - Calls `handleAddToPreOrder` to update the pre-order list.
+ */
   const handleAddToPreOrderFromCard = () => {
     const customizations = {
       id: meal.id,
       name: meal.name,
-      price: calculateTotalPrice(), // This is the price of a single item
+      price: calculateTotalPrice(), 
       basePrice: meal.price,
       image: meal.image || (carouselImages.length > 0 ? carouselImages[0] : null),
       size: selectedSize,
@@ -145,13 +186,12 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
       addOns,
       drink: selectedDrink,
       categoryId: resolvedCategoryId,
-      quantity: quantity // This should be handled correctly in the parent component
+      quantity: quantity 
     };
     console.log('Adding to pre-order:', customizations);
-    // Only send this item once, with the quantity property indicating how many
     handleAddToPreOrder(customizations);
   };
-  
+
   const calculateTotalPrice = () => {
     let total = meal.price;
 
@@ -166,7 +206,6 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
     return total;
   };
 
-  // Format price with commas for thousands
   const formatPrice = (price: number) => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
@@ -193,17 +232,17 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
 
           <div className="bg-white rounded-xl shadow-sm p-4 space-y-4">
             <div className="mb-2 flex justify-between items-center">
-              
+
               <div className="bg-gray-100 rounded-lg p-1">
-                <button 
-                  onClick={() => setShowAR(false)} 
+                <button
+                  onClick={() => setShowAR(false)}
                   className={`px-4 py-2 text-sm rounded-lg flex items-center ${!showAR ? 'bg-red-500 text-white shadow-sm' : 'bg-transparent text-gray-700'}`}
                 >
                   <ImageIcon size={16} className="mr-2" />
                   Photos
                 </button>
-                <button 
-                  onClick={() => setShowAR(true)} 
+                <button
+                  onClick={() => setShowAR(true)}
                   className={`px-4 py-2 text-sm rounded-lg flex items-center ${showAR ? 'bg-red-500 text-white shadow-sm' : 'bg-transparent text-gray-700'} ${!meal.arModelUrl ? 'opacity-50 cursor-not-allowed' : ''}`}
                   disabled={!meal.arModelUrl}
                 >
@@ -263,9 +302,8 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
               {carouselImages.map((img, index) => (
                 <div
                   key={index}
-                  className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer bg-gray-100 transition-all hover:opacity-90 ${
-                    index === currentImageIndex ? "ring-2 ring-red-500 shadow-md" : ""
-                  }`}
+                  className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer bg-gray-100 transition-all hover:opacity-90 ${index === currentImageIndex ? "ring-2 ring-red-500 shadow-md" : ""
+                    }`}
                   onClick={() => setCurrentImageIndex(index)}
                 >
                   <Image
@@ -319,11 +357,10 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
                   ].map((size) => (
                     <button
                       key={size.name}
-                      className={`p-3 border rounded-lg transition-all hover:border-red-300 ${
-                        selectedSize === size.name 
-                          ? "bg-red-50 border-red-500 text-red-700 font-medium" 
+                      className={`p-3 border rounded-lg transition-all hover:border-red-300 ${selectedSize === size.name
+                          ? "bg-red-50 border-red-500 text-red-700 font-medium"
                           : "text-gray-700 hover:bg-gray-50"
-                      }`}
+                        }`}
                       onClick={() => setSelectedSize(size.name)}
                     >
                       <div className="text-sm mb-1">{size.name}</div>
@@ -341,11 +378,10 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
                   {["Mild", "Medium", "Hot"].map((level) => (
                     <button
                       key={level}
-                      className={`p-3 border rounded-lg transition-all hover:border-red-300 ${
-                        spiceLevel === level 
-                          ? "bg-red-50 border-red-500 text-red-700 font-medium" 
+                      className={`p-3 border rounded-lg transition-all hover:border-red-300 ${spiceLevel === level
+                          ? "bg-red-50 border-red-500 text-red-700 font-medium"
                           : "text-gray-700 hover:bg-gray-50"
-                      }`}
+                        }`}
                       onClick={() => setSpiceLevel(level)}
                     >
                       <div className="text-sm">{level}</div>
@@ -358,16 +394,15 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
                 <h3 className="text-sm font-medium text-gray-700 mb-2">Add-ons</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { name: "Extra Avocado", price: 200 },
+                    { name: "Extra Beef", price: 200 },
                     { name: "Extra Salmon", price: 600 },
                     { name: "Extra Sauce", price: 100 },
                     { name: "Brown Rice", price: 150 }
                   ].map((addon) => (
-                    <label 
-                      key={addon.name} 
-                      className={`text-black flex items-center p-3 border rounded-lg cursor-pointer transition-all hover:bg-gray-50 ${
-                        addOns.includes(addon.name) ? "bg-red-50 border-red-300" : ""
-                      }`}
+                    <label
+                      key={addon.name}
+                      className={`text-black flex items-center p-3 border rounded-lg cursor-pointer transition-all hover:bg-gray-50 ${addOns.includes(addon.name) ? "bg-red-50 border-red-300" : ""
+                        }`}
                     >
                       <input
                         type="checkbox"
@@ -396,11 +431,10 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
                   {["Water", "Lemonade", "Iced Tea", "Soda"].map((drink) => (
                     <button
                       key={drink}
-                      className={`p-3 border rounded-lg transition-all hover:border-red-300 ${
-                        selectedDrink === drink 
-                          ? "bg-red-50 border-red-500 text-red-700 font-medium" 
+                      className={`p-3 border rounded-lg transition-all hover:border-red-300 ${selectedDrink === drink
+                          ? "bg-red-50 border-red-500 text-red-700 font-medium"
                           : "text-gray-700 hover:bg-gray-50"
-                      }`}
+                        }`}
                       onClick={() => setSelectedDrink(drink)}
                     >
                       <div className="text-sm">{drink}</div>
@@ -425,11 +459,11 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
               )}
               {addOns.length > 0 && addOns.map(addon => {
                 let price = 0;
-                if (addon === "Extra Avocado") price = 200;
+                if (addon === "Extra Beef") price = 200;
                 if (addon === "Extra Salmon") price = 600;
                 if (addon === "Extra Sauce") price = 100;
                 if (addon === "Brown Rice") price = 150;
-                
+
                 return (
                   <div key={addon} className="flex justify-between mb-2">
                     <span className=" text-black">{addon}:</span>

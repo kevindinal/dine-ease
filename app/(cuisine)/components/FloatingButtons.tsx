@@ -21,7 +21,6 @@ const FloatingButtons: FC<FloatingButtonsProps> = ({
 }) => {
   const router = useRouter();
   
-  // State for popup visibility
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [cancelAlertOpen, setCancelAlertOpen] = useState(false);
   const [checkoutConfirmOpen, setCheckoutConfirmOpen] = useState(false);
@@ -50,7 +49,6 @@ const FloatingButtons: FC<FloatingButtonsProps> = ({
     router.push("/payment-page");
   };
 
-  // Calculate total price of all items in the pre-order
   const totalPrice = preOrders.reduce((sum, item) => {
     return sum + (item.price * item.quantity);
   }, 0);
@@ -108,7 +106,6 @@ const FloatingButtons: FC<FloatingButtonsProps> = ({
         </div>
       </div>
 
-      {/* Popups */}
       <ConfirmPopup
         isOpen={cancelConfirmOpen}
         message="Are you sure you want to remove the pre-order items?"
