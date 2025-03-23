@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useEffect, useState, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,6 +12,7 @@ import { onAuthStateChanged } from "firebase/auth"; // Import onAuthStateChanged
 import { Dialog, Transition } from "@headlessui/react";
 import PaymentForm from "../components/PaymentForm";
 import { useRouter } from "next/navigation";
+
 
 // Define type for order items
 type OrderItem = {
@@ -25,6 +27,7 @@ type OrderItem = {
   [key: string]: any;
 };
 
+
 // Define type for reservation
 type Reservation = {
   date: string;
@@ -33,6 +36,7 @@ type Reservation = {
   table: string;
 };
 
+
 // Define type for DetailCard props
 interface DetailCardProps {
   icon: React.ReactNode;
@@ -40,12 +44,11 @@ interface DetailCardProps {
   value: string;
 }
 
+
 const SummaryPage = () => {
   const router = useRouter();
-  
   // User ID - Now using state with null as initial value
   const [userId, setUserId] = useState<string | null>(null);
-  
   // State for reservation details
   const [reservation, setReservation] = useState<Reservation>({
     date: "2025-03-17",
@@ -54,6 +57,7 @@ const SummaryPage = () => {
     table: "12",
   });
 
+
   // State for order items and UI controls
   const [items, setItems] = useState<OrderItem[]>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -61,6 +65,7 @@ const SummaryPage = () => {
   const [isLoadingPoints, setIsLoadingPoints] = useState<boolean>(true);
   const [discountApplied, setDiscountApplied] = useState<boolean>(false);
   const [totalPrice, setTotalPrice] = useState<number>(0);
+
 
   // Listen for authentication state changes
   useEffect(() => {
@@ -78,9 +83,11 @@ const SummaryPage = () => {
       }
     });
 
+
     // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
+
 
   // Fetch user points from Firebase - Now dependent on userId changes
   useEffect(() => {
@@ -93,13 +100,14 @@ const SummaryPage = () => {
           return;
         }
 
+
         setIsLoadingPoints(true);
         console.log("Fetching points for user ID:", userId);
-        
+
         // Get user document from Firebase
         const userDocRef = doc(db, "users", userId);
         const userDoc = await getDoc(userDocRef);
-        
+
         if (userDoc.exists()) {
           const userData = userDoc.data();
           console.log("User data from Firebase:", userData);
@@ -117,10 +125,12 @@ const SummaryPage = () => {
       }
     };
 
+
     if (userId) {
       fetchUserPoints();
     }
   }, [userId]); // This effect now runs when userId changes
+
 
   // Load pre-order items from localStorage
   useEffect(() => {
@@ -129,8 +139,10 @@ const SummaryPage = () => {
         // Get preOrder data from localStorage
         const savedItems = localStorage.getItem("preOrders");
 
+
         if (savedItems) {
           const parsedData = JSON.parse(savedItems);
+
 
           // If parsedData is an array, use it directly
           if (Array.isArray(parsedData)) {
@@ -163,40 +175,53 @@ const SummaryPage = () => {
     }
   }, []);
 
+
   // Fetch reservation data from Firebase - Also dependent on userId
-  useEffect(() => {
-    const fetchReservation = async (): Promise<void> => {
-      try {
-        if (!userId) {
-          console.log("No user ID available, cannot fetch reservations");
-          return;
-        }
-
-        const q = query(
-          collection(db, "reservations"),
-          where("userId", "==", userId),
-          orderBy("createdAt", "desc"),
-          limit(1)
-        );
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-          const data = querySnapshot.docs[0].data();
+  // Replace the Firebase reservation fetch useEffect with this localStorage implementation
+// Updated useEffect for retrieving reservation from localStorage with date formatting
+useEffect(() => {
+  const fetchReservation = (): void => {
+    try {
+      if (typeof window !== "undefined") {
+        const savedReservation = localStorage.getItem("reservation");
+        
+        if (savedReservation) {
+          const parsedReservation = JSON.parse(savedReservation);
+          
+          // Format the date to extract just the YYYY-MM-DD portion
+          let formattedDate = parsedReservation.date;
+          
+          // Check if the date is in ISO format and extract just the date part
+          if (parsedReservation.date && parsedReservation.date.includes('T')) {
+            formattedDate = parsedReservation.date.split('T')[0];
+          }
+          
+          // Set state with parsed data (with fallbacks for missing fields)
           setReservation({
-            date: data.date,
-            time: data.time,
-            guests: data.guests,
-            table: data.table,
+            date: formattedDate || "2025-03-17",
+            time: parsedReservation.time || "19:00",
+            guests: parsedReservation.guests || "4",
+            table: parsedReservation.table || "12",
           });
+          
+          console.log("Loaded reservation from localStorage:", {
+            ...parsedReservation,
+            date: formattedDate
+          });
+        } else {
+          console.log("No saved reservation found in localStorage");
+          // Default values are already set in the initial state
         }
-      } catch (error) {
-        console.error("Error fetching reservation:", error);
       }
-    };
-
-    if (userId) {
-      fetchReservation();
+    } catch (error) {
+      console.error("Error loading reservation from localStorage:", error);
+      // Default values are already set in the initial state
     }
-  }, [userId]); // This effect now runs when userId changes
+  };
+
+  fetchReservation();
+}, []);
+
 
   // Calculate total price when items change
   useEffect(() => {
@@ -204,13 +229,16 @@ const SummaryPage = () => {
     setTotalPrice(calculatedTotal);
   }, [items]);
 
+
   // Handle deletion of items
   const handleDelete = (id: string | number): void => {
     // Filter out the item with the matching id
     const updatedItems = items.filter((item) => item.id !== id);
 
+
     // Update the state
     setItems(updatedItems);
+
 
     // Update localStorage consistently
     if (typeof window !== "undefined") {
@@ -223,6 +251,7 @@ const SummaryPage = () => {
       }
     }
   };
+
 
   // Function to update quantity (increment or decrement)
   const updateQuantity = (id: string | number, action: 'increment' | 'decrement'): void => {
@@ -237,13 +266,16 @@ const SummaryPage = () => {
       return item;
     });
 
+
     setItems(updatedItems);
+
 
     // Update localStorage
     if (typeof window !== "undefined") {
       localStorage.setItem("preOrders", JSON.stringify(updatedItems));
     }
   };
+
 
   // Apply points discount to total
   const applyPointsDiscount = (): void => {
@@ -254,30 +286,33 @@ const SummaryPage = () => {
     setDiscountApplied(true);
   };
 
+
   // Function to navigate to order status page
   const navigateToOrderStatus = (): void => {
     // Save payment method info to localStorage
     if (typeof window !== "undefined") {
       localStorage.setItem("paymentMethod", "pay_at_restaurant");
     }
-    
+
     // Navigate to order status page
     router.push("/order-status");
   };
+
 
   // Function to handle payment completion
   const handlePaymentComplete = (): void => {
     // Close the payment modal
     setIsOpen(false);
-    
+
     // Save payment method info to localStorage
     if (typeof window !== "undefined") {
       localStorage.setItem("paymentMethod", "paid_online");
     }
-    
+
     // Navigate to order status page
     router.push("/order-status");
   };
+
 
   // Helper function to safely render items
   const renderItems = (): React.ReactNode => {
@@ -293,6 +328,7 @@ const SummaryPage = () => {
       );
     }
 
+
     return items.map((item, index) => (
       <div key={`order-item-${item.id}-${index}`} className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm mb-3 hover:shadow-md transition-shadow">
         <div className="flex items-center space-x-4">
@@ -301,7 +337,7 @@ const SummaryPage = () => {
             <p className="font-semibold text-gray-900">{item.name}</p>
             <div className="flex items-center space-x-2 mt-1">
               <div className="flex items-center px-2 py-0.5 bg-[#FFF0EF] text-[#FA4032] text-xs font-medium rounded-full">
-                <button 
+                <button
                   onClick={() => updateQuantity(item.id, 'decrement')}
                   className="mr-2 hover:bg-[#FFD5D2] rounded-full w-4 h-4 flex items-center justify-center"
                   disabled={item.quantity <= 1}
@@ -309,7 +345,7 @@ const SummaryPage = () => {
                   -
                 </button>
                 <span>x{item.quantity}</span>
-                <button 
+                <button
                   onClick={() => updateQuantity(item.id, 'increment')}
                   className="ml-2 hover:bg-[#FFD5D2] rounded-full w-4 h-4 flex items-center justify-center"
                 >
@@ -349,11 +385,13 @@ const SummaryPage = () => {
     ));
   };
 
+
   // Helper function to safely render payment summary items
   const renderPaymentSummaryItems = (): React.ReactNode => {
     if (items.length === 0) {
       return <p className="text-gray-600">No pre-ordered meals.</p>;
     }
+
 
     return items.map((item, index) => (
       <div key={`payment-item-${item.id}-${index}`} className="flex justify-between py-2 border-b border-gray-100 last:border-none">
@@ -370,6 +408,7 @@ const SummaryPage = () => {
     ));
   };
 
+
   // Show loading state if user authentication is still being determined
   if (userId === null) {
     return (
@@ -381,6 +420,7 @@ const SummaryPage = () => {
       </div>
     );
   }
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#FFF5F4] to-white px-4 py-8">
@@ -414,9 +454,8 @@ const SummaryPage = () => {
                   <p className="text-2xl font-bold text-[#FA4032]">{points}</p>
                 </div>
                 <Button
-                  className={`bg-[#FA4032] text-white hover:bg-[#FB665B] ${
-                    discountApplied || points <= 0 ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
+                  className={`bg-[#FA4032] text-white hover:bg-[#FB665B] ${discountApplied || points <= 0 ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   onClick={applyPointsDiscount}
                   disabled={discountApplied || points <= 0}
                 >
@@ -426,9 +465,11 @@ const SummaryPage = () => {
             )}
           </div>
 
+
           {/* Reservation Details */}
           <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
             <h3 className="text-lg font-semibold mb-4 text-gray-800">Reservation Details</h3>
+
 
             {reservation ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -468,15 +509,18 @@ const SummaryPage = () => {
             )}
           </div>
 
+
           {/* Pre-ordered Meals */}
           <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
             <h3 className="text-lg font-semibold mb-4 text-gray-800">Pre-ordered Meals</h3>
             {renderItems()}
           </div>
 
+
           {/* Payment Summary */}
           <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
             <h3 className="text-lg font-semibold mb-3 text-gray-800">Payment Summary</h3>
+
 
             <div className="space-y-3">
               <div className="flex justify-between items-center text-gray-700">
@@ -484,12 +528,14 @@ const SummaryPage = () => {
                 <span>Rs.{items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}</span>
               </div>
 
+
               {discountApplied && (
                 <div className="flex justify-between items-center text-green-600">
                   <span>Points Discount</span>
                   <span>-Rs.{Math.min(points, totalPrice + (discountApplied ? Math.min(points, totalPrice) : 0)).toFixed(2)}</span>
                 </div>
               )}
+
 
               <div className="border-t border-dashed border-gray-200 pt-3 mt-3">
                 <div className="flex justify-between items-center">
@@ -500,9 +546,10 @@ const SummaryPage = () => {
             </div>
           </div>
 
+
           {/* Payment Actions */}
           <div className="flex flex-col md:flex-row gap-4 mt-6">
-            <Button 
+            <Button
               className="w-full h-14 bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-lg border border-gray-300 font-medium"
               onClick={() => {
                 // Create a toast or notification message
@@ -510,41 +557,41 @@ const SummaryPage = () => {
                 notification.className = 'fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 z-50 animate-fade-in flex items-center';
                 notification.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
                 notification.innerHTML = `
-                  <div class="bg-green-100 p-2 rounded-full mr-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 class="font-bold text-gray-900">Thank you!</h3>
-                    <p class="text-sm text-gray-600">You selected to pay at the restaurant</p>
-                  </div>
-                `;
-                
+                 <div class="bg-green-100 p-2 rounded-full mr-3">
+                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                   </svg>
+                 </div>
+                 <div>
+                   <h3 class="font-bold text-gray-900">Thank you!</h3>
+                   <p class="text-sm text-gray-600">You selected to pay at the restaurant</p>
+                 </div>
+               `;
+
                 document.body.appendChild(notification);
-                
+
                 // Add fade-in animation
                 if (typeof document !== 'undefined') {
                   const style: HTMLStyleElement = document.createElement('style');
                   style.innerHTML = `
-                    @keyframes fadeIn {
-                      0% { opacity: 0; transform: translateY(-20px); }
-                      100% { opacity: 1; transform: translateY(0); }
-                    }
-                    .animate-fade-in {
-                      animation: fadeIn 0.3s ease-out forwards;
-                    }
-                  `;
+                   @keyframes fadeIn {
+                     0% { opacity: 0; transform: translateY(-20px); }
+                     100% { opacity: 1; transform: translateY(0); }
+                   }
+                   .animate-fade-in {
+                     animation: fadeIn 0.3s ease-out forwards;
+                   }
+                 `;
                   document.head.appendChild(style);
                 }
-                
+
                 // Navigate to order status page after 4 seconds
                 setTimeout(() => {
                   // Optional: Add fade-out animation before navigating
                   notification.style.transition = 'opacity 0.3s, transform 0.3s';
                   notification.style.opacity = '0';
                   notification.style.transform = 'translateY(-20px)';
-                  
+
                   setTimeout(() => {
                     // Remove the notification before navigating
                     if (document.body.contains(notification)) {
@@ -567,6 +614,7 @@ const SummaryPage = () => {
           </div>
         </div>
 
+
         {/* Payment Form Modal */}
         <Transition appear show={isOpen} as={Fragment}>
           <Dialog as="div" className="relative z-10" onClose={() => setIsOpen(false)}>
@@ -581,6 +629,7 @@ const SummaryPage = () => {
             >
               <div className="fixed inset-0 bg-black bg-opacity-60" />
             </Transition.Child>
+
 
             <div className="fixed inset-0 overflow-y-auto">
               <div className="flex min-h-full items-center justify-center p-4">
@@ -598,16 +647,19 @@ const SummaryPage = () => {
                       Payment Details
                     </Dialog.Title>
 
+
                     {/* Display pre-ordered meals in payment summary */}
                     <div className="mb-6">
                       <h4 className="font-medium mb-3 text-gray-700">Pre-ordered Items:</h4>
                       <div className="bg-gray-50 rounded-lg p-4">
                         {renderPaymentSummaryItems()}
 
+
                         <div className="border-t border-gray-200 mt-3 pt-3 flex justify-between font-semibold">
                           <span>Subtotal:</span>
                           <span>Rs.{items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}</span>
                         </div>
+
 
                         {discountApplied && (
                           <div className="flex justify-between text-green-600 mt-2">
@@ -616,6 +668,7 @@ const SummaryPage = () => {
                           </div>
                         )}
 
+
                         <div className="flex justify-between font-bold text-[#FA4032] mt-2 text-lg">
                           <span>Total:</span>
                           <span>Rs.{totalPrice.toFixed(2)}</span>
@@ -623,7 +676,9 @@ const SummaryPage = () => {
                       </div>
                     </div>
 
+
                     <PaymentForm amount={totalPrice} onPaymentComplete={handlePaymentComplete} />
+
 
                     <div className="mt-6 flex space-x-3">
                       <Button
@@ -644,6 +699,7 @@ const SummaryPage = () => {
   );
 };
 
+
 // DetailCard component with TypeScript props
 const DetailCard = ({ icon, label, value }: DetailCardProps) => (
   <div className="flex flex-col items-center bg-gray-50 p-3 rounded-lg">
@@ -653,4 +709,6 @@ const DetailCard = ({ icon, label, value }: DetailCardProps) => (
   </div>
 );
 
+
 export default SummaryPage;
+
