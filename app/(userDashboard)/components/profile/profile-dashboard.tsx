@@ -406,7 +406,7 @@ export default function ProfileDashboard() {
                 seats: tableData.seats || 0,
                 price: tableData.price,
                 status: tableData.status || "unknown",
-                imageUrl: tableData.imageUrl || "/placeholder.svg?height=80&width=80",
+                imageUrl: tableData.imageUrls[0] || "/placeholder.svg?height=80&width=80",
                 rating: tableData.rating || 4.5,
                 cuisine: tableData.cuisine || "Various",
                 lastVisited: "Recently",
