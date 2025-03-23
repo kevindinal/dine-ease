@@ -60,7 +60,7 @@ const FloatingButtons: FC<FloatingButtonsProps> = ({
           {preOrderCount > 0 && (
             <div className="flex justify-between items-center mb-3 text-sm text-gray-600">
               <span>{preOrderCount} {preOrderCount === 1 ? 'item' : 'items'}</span>
-              <span className="font-medium text-gray-800">Total: ${totalPrice.toFixed(2)}</span>
+              <span className="font-medium text-gray-800">Total: Rs.{totalPrice.toFixed(2)}</span>
             </div>
           )}
           
