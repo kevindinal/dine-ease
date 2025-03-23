@@ -12,10 +12,10 @@ if (!process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY) {
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
-interface PaymentFormProps {
+type PaymentFormProps = {
   amount: number;
   onPaymentComplete: () => void;
-}
+};
 
 const PaymentForm: React.FC<PaymentFormProps> = ({ amount }) => {
   // Ensure the amount is valid before proceeding
@@ -29,6 +29,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount }) => {
     );
   }
 
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#FA4032] to-[#FB665B] p-6">
       <div className="w-full max-w-2xl bg-white shadow-2xl rounded-2xl overflow-hidden">
@@ -39,12 +40,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount }) => {
             <p className="mt-2 text-lg">Complete your transaction safely</p>
           </div>
 
+
           {/* Scrollable Payment Info Section */}
           <div className="p-6 flex-grow">
             <p className="text-xl font-semibold text-gray-800 text-center">
               You are about to pay{" "}
               <span className="text-[#FA4032] font-bold">Rs.{amount.toFixed(2)}</span>
             </p>
+
 
             {/* Stripe Elements for payment processing */}
             <Elements
@@ -61,6 +64,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount }) => {
             </Elements>
           </div>
 
+
           {/* Footer Section */}
           <div className="text-center text-gray-500 text-sm p-4 border-t">
             Payments are secured & encrypted with <span className="font-semibold">Stripe</span>.
@@ -71,5 +75,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount }) => {
   );
 };
 
+
 export default PaymentForm;
+
+
+
+
 
