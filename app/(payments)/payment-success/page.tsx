@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
@@ -9,23 +7,24 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/lib/firebase";
 import { Loader2, CheckCircle, AlertCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { usePoints } from "../hooks/usePoints";
 
 const PaymentSuccessPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [user] = useAuthState(auth);
   const { processOrder, loading, error, orderSuccess, preOrders } = useOrder();
-  const { addPoints } = usePoints(user?.uid || "");
   
   const [processingOrder, setProcessingOrder] = useState(true);
   const [orderProcessed, setOrderProcessed] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
-  const [pointsAwarded, setPointsAwarded] = useState(false);
+  const [orderState, setOrderState] = useState({
+    isTableReady: false,
+    isMealReady: false,
+    isReservationReady: false
+  });
   
   // Use a ref to track if the order has been processed
   const hasProcessedOrder = useRef(false);
-  const hasAwardedPoints = useRef(false);
 
   // Get parameters from URL
   const amount = searchParams.get("amount") ? parseInt(searchParams.get("amount")!) : 0;
@@ -44,13 +43,13 @@ const PaymentSuccessPage = () => {
         // If user is not loaded yet, wait
         return;
       }
-
+  
       if (!paymentIntentId) {
         // If payment intent is missing, something went wrong
         setProcessingOrder(false);
         return;
       }
-
+  
       try {
         // Set the ref BEFORE processing to prevent race conditions
         hasProcessedOrder.current = true;
@@ -63,24 +62,23 @@ const PaymentSuccessPage = () => {
           paymentIntentId,
           preOrders // This is now directly accessed from useOrder
         );
-
+  
         if (newOrderId) {
           setOrderId(newOrderId);
           setOrderProcessed(true);
-          console.log("Order processed successfully with ID:", newOrderId);
+
           
-          // Award points to the user after order is processed
-          if (!hasAwardedPoints.current && user) {
-            try {
-              hasAwardedPoints.current = true;
-              const success = await addPoints(10); // Add 10 points
-              setPointsAwarded(success);
-              console.log("Points awarded successfully:", success);
-            } catch (pointsError) {
-              console.error("Error awarding points:", pointsError);
-              // Continue with payment success even if points failed
-            }
-          }
+          // Initialize order status states (all false by default)
+          setOrderState({
+            isTableReady: false,
+            isMealReady: false,
+            isReservationReady: false
+          });
+          
+
+          // Save the order ID to localStorage
+          localStorage.setItem('currentOrderId', newOrderId);
+          console.log("Order processed successfully with ID:", newOrderId);
         }
       } catch (err) {
         console.error("Failed to create order:", err);
@@ -88,7 +86,7 @@ const PaymentSuccessPage = () => {
         setProcessingOrder(false);
       }
     };
-
+  
     // Only attempt to process the order if conditions are met and we haven't already processed it
     if (user && paymentIntentId && !hasProcessedOrder.current) {
       handleOrderCreation();
@@ -177,12 +175,6 @@ const PaymentSuccessPage = () => {
           </div>
           <h1 className="mt-6 text-2xl font-bold text-gray-800">Payment Successful!</h1>
           <p className="mt-2 text-gray-500">Thank you for your order.</p>
-          
-          {pointsAwarded && (
-            <div className="mt-4 bg-yellow-50 p-3 rounded-md border border-yellow-200 w-full text-center">
-              <p className="text-yellow-800 font-medium">You earned 10 reward points! 🎉</p>
-            </div>
-          )}
         </div>
         
         <div className="space-y-4">
