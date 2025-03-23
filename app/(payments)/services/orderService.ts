@@ -1,6 +1,6 @@
 import { db } from "@/lib/firebase";
 import { collection, doc, setDoc, updateDoc, arrayUnion, serverTimestamp, getDoc, getDocs, query, limit, or } from "firebase/firestore";
-import { Order, UserOrder } from "../types/Order";
+import { Order, UserOrder } from "../types/order";
 import { PreOrderItem } from "@/app/(cuisine)/types/preOrderTypes";
 import { create } from "domain";
 
