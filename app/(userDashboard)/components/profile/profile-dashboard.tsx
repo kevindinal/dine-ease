@@ -349,6 +349,8 @@ export default function ProfileDashboard() {
   const [showMobileNav, setShowMobileNav] = useState(false)
   const [favoriteTables, setFavoriteTables] = useState<FavoriteTable[]>([])
   const [loading, setLoading] = useState(true)
+  const [localUser, setLocalUser] = useState<any>(null)
+
   const router = useRouter()
 
   useEffect(() => {
@@ -362,6 +364,23 @@ export default function ProfileDashboard() {
     return () => {
       window.removeEventListener("resize", checkMobile)
     }
+  }, [])
+
+   // Fetch user data from local storage
+   useEffect(() => {
+    const fetchUserData = () => {
+      try {
+        const storedUser = localStorage.getItem("user")
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser)
+          setLocalUser(parsedUser)
+        }
+      } catch (error) {
+        console.error("Error fetching user data from local storage:", error)
+      }
+    }
+
+    fetchUserData()
   }, [])
 
   // Fetch favorite tables from Firebase
@@ -430,6 +449,7 @@ export default function ProfileDashboard() {
 
   const handleLogout = () => {
     // Implement logout functionality
+    localStorage.removeItem('user')
     router.push("/sign-in")
   }
 
@@ -497,13 +517,13 @@ export default function ProfileDashboard() {
       {/* Mobile Header */}
       <header className="md:hidden bg-white border-b sticky top-0 z-30 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Avatar className="h-9 w-9 border-2 border-primary">
-            <AvatarImage src={userData.avatar} alt={userData.name} />
-            <AvatarFallback>{userData.name.charAt(0)}</AvatarFallback>
+        <Avatar className="h-9 w-9 border-2 border-primary">
+            <AvatarImage src={localUser?.avatar || userData.avatar} alt={localUser?.firstName || userData.name} />
+            <AvatarFallback>{(localUser?.firstName || userData.name).charAt(0)}</AvatarFallback>
           </Avatar>
           <div>
-            <h2 className="font-semibold text-sm">{userData.name}</h2>
-            <p className="text-xs text-muted-foreground">{userData.level}</p>
+          <h2 className="font-semibold text-sm">{localUser?.firstName || userData.name}</h2>
+          <p className="text-xs text-muted-foreground">{userData.level}</p>
           </div>
         </div>
         <Button variant="outline" size="icon" onClick={() => setShowMobileNav(!showMobileNav)}>
@@ -518,13 +538,13 @@ export default function ProfileDashboard() {
         >
           <div className="p-4 md:p-6 border-b">
             <div className="flex items-center gap-3 mb-4">
-              <Avatar className="h-12 w-12 border-2 border-primary">
-                <AvatarImage src={userData.avatar} alt={userData.name} />
-                <AvatarFallback>{userData.name.charAt(0)}</AvatarFallback>
+            <Avatar className="h-12 w-12 border-2 border-primary">
+                <AvatarImage src={localUser?.avatar || userData.avatar} alt={localUser?.firstName || userData.name} />
+                <AvatarFallback>{(localUser?.firstName || userData.name).charAt(0)}</AvatarFallback>
               </Avatar>
               <div>
-                <h2 className="font-semibold">{userData.name}</h2>
-                <p className="text-sm text-muted-foreground">{userData.email}</p>
+              <h2 className="font-semibold">{localUser?.firstName || userData.name}</h2>
+              <p className="text-sm text-muted-foreground">{localUser?.email || userData.email}</p>
               </div>
             </div>
 
