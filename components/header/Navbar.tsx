@@ -83,6 +83,10 @@ const Navbar = () => {
     }
   }
 
+  const handleGoMyProfile = async () => {
+    router.push("/my-profile")
+  }
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 0) {
@@ -371,7 +375,8 @@ const Navbar = () => {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer transition-colors duration-200 hover:bg-[#FA4032]/10 group">
+                <DropdownMenuItem className="cursor-pointer transition-colors duration-200 hover:bg-[#FA4032]/10 group" 
+                onClick={handleGoMyProfile}>
                   <Settings className="mr-2 h-4 w-4 group-hover:rotate-90 transition-transform duration-300" />
                   <span>My Profile</span>
                 </DropdownMenuItem>
