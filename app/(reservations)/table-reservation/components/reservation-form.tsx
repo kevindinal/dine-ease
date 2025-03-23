@@ -19,7 +19,15 @@ interface ReservationFormProps {
   tablePrice: number
   tableSeats: number
   isAvailable: boolean
-  onReservation: () => void
+  onReservation: (reservationData: {
+    date: Date | undefined
+    time: string
+    guests: number
+    occasion: string
+    specialRequests: string
+    promoCode?: string
+    promoDiscount?: number
+  }) => void
   promoDiscount: number
   onApplyPromoCode: (code: string) => void
   availability?: {
@@ -81,7 +89,9 @@ export default function ReservationForm({
 
       if (!isDayAvailable) {
         setDateError(
-          `This table is not available on ${dayKey.charAt(0).toUpperCase() + dayKey.slice(1)}s. Please select another day.`,
+          `This table is not available on ${
+            dayKey.charAt(0).toUpperCase() + dayKey.slice(1)
+          }s. Please select another day.`,
         )
       } else {
         setDateError(null)
@@ -132,7 +142,16 @@ export default function ReservationForm({
       return
     }
 
-    onReservation()
+    // Pass all the reservation data to the parent component
+    onReservation({
+      date,
+      time,
+      guests,
+      occasion,
+      specialRequests,
+      promoCode: promoCode.trim() ? promoCode : undefined,
+      promoDiscount: promoDiscount > 0 ? promoDiscount : undefined,
+    })
   }
 
   const handleApplyPromo = () => {
