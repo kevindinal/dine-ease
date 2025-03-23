@@ -25,6 +25,12 @@ const MealDetailsPage: React.FC = () => {
     addOns?: string[];
   }
 
+/**
+ * Function to handle adding an item to the pre-order list.
+ * - Maps the `customizations` object to a `preOrderItem` object containing all relevant item details.
+ * - Ensures that optional fields like `addOns` are safely handled.
+ * - Calls `addItemToPreOrder` to update the pre-order with the newly created item.
+ */
   const handleAddToPreOrder = (customizations: Customizations) => {
     const preOrderItem = {
       id: customizations.id,
@@ -37,7 +43,6 @@ const MealDetailsPage: React.FC = () => {
       price: customizations.price,
       image: customizations.image,
       addOns: customizations.addOns
-      // uniqueId will be added by the hook
     };
 
     addItemToPreOrder(preOrderItem);
@@ -50,7 +55,7 @@ const MealDetailsPage: React.FC = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         preOrders={preOrders}
-        removeItem={removePreOrderItem} // Updated to just pass the uniqueId
+        removeItem={removePreOrderItem} 
       />
 
       <section className="py-4 mx-4 md:mx-14 z-10 fixed slide-in-from-bottom-28 left-0 right-0 flex justify-center bottom-24">
