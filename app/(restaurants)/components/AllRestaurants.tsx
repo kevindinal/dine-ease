@@ -1,5 +1,3 @@
-
-
 "use client"
 
 import type React from "react"
@@ -139,8 +137,8 @@ export default function AllRestaurants() {
                   </select>
                 </div>
 
-               {/* Search Button */}
-               <button
+                {/* Search Button */}
+                <button
                   type="submit"
                   className="w-full h-12 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md flex items-center justify-center gap-2 transition-all duration-300 mb-4 sm:mb-0"
                 >
@@ -176,6 +174,30 @@ export default function AllRestaurants() {
 
       {/* Restaurant Listing */}
       <div className="container mx-auto px-4 py-8">
+        {/* Dedicated Search Bar */}
+        <div className="mb-10 mt-0">
+          <div className="relative max-w-2xl mx-auto">
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-red-500" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search restaurants, cuisine, or location..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10 pr-4 py-3 w-full bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 shadow-sm"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600"
+              >
+                <ChevronDown className="h-5 w-5 rotate-45" />
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <motion.h2
             initial={{ x: -20, opacity: 0 }}
@@ -304,5 +326,4 @@ export default function AllRestaurants() {
     </div>
   )
 }
-
 
