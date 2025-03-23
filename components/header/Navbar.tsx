@@ -76,6 +76,7 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth)
+      localStorage.removeItem("user");
       router.push("/sign-in")
     } catch (error) {
       console.error("Error signing out:", error)
