@@ -393,20 +393,28 @@ export default function TableVisualization({
                           transform: isSelected ? "scale(1.02)" : "scale(1)",
                         }}
                       >
-                        <span className={cn("font-bold text-base", getStatusTextColor(table.status))}>
+                        <span
+                          className={cn("font-bold text-xs sm:text-sm md:text-base", getStatusTextColor(table.status))}
+                        >
                           {table.name}
                         </span>
                         {table.status === "available" && (
-                          <span className={cn("text-xs", getStatusTextColor(table.status))}>Free</span>
+                          <span className={cn("text-[9px] sm:text-xs", getStatusTextColor(table.status))}>Free</span>
                         )}
                         {table.status === "billed" && (
-                          <span className={cn("text-xs", getStatusTextColor(table.status))}>Checked-in</span>
+                          <span className={cn("text-[9px] sm:text-xs", getStatusTextColor(table.status))}>
+                            Checked-in
+                          </span>
                         )}
                         {table.status === "reserved" && table.customer && (
                           <>
-                            <span className={cn("text-xs", getStatusTextColor(table.status))}>{table.customer}</span>
+                            <span className={cn("text-[9px] sm:text-xs", getStatusTextColor(table.status))}>
+                              {table.customer}
+                            </span>
                             {table.time && (
-                              <span className={cn("text-[10px]", getStatusTextColor(table.status))}>{table.time}</span>
+                              <span className={cn("text-[8px] sm:text-[10px]", getStatusTextColor(table.status))}>
+                                {table.time}
+                              </span>
                             )}
                           </>
                         )}
@@ -450,7 +458,7 @@ export default function TableVisualization({
       <div className="p-3">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-3">
           <div>
-            <h2 className="text-xl font-bold text-gray-800">Choose Tables</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">Choose Tables</h2>
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
             <Tabs defaultValue="indoor" className="w-full sm:w-[240px]" onValueChange={setActiveTab}>
@@ -495,7 +503,7 @@ export default function TableVisualization({
         </Tabs>
 
         {/* Legend */}
-        <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-3 pt-2 border-t text-xs md:text-sm">
+        <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-3 pt-2 border-t text-[10px] sm:text-xs md:text-sm">
           <div className="font-medium">Table</div>
           <div className="flex items-center gap-1 md:gap-2">
             <div className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-emerald-400"></div>
@@ -511,10 +519,10 @@ export default function TableVisualization({
           </div>
 
           <div className="w-full md:w-auto md:ml-auto mt-2 md:mt-0">
-            <Button variant="outline" size="sm" className="mr-2">
+            <Button variant="outline" size="sm" className="mr-2 text-xs">
               Cancel
             </Button>
-            <Button size="sm" className="bg-orange-500 hover:bg-orange-600">
+            <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-xs">
               Check-in
             </Button>
           </div>
