@@ -38,13 +38,13 @@ const PaymentSuccessPage = () => {
         // If user is not loaded yet, wait
         return;
       }
-
+  
       if (!paymentIntentId) {
         // If payment intent is missing, something went wrong
         setProcessingOrder(false);
         return;
       }
-
+  
       try {
         // Set the ref BEFORE processing to prevent race conditions
         hasProcessedOrder.current = true;
@@ -57,10 +57,22 @@ const PaymentSuccessPage = () => {
           paymentIntentId,
           preOrders // This is now directly accessed from useOrder
         );
-
+  
         if (newOrderId) {
           setOrderId(newOrderId);
           setOrderProcessed(true);
+
+          
+          // Initialize order status states (all false by default)
+          setOrderState({
+            isTableReady: false,
+            isMealReady: false,
+            isReservationReady: false
+          });
+          
+
+          // Save the order ID to localStorage
+          localStorage.setItem('currentOrderId', newOrderId);
           console.log("Order processed successfully with ID:", newOrderId);
         }
       } catch (err) {
@@ -69,7 +81,7 @@ const PaymentSuccessPage = () => {
         setProcessingOrder(false);
       }
     };
-
+  
     // Only attempt to process the order if conditions are met and we haven't already processed it
     if (user && paymentIntentId && !hasProcessedOrder.current) {
       handleOrderCreation();
