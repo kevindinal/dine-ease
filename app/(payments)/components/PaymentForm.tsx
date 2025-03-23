@@ -14,7 +14,9 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
 type PaymentFormProps = {
   amount: number;
+  onPaymentComplete: () => void;
 };
+
 
 const PaymentForm: React.FC<PaymentFormProps> = ({ amount }) => {
   // Ensure the amount is valid before proceeding
