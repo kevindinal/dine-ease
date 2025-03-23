@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, Fragment } from "react";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Trash2, Edit, Calendar, Clock, Users, MapPin, ChevronRight } from "lucide-react";
 import { db } from "@/lib/firebase";
-import { collection, query, where, orderBy, limit, getDocs, doc, getDoc, updateDoc, DocumentData } from "firebase/firestore";
+import { collection, query, where, orderBy, limit, getDocs, doc, getDoc, DocumentData } from "firebase/firestore";
 import { auth } from "@/lib/firebase"; // Import auth from firebase
 import { onAuthStateChanged } from "firebase/auth"; // Import onAuthStateChanged
 import { Dialog, Transition } from "@headlessui/react";
@@ -62,7 +61,6 @@ const SummaryPage = () => {
   const [isLoadingPoints, setIsLoadingPoints] = useState<boolean>(true);
   const [discountApplied, setDiscountApplied] = useState<boolean>(false);
   const [totalPrice, setTotalPrice] = useState<number>(0);
-  const [pointsToDeduct, setPointsToDeduct] = useState<number>(0);
 
   // Listen for authentication state changes
   useEffect(() => {
@@ -247,71 +245,24 @@ const SummaryPage = () => {
     }
   };
 
-  // Function to update user points in Firebase
-  const updateUserPointsInFirebase = async (newPoints: number): Promise<void> => {
-    try {
-      if (!userId) {
-        console.error("Cannot update points: No user ID available");
-        return;
-      }
-
-      const userDocRef = doc(db, "users", userId);
-      await updateDoc(userDocRef, {
-        points: newPoints
-      });
-      console.log("User points updated successfully in Firebase:", newPoints);
-    } catch (error) {
-      console.error("Error updating user points in Firebase:", error);
-    }
-  };
-
   // Apply points discount to total
-  const applyPointsDiscount = async (): Promise<void> => {
+  const applyPointsDiscount = (): void => {
     if (discountApplied || points <= 0) return;
-    
     const discount = Math.min(points, totalPrice);
-    setPointsToDeduct(discount);
     setTotalPrice(totalPrice - discount);
-    
-    // Update local state
-    const newPointsValue = points - discount;
-    setPoints(newPointsValue);
+    setPoints(points - discount);
     setDiscountApplied(true);
-    
-    // Update points in Firebase
-    await updateUserPointsInFirebase(newPointsValue);
   };
 
-  // Function to add points after payment and navigate to order status page
-  const addPointsAndNavigate = async (paymentMethod: string): Promise<void> => {
-    try {
-      if (userId) {
-        // Add 10 points to the user's current points
-        const newPoints = points + 10;
-        setPoints(newPoints);
-        
-        // Update points in Firebase
-        await updateUserPointsInFirebase(newPoints);
-        console.log("Added 10 points for completing a payment");
-      }
-      
-      // Save payment method info to localStorage
-      if (typeof window !== "undefined") {
-        localStorage.setItem("paymentMethod", paymentMethod);
-      }
-      
-      // Navigate to order status page
-      router.push("/order-status");
-    } catch (error) {
-      console.error("Error adding points after payment:", error);
-      // Still navigate to order status even if points update fails
-      router.push("/order-status");
-    }
-  };
-
-  // Function to navigate to order status page after pay at restaurant
+  // Function to navigate to order status page
   const navigateToOrderStatus = (): void => {
-    addPointsAndNavigate("pay_at_restaurant");
+    // Save payment method info to localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("paymentMethod", "pay_at_restaurant");
+    }
+    
+    // Navigate to order status page
+    router.push("/order-status");
   };
 
   // Function to handle payment completion
@@ -319,8 +270,13 @@ const SummaryPage = () => {
     // Close the payment modal
     setIsOpen(false);
     
-    // Add points and navigate
-    addPointsAndNavigate("paid_online");
+    // Save payment method info to localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("paymentMethod", "paid_online");
+    }
+    
+    // Navigate to order status page
+    router.push("/order-status");
   };
 
   // Helper function to safely render items
@@ -456,11 +412,6 @@ const SummaryPage = () => {
                 <div>
                   <span className="text-gray-700 font-medium">Available Points</span>
                   <p className="text-2xl font-bold text-[#FA4032]">{points}</p>
-                  {discountApplied && (
-                    <p className="text-xs text-green-600 mt-1">
-                      {pointsToDeduct} points applied as discount
-                    </p>
-                  )}
                 </div>
                 <Button
                   className={`bg-[#FA4032] text-white hover:bg-[#FB665B] ${
@@ -536,7 +487,7 @@ const SummaryPage = () => {
               {discountApplied && (
                 <div className="flex justify-between items-center text-green-600">
                   <span>Points Discount</span>
-                  <span>-Rs.{pointsToDeduct.toFixed(2)}</span>
+                  <span>-Rs.{Math.min(points, totalPrice + (discountApplied ? Math.min(points, totalPrice) : 0)).toFixed(2)}</span>
                 </div>
               )}
 
@@ -545,12 +496,6 @@ const SummaryPage = () => {
                   <span className="text-lg font-semibold text-gray-800">Total:</span>
                   <span className="text-xl font-bold text-[#FA4032]">Rs.{totalPrice.toFixed(2)}</span>
                 </div>
-                
-                {!discountApplied && (
-                  <div className="text-sm text-gray-500 mt-1">
-                    Complete your order to earn 10 loyalty points!
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -573,7 +518,6 @@ const SummaryPage = () => {
                   <div>
                     <h3 class="font-bold text-gray-900">Thank you!</h3>
                     <p class="text-sm text-gray-600">You selected to pay at the restaurant</p>
-                    <p class="text-sm text-green-600">You earned 10 loyalty points!</p>
                   </div>
                 `;
                 
@@ -606,7 +550,7 @@ const SummaryPage = () => {
                     if (document.body.contains(notification)) {
                       document.body.removeChild(notification);
                     }
-                    // Navigate to order status page with points update
+                    // Navigate to order status page
                     navigateToOrderStatus();
                   }, 300);
                 }, 4000);
@@ -668,17 +612,13 @@ const SummaryPage = () => {
                         {discountApplied && (
                           <div className="flex justify-between text-green-600 mt-2">
                             <span>Points Discount:</span>
-                            <span>-Rs.{pointsToDeduct.toFixed(2)}</span>
+                            <span>-Rs.{Math.min(points, totalPrice + (discountApplied ? Math.min(points, totalPrice) : 0)).toFixed(2)}</span>
                           </div>
                         )}
 
                         <div className="flex justify-between font-bold text-[#FA4032] mt-2 text-lg">
                           <span>Total:</span>
                           <span>Rs.{totalPrice.toFixed(2)}</span>
-                        </div>
-                        
-                        <div className="bg-green-50 rounded-lg p-2 mt-3 text-green-700 text-sm">
-                          <p className="font-medium">Complete payment to earn 10 loyalty points!</p>
                         </div>
                       </div>
                     </div>
