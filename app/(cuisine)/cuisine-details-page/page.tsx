@@ -6,6 +6,7 @@ import usePreOrder from "../hooks/usePreOrder";
 import CuisineDetailContainer from "../components/CuisineDetailContainer";
 import FloatingButtons from "../components/FloatingButtons";
 import PreOrderModal from "../components/PreOrderModel";
+import Navbar from "@/components/header/Navbar";
 
 const MealDetailsPage: React.FC = () => {
   const { preOrders, preOrderCount, addItemToPreOrder, removePreOrderItem, clearPreOrder } = usePreOrder();
@@ -44,6 +45,7 @@ const MealDetailsPage: React.FC = () => {
 
   return (
     <div>
+      <Navbar/>
       <PreOrderModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

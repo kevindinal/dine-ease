@@ -296,11 +296,11 @@ const SummaryPage = () => {
             <h2 className="text-2xl font-bold">Order Summary</h2>
             <Button 
               variant="ghost" 
-              size="sm" 
+              size="lg" 
               className="text-white hover:bg-[#FB665B]"
-              onClick={() => router.push('/cuisine-main-page')}
+              onClick={() => router.push('/home-main')}
             >
-              <Edit className="h-4 w-4 mr-1" /> Edit
+              Cancel Order
             </Button>
           </div>
           <div className="mt-2 text-white/80">Complete your reservation details below</div>
