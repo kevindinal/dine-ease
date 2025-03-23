@@ -204,8 +204,7 @@ export default function HomePage() {
               >
                 <Button
                   size="lg"
-                  className="bg-[#FA4032] hover:bg-[#E63326] text-white rounded-full px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
-                >
+                  className="bg-[#FA4032] hover:bg-[#E63326] text-white rounded-full px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group">
                   Make a Reservation
                   <motion.span
                     className="inline-block ml-2"

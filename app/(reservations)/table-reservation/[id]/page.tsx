@@ -3,7 +3,19 @@
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 // Import addDoc for adding reviews to Firebase
-import { doc, getDoc, collection, getDocs, query, where, addDoc } from "firebase/firestore"
+import {
+  doc,
+  getDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+  addDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+  setDoc,
+} from "firebase/firestore"
 import { ref, getDownloadURL } from "firebase/storage"
 import { db, storage } from "@/lib/firebase/tables"
 import {
@@ -61,6 +73,8 @@ import FeaturesSection from "@/app/(reservations)/table-reservation/components/f
 import AvailabilityCalendar from "@/app/(reservations)/table-reservation/components/availability-calendar"
 // Add this import at the top of the file, which was missing
 import ThreeSixtyViewer from "@/app/(reservations)/table-reservation/thresixty"
+import Navbar from "@/components/header/Navbar"
+import Footer from "@/components/footer/Footer"
 
 interface Table {
   id: string
@@ -109,6 +123,16 @@ interface Review {
   tableId?: string
 }
 
+interface ReservationData {
+  date: Date | undefined
+  time: string
+  guests: number
+  occasion: string
+  specialRequests: string
+  promoCode?: string
+  promoDiscount?: number
+}
+
 interface SpecialOffer {
   id: string
   title: string
@@ -137,6 +161,12 @@ export default function TableDetailsPage() {
   const [showPaymentOptions, setShowPaymentOptions] = useState(false)
   const isMobile = useMediaQuery("(max-width: 768px)")
   const imageContainerRef = useRef<HTMLDivElement>(null)
+
+  const [reservationDate, setReservationDate] = useState("")
+  const [reservationTime, setReservationTime] = useState("")
+  const [guestCount, setGuestCount] = useState("")
+  const [occasion, setOccasion] = useState("")
+  const [specialR, setSpecialR] = useState("")
 
   const [user, setUser] = useState({
     name: "Guest",
@@ -252,6 +282,32 @@ export default function TableDetailsPage() {
 
     return () => unsubscribe()
   }, [])
+
+  useEffect(() => {
+    // Check if the current table is in user's favorites
+    const checkIfFavorite = async () => {
+      try {
+        const currentUser = auth.currentUser
+        if (currentUser && id) {
+          const userDocRef = doc(db, "users", currentUser.uid)
+          const userDoc = await getDoc(userDocRef)
+
+          if (userDoc.exists()) {
+            const userData = userDoc.data()
+            if (userData.favorites && Array.isArray(userData.favorites)) {
+              setIsFavorite(userData.favorites.includes(id))
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error checking favorites:", error)
+      }
+    }
+
+    if (id) {
+      checkIfFavorite()
+    }
+  }, [id])
 
   useEffect(() => {
     const fetchTable = async () => {
@@ -453,7 +509,22 @@ export default function TableDetailsPage() {
     router.back()
   }
 
-  const handleReservation = () => {
+  const handleReservation = (reservationData: ReservationData) => {
+    // Store the reservation data in state
+    setReservationDate(reservationData.date ? reservationData.date.toISOString().split("T")[0] : "")
+    setReservationTime(reservationData.time)
+    setGuestCount(reservationData.guests.toString())
+    setOccasion(reservationData.occasion)
+    setSpecialR(reservationData.specialRequests)
+
+    // If there's a promo code applied in the form, update the discount
+    if (reservationData.promoDiscount) {
+      setPromoDiscount(reservationData.promoDiscount)
+    }
+
+    console.log("Reservation data received:", reservationData)
+
+    // Show payment options
     setShowPaymentOptions(true)
   }
 
@@ -463,23 +534,76 @@ export default function TableDetailsPage() {
     setShowNotification(true)
     setTimeout(() => setShowNotification(false), 5000)
 
+    // Create query parameters with reservation details
+    const queryParams = new URLSearchParams({
+      tableId: table?.id || "",
+      tableName: table?.name || "",
+      date: reservationDate,
+      time: reservationTime,
+      guests: guestCount,
+      occasion: occasion,
+      specialRequests: specialR,
+      promoDiscount: promoDiscount.toString(),
+    }).toString()
+
     if (option === "payment") {
       if (table?.restaurantId) {
-        router.push(`/payment-page/${encodeURIComponent(table?.restaurantId)}`)
+        router.push(`/payment-page?restaurantId=${encodeURIComponent(table?.restaurantId)}&${queryParams}`)
       }
     } else {
       if (table?.restaurantId) {
-        router.push(`/cuisine-main-page/${encodeURIComponent(table.restaurantId)}`)
+        router.push(`/cuisine-main-page/${encodeURIComponent(table.restaurantId)}?${queryParams}`)
       }
     }
   }
 
-  const handleToggleFavorite = () => {
-    setIsFavorite(!isFavorite)
-    // Show notification when adding to favorites
-    if (!isFavorite) {
+  const handleToggleFavorite = async () => {
+    try {
+      const currentUser = auth.currentUser
+
+      if (!currentUser) {
+        // If user is not logged in, prompt them to log in
+        alert("Please log in to save favorites")
+        return
+      }
+
+      if (!table?.id) {
+        console.error("Table ID is missing")
+        return
+      }
+
+      const userDocRef = doc(db, "users", currentUser.uid)
+      const userDoc = await getDoc(userDocRef)
+
+      // Toggle favorite status
+      const newFavoriteStatus = !isFavorite
+
+      if (userDoc.exists()) {
+        // Update existing user document
+        await updateDoc(userDocRef, {
+          favorites: newFavoriteStatus ? arrayUnion(table.id) : arrayRemove(table.id),
+        })
+      } else {
+        // Create new user document if it doesn't exist
+        await setDoc(userDocRef, {
+          favorites: newFavoriteStatus ? [table.id] : [],
+          email: currentUser.email,
+          name: currentUser.displayName || "User",
+          createdAt: new Date(),
+        })
+      }
+
+      // Update local state
+      setIsFavorite(newFavoriteStatus)
+
+      // Show notification
       setShowNotification(true)
       setTimeout(() => setShowNotification(false), 3000)
+
+      console.log(`Table ${newFavoriteStatus ? "added to" : "removed from"} favorites`)
+    } catch (error) {
+      console.error("Error updating favorites:", error)
+      alert("Failed to update favorites. Please try again.")
     }
   }
 
@@ -752,14 +876,15 @@ export default function TableDetailsPage() {
       {/* Header with Navigation */}
       <div className="bg-white sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <div className="flex items-center">
+          <Navbar />
+          <div className="flex items-center pt-20">
             <Button variant="ghost" size="icon" className="mr-2" onClick={handleGoBack}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-xl font-bold truncate">{table.name}</h1>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-20">
             {isMobile ? (
               <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setShowMobileMenu(true)}>
                 <Menu className="h-5 w-5" />
@@ -834,7 +959,7 @@ export default function TableDetailsPage() {
           <SheetHeader className="mb-4">
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>
-          <div className="grid gap-3">
+          <div className="grid gap-3 ">
             <Button
               variant="ghost"
               className="justify-start"
@@ -1254,6 +1379,7 @@ export default function TableDetailsPage() {
           </div>
         </DialogContent>
       </Dialog>
+      <Footer />
     </div>
   )
 }

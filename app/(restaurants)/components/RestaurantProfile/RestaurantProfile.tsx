@@ -21,7 +21,8 @@ export default function RestaurantProfile({ restaurant }: RestaurantProfileProps
       <AboutSection restaurant={restaurant} />
       <ServicesSection />
       <FeaturedMenu featuredMenu={restaurant.featuredMenu} />
-      <GuestReviews reviews={restaurant.reviews} />
+      {/* <GuestReviews reviews={restaurant.reviews} /> */}
+      <GuestReviews />
       <LocationSection address={restaurant.address} location={restaurant.location} />
     </div>
   )
