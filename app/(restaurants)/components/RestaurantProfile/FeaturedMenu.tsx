@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { ChevronRight, Star, StarHalf, MessageCircle, X } from "lucide-react"
 import { db, auth } from "@/lib/firebase"
-import { collection, addDoc, query, where, getDocs, orderBy, serverTimestamp, doc, deleteDoc } from "firebase/firestore"
+import { doc, getDoc, updateDoc } from "firebase/firestore"
 import { useAuthState } from "react-firebase-hooks/auth"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -34,14 +34,15 @@ type MenuItem = {
   price: number
   image: string
   description?: string
-  reviews?: Review[]
+  "food review"?: Review[] // Changed to match the desired field name
 }
 
 type FeaturedMenuProps = {
   featuredMenu?: MenuItem[]
+  restaurantId?: string
 }
 
-export default function FeaturedMenu({ featuredMenu }: FeaturedMenuProps) {
+export default function FeaturedMenu({ featuredMenu, restaurantId }: FeaturedMenuProps) {
   const [user] = useAuthState(auth)
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
@@ -49,6 +50,7 @@ export default function FeaturedMenu({ featuredMenu }: FeaturedMenuProps) {
   const [rating, setRating] = useState(5)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Sample menu items if none provided
   const sampleMenu: MenuItem[] = [
@@ -59,6 +61,7 @@ export default function FeaturedMenu({ featuredMenu }: FeaturedMenuProps) {
       image:
         "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
       description: "Fresh salmon fillet grilled to perfection with herbs and lemon",
+      "food review": [],
     },
     {
       id: "menu-item-2",
@@ -67,6 +70,7 @@ export default function FeaturedMenu({ featuredMenu }: FeaturedMenuProps) {
       image:
         "https://images.unsplash.com/photo-1544025162-d76694265947?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1469&q=80",
       description: "Tender beef wrapped in puff pastry with mushroom duxelles",
+      "food review": [],
     },
     {
       id: "menu-item-3",
@@ -75,6 +79,7 @@ export default function FeaturedMenu({ featuredMenu }: FeaturedMenuProps) {
       image:
         "https://images.unsplash.com/photo-1476124369491-e7addf5db371?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
       description: "Creamy arborio rice with seasonal vegetables and parmesan",
+      "food review": [],
     },
   ]
 
@@ -85,77 +90,146 @@ export default function FeaturedMenu({ featuredMenu }: FeaturedMenuProps) {
         ? featuredMenu.map((item) => ({
             ...item,
             id: item.id || `menu-item-${Math.random().toString(36).substr(2, 9)}`,
+            "food review": item["food review"] || [],
           }))
         : sampleMenu
 
     setMenuItems(initialMenu)
 
-    // Fetch reviews for each menu item
-    initialMenu.forEach((item) => {
-      fetchReviews(item.id)
-    })
-  }, [featuredMenu])
+    // If we don't have reviews in the featuredMenu, fetch the restaurant document to get the latest data
+    if (restaurantId && (!featuredMenu || featuredMenu.some((item) => !item["food review"]))) {
+      fetchRestaurantData(restaurantId)
+    }
+  }, [featuredMenu, restaurantId])
 
-  // Fetch reviews from Firebase
-  const fetchReviews = async (menuItemId: string) => {
+  // Fetch restaurant data to get the latest menu items with reviews
+  const fetchRestaurantData = async (restaurantId: string) => {
     try {
-      const reviewsQuery = query(
-        collection(db, "menuReviews"),
-        where("menuItemId", "==", menuItemId),
-        orderBy("createdAt", "desc"),
-      )
+      const restaurantDoc = await getDoc(doc(db, "restaurants", restaurantId))
 
-      const reviewsSnapshot = await getDocs(reviewsQuery)
-      const reviewsList: Review[] = []
+      if (restaurantDoc.exists()) {
+        const data = restaurantDoc.data()
 
-      reviewsSnapshot.forEach((doc) => {
-        const data = doc.data()
-        reviewsList.push({
-          id: doc.id,
-          userId: data.userId,
-          userName: data.userName,
-          userImage: data.userImage,
-          rating: data.rating,
-          comment: data.comment,
-          createdAt: data.createdAt,
-        })
-      })
+        if (data.featuredMenu && Array.isArray(data.featuredMenu)) {
+          const updatedMenu = data.featuredMenu.map((item: any) => ({
+            ...item,
+            id: item.id || `menu-item-${Math.random().toString(36).substr(2, 9)}`,
+            "food review": item["food review"] || [],
+          }))
 
-      // Update the menu item with reviews
-      setMenuItems((prev) => prev.map((item) => (item.id === menuItemId ? { ...item, reviews: reviewsList } : item)))
+          setMenuItems(updatedMenu)
+        }
+      }
     } catch (error) {
-      console.error("Error fetching reviews:", error)
+      console.error("Error fetching restaurant data:", error)
+      setError("Failed to fetch restaurant data. Please try again.")
     }
   }
 
-  // Submit a review to Firebase
+  // Submit a review directly to the featuredMenu array in the restaurant document
   const submitReview = async () => {
-    if (!user || !selectedItem || !reviewText.trim() || rating < 1) return
+    if (!user || !selectedItem || !reviewText.trim() || rating < 1 || !restaurantId) {
+      setError("Missing required information to submit review")
+      return
+    }
 
     setIsSubmitting(true)
+    setError(null)
 
     try {
-      const reviewData = {
-        menuItemId: selectedItem.id,
-        userId: user.uid,
-        userName: user.displayName || "Anonymous User",
-        userImage: user.photoURL || "",
-        rating,
-        comment: reviewText.trim(),
-        createdAt: serverTimestamp(),
+      // Get user data from localStorage if available
+      let userName = "Anonymous User"
+      let userImage = ""
+
+      try {
+        const localStorageUser = localStorage.getItem("user")
+        if (localStorageUser) {
+          const userData = JSON.parse(localStorageUser)
+          userName = userData.name || userData.firstName || user.displayName || "Anonymous User"
+          userImage = userData.avatar || userData.image || user.photoURL || ""
+        }
+      } catch (error) {
+        console.error("Error parsing user from localStorage:", error)
       }
 
-      await addDoc(collection(db, "menuReviews"), reviewData)
+      // Create a new review object
+      const newReview = {
+        id: `review-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+        userId: user.uid,
+        userName: userName,
+        userImage: userImage,
+        rating: rating,
+        comment: reviewText.trim(),
+        createdAt: new Date().toISOString(),
+      }
 
-      // Refresh reviews for this menu item
-      fetchReviews(selectedItem.id)
+      console.log("Submitting review:", newReview)
+      console.log("Restaurant ID:", restaurantId)
+      console.log("Selected item ID:", selectedItem.id)
 
-      // Reset form
-      setReviewText("")
-      setRating(5)
-      setReviewDialogOpen(false)
+      // Get the restaurant document reference
+      const restaurantRef = doc(db, "restaurants", restaurantId)
+
+      // Get the current restaurant data
+      const restaurantDoc = await getDoc(restaurantRef)
+
+      if (restaurantDoc.exists()) {
+        const restaurantData = restaurantDoc.data()
+        const featuredMenu = restaurantData.featuredMenu || []
+
+        console.log("Current featuredMenu:", featuredMenu)
+
+        // Find the index of the menu item to update
+        const menuItemIndex = featuredMenu.findIndex((item: any) => item.id === selectedItem.id)
+
+        console.log("Menu item index:", menuItemIndex)
+
+        if (menuItemIndex !== -1) {
+          // Create a new array with the updated menu item
+          const updatedFeaturedMenu = [...featuredMenu]
+
+          // Initialize food review array if it doesn't exist
+          if (!updatedFeaturedMenu[menuItemIndex]["food review"]) {
+            updatedFeaturedMenu[menuItemIndex]["food review"] = []
+          }
+
+          // Add the new review
+          updatedFeaturedMenu[menuItemIndex]["food review"].push(newReview)
+
+          console.log("Updated featuredMenu:", updatedFeaturedMenu)
+
+          // Update the restaurant document
+          await updateDoc(restaurantRef, {
+            featuredMenu: updatedFeaturedMenu,
+          })
+
+          console.log("Document updated successfully")
+
+          // Update local state
+          setMenuItems((prev) =>
+            prev.map((item) =>
+              item.id === selectedItem.id
+                ? {
+                    ...item,
+                    "food review": [...(item["food review"] || []), newReview],
+                  }
+                : item,
+            ),
+          )
+
+          // Reset form
+          setReviewText("")
+          setRating(5)
+          setReviewDialogOpen(false)
+        } else {
+          setError(`Menu item with ID ${selectedItem.id} not found in restaurant document`)
+        }
+      } else {
+        setError(`Restaurant with ID ${restaurantId} not found`)
+      }
     } catch (error) {
       console.error("Error submitting review:", error)
+      setError("Failed to submit review. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -163,15 +237,57 @@ export default function FeaturedMenu({ featuredMenu }: FeaturedMenuProps) {
 
   // Delete a review (only if user is the author)
   const deleteReview = async (reviewId: string, menuItemId: string) => {
-    if (!user) return
+    if (!user || !restaurantId) return
 
     try {
-      await deleteDoc(doc(db, "menuReviews", reviewId))
+      // Get the restaurant document reference
+      const restaurantRef = doc(db, "restaurants", restaurantId)
 
-      // Refresh reviews for this menu item
-      fetchReviews(menuItemId)
+      // Get the current restaurant data
+      const restaurantDoc = await getDoc(restaurantRef)
+
+      if (restaurantDoc.exists()) {
+        const restaurantData = restaurantDoc.data()
+        const featuredMenu = restaurantData.featuredMenu || []
+
+        // Find the index of the menu item to update
+        const menuItemIndex = featuredMenu.findIndex((item: any) => item.id === menuItemId)
+
+        if (menuItemIndex !== -1 && featuredMenu[menuItemIndex]["food review"]) {
+          // Find the review to delete
+          const reviewIndex = featuredMenu[menuItemIndex]["food review"].findIndex(
+            (review: any) => review.id === reviewId && review.userId === user.uid,
+          )
+
+          if (reviewIndex !== -1) {
+            // Create a new array with the updated menu item
+            const updatedFeaturedMenu = [...featuredMenu]
+
+            // Remove the review
+            updatedFeaturedMenu[menuItemIndex]["food review"].splice(reviewIndex, 1)
+
+            // Update the restaurant document
+            await updateDoc(restaurantRef, {
+              featuredMenu: updatedFeaturedMenu,
+            })
+
+            // Update local state
+            setMenuItems((prev) =>
+              prev.map((item) =>
+                item.id === menuItemId
+                  ? {
+                      ...item,
+                      "food review": item["food review"]?.filter((review) => review.id !== reviewId) || [],
+                    }
+                  : item,
+              ),
+            )
+          }
+        }
+      }
     } catch (error) {
       console.error("Error deleting review:", error)
+      setError("Failed to delete review. Please try again.")
     }
   }
 
@@ -223,8 +339,8 @@ export default function FeaturedMenu({ featuredMenu }: FeaturedMenuProps) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
         {menuItems.map((item, index) => {
-          const avgRating = getAverageRating(item.reviews)
-          const reviewCount = item.reviews?.length || 0
+          const avgRating = getAverageRating(item["food review"])
+          const reviewCount = item["food review"]?.length || 0
 
           return (
             <motion.div
@@ -267,6 +383,7 @@ export default function FeaturedMenu({ featuredMenu }: FeaturedMenuProps) {
                     onClick={() => {
                       setSelectedItem(item)
                       setReviewDialogOpen(true)
+                      setError(null)
                     }}
                   >
                     <MessageCircle className="mr-1 h-4 w-4" />
@@ -324,12 +441,17 @@ export default function FeaturedMenu({ featuredMenu }: FeaturedMenuProps) {
               />
             </div>
 
+            {/* Error message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">{error}</div>
+            )}
+
             {/* Display existing reviews */}
-            {selectedItem?.reviews && selectedItem.reviews.length > 0 && (
+            {selectedItem?.["food review"] && selectedItem["food review"].length > 0 && (
               <div className="space-y-3 mt-6">
                 <h4 className="font-medium text-sm border-b pb-2">Previous Reviews</h4>
                 <div className="max-h-60 overflow-y-auto space-y-4 pr-2">
-                  {selectedItem.reviews.map((review) => (
+                  {selectedItem["food review"].map((review) => (
                     <div key={review.id} className="bg-gray-50 p-3 rounded-lg">
                       <div className="flex justify-between items-start">
                         <div className="flex items-center gap-2">
@@ -366,7 +488,7 @@ export default function FeaturedMenu({ featuredMenu }: FeaturedMenuProps) {
             </DialogClose>
             <Button
               onClick={submitReview}
-              disabled={!user || isSubmitting || !reviewText.trim() || rating < 1}
+              disabled={!user || isSubmitting || !reviewText.trim() || rating < 1 || !restaurantId}
               className="bg-red-500 hover:bg-red-600 text-white"
             >
               {isSubmitting ? "Submitting..." : "Submit Review"}
@@ -375,6 +497,10 @@ export default function FeaturedMenu({ featuredMenu }: FeaturedMenuProps) {
 
           {!user && (
             <p className="text-sm text-center text-amber-600 mt-2">You need to be logged in to submit a review</p>
+          )}
+
+          {!restaurantId && (
+            <p className="text-sm text-center text-amber-600 mt-2">Restaurant ID is required to submit reviews</p>
           )}
         </DialogContent>
       </Dialog>

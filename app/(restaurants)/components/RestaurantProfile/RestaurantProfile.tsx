@@ -20,7 +20,7 @@ export default function RestaurantProfile({ restaurant }: RestaurantProfileProps
       <BannerSection restaurant={restaurant} />
       <AboutSection restaurant={restaurant} />
       <ServicesSection />
-      <FeaturedMenu featuredMenu={restaurant.featuredMenu} />
+      <FeaturedMenu featuredMenu={restaurant.featuredMenu as any} restaurantId={restaurant.id}/>
       {/* <GuestReviews reviews={restaurant.reviews} /> */}
       <GuestReviews />
       <LocationSection address={restaurant.address} location={restaurant.location} />
