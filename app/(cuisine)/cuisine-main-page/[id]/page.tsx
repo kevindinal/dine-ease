@@ -41,6 +41,11 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
   const categoriesRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
+  /**
+ * Effect to update the background image URL for the restaurant's meal page.
+ * - Ensures the provided image URL is properly formatted (either relative or absolute).
+ * - Updates the `backgroundImageUrl` state with the valid URL for use in the UI.
+ */
   useEffect(() => {
     if (restaurant && restaurant.mealPageImage) {
       let imageUrl = restaurant.mealPageImage;
@@ -53,6 +58,12 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
     }
   }, [restaurant]);
 
+  /**
+ * Effect to detect scroll position and update state accordingly.
+ * - Adds an event listener to the window's scroll event.
+ * - Updates the `isScrolled` state when the scroll position exceeds 100px.
+ * - Removes the event listener when the component unmounts to prevent memory leaks.
+ */
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 100);
@@ -71,7 +82,6 @@ export default function MealPreOrderMain({ hotelImage }: MealPreOrderMainProps) 
       setSelectedCategory(null);
     }
 
-    // Scroll to top when changing categories
     window.scrollTo({
       top: 0,
       behavior: 'smooth'

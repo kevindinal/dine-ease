@@ -13,11 +13,19 @@ const OrderStatusPopup: React.FC<OrderStatusPopupProps> = ({ onClose }) => {
   const { orderStatus, loading, error } = useOrderStatus();
   const popupRef = useRef<HTMLDivElement>(null);
 
-  // Close popup when clicking outside
+/**
+Effect that closes a popup when a user clicks outside of it and disables body scroll.
+ * - This effect listens for the `mousedown` event on the document and checks if the click 
+ *   happened outside the popup. If so, it calls the `onClose` function to close the popup.
+ * - It also disables the page's body scroll by setting `document.body.style.overflow` to `'hidden'`.
+ * The cleanup function ensures that:
+ * - The `mousedown` event listener is removed when the component is unmounted or when dependencies change.
+ * - The body scroll is re-enabled by resetting `document.body.style.overflow` to its original state.
+ */
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
-        onClose(); // Call the parent's function instead
+        onClose(); 
       }
     };
 
@@ -63,7 +71,6 @@ const OrderStatusPopup: React.FC<OrderStatusPopupProps> = ({ onClose }) => {
 
   return (
     <div>
-      {/* Button can be used in dropdown or standalone */}
       <button
         onClick={onClose}
         className="px-5 py-2.5 w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-300 shadow-md hover:shadow-lg font-medium flex items-center justify-center"
@@ -83,7 +90,6 @@ const OrderStatusPopup: React.FC<OrderStatusPopupProps> = ({ onClose }) => {
         )}
       </button>
 
-      {/* Full-screen overlay with centered popup */}
       <AnimatePresence>
         {true && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
