@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { Search } from "lucide-react"
@@ -33,205 +33,160 @@ interface TableVisualizationProps {
   tables: any[]
   onTableSelect: (tableId: string) => void
   selectedTableId?: string
+  reservationTime?: string
 }
 
-export default function TableVisualization({ tables, onTableSelect, selectedTableId }: TableVisualizationProps) {
+export default function TableVisualization({
+  tables,
+  onTableSelect,
+  selectedTableId,
+  reservationTime,
+}: TableVisualizationProps) {
   const [activeTab, setActiveTab] = useState("indoor")
   const [searchTerm, setSearchTerm] = useState("")
+  const [visualizationTables, setVisualizationTables] = useState<TablePosition[]>([])
 
-  // Define the restaurant layout with improved positioning
-  const restaurantLayout: TablePosition[] = [
-    // Row 1
-    {
-      id: "T1",
-      name: "T1",
-      x: 200,
-      y: 150,
-      width: 200,
-      height: 80,
-      shape: "rectangle",
-      status: "reserved",
-      seats: 5,
-      customer: "Jhon ciena",
-      time: "11:30am",
-      chairs: {
-        top: 2,
-        right: 0,
-        bottom: 2,
-        left: 0,
-      },
-    },
-    {
-      id: "T2",
-      name: "T2",
-      x: 500,
-      y: 150,
-      width: 120,
-      height: 80,
-      shape: "rectangle",
-      status: "checked-in",
-      seats: 2,
-      chairs: {
-        top: 1,
-        right: 0,
-        bottom: 1,
-        left: 0,
-      },
-    },
-    {
-      id: "T3",
-      name: "T3",
-      x: 750,
-      y: 150,
-      width: 200,
-      height: 80,
-      shape: "rectangle",
-      status: "reserved",
-      seats: 4,
-      customer: "Kathryn",
-      time: "11:30pm",
-      chairs: {
-        top: 2,
-        right: 0,
-        bottom: 2,
-        left: 0,
-      },
-    },
+  // Generate a layout based on the actual table data
+  useEffect(() => {
+    if (!tables || tables.length === 0) return
 
-    // Row 2
-    {
-      id: "T4",
-      name: "T4",
-      x: 200,
-      y: 350,
-      width: 120,
-      height: 80,
-      shape: "rectangle",
-      status: "checked-in",
-      seats: 2,
-      chairs: {
-        top: 1,
-        right: 0,
-        bottom: 1,
-        left: 0,
-      },
-    },
-    {
-      id: "T5",
-      name: "T5",
-      x: 500,
-      y: 350,
-      width: 160,
-      height: 80,
-      shape: "rectangle",
-      status: "free",
-      seats: 4,
-      chairs: {
-        top: 2,
-        right: 0,
-        bottom: 2,
-        left: 0,
-      },
-    },
-    {
-      id: "T6",
-      name: "T6",
-      x: 750,
-      y: 350,
-      width: 200,
-      height: 80,
-      shape: "rectangle",
-      status: "checked-in",
-      seats: 5,
-      chairs: {
-        top: 3,
-        right: 0,
-        bottom: 3,
-        left: 0,
-      },
-    },
+    // Create a grid layout based on the number of tables
+    const generateLayout = () => {
+      const layout: TablePosition[] = []
 
-    // Row 3
-    {
-      id: "T7",
-      name: "T7",
-      x: 200,
-      y: 550,
-      width: 200,
-      height: 80,
-      shape: "rectangle",
-      status: "reserved",
-      seats: 3,
-      customer: "Donald",
-      time: "11:30am",
-      chairs: {
-        top: 2,
-        right: 0,
-        bottom: 2,
-        left: 0,
-      },
-    },
-    {
-      id: "T8",
-      name: "T8",
-      x: 500,
-      y: 550,
-      width: 200,
-      height: 80,
-      shape: "rectangle",
-      status: "free",
-      seats: 6,
-      chairs: {
-        top: 3,
-        right: 0,
-        bottom: 3,
-        left: 0,
-      },
-    },
-    {
-      id: "T9",
-      name: "T9",
-      x: 750,
-      y: 550,
-      width: 120,
-      height: 80,
-      shape: "rectangle",
-      status: "free",
-      seats: 2,
-      chairs: {
-        top: 1,
-        right: 0,
-        bottom: 1,
-        left: 0,
-      },
-    },
-  ]
+      // Define grid parameters
+      const columns = 3
+      const rowHeight = 200
+      const columnWidth = 300
+      const startX = 200
+      const startY = 150
+      const tableWidths = {
+        small: 120, // 1-2 seats
+        medium: 160, // 3-4 seats
+        large: 200, // 5+ seats
+      }
 
-  // Map the status from the database tables to the visualization status
-  const getTableStatus = (tableId: string) => {
-    const layoutTable = restaurantLayout.find((t) => t.id === tableId)
-    if (!layoutTable) return "free"
+      // Sort tables by name to ensure consistent layout
+      const sortedTables = [...tables].sort((a, b) => {
+        // Extract numbers from table names for proper sorting (T1, T2, T10, etc.)
+        const aNum = Number.parseInt(a.name.replace(/\D/g, "")) || 0
+        const bNum = Number.parseInt(b.name.replace(/\D/g, "")) || 0
+        return aNum - bNum
+      })
 
-    const dbTable = tables.find((t) => t.name === tableId)
-    if (dbTable) {
-      const status = dbTable.status.toLowerCase()
-      if (status === "available") return "free"
-      if (status === "reserved") return "reserved"
-      if (status === "billed") return "checked-in"
-      return status
+      sortedTables.forEach((table, index) => {
+        // Calculate position in grid
+        const row = Math.floor(index / columns)
+        const col = index % columns
+
+        // Determine table size based on seats
+        let tableWidth
+        if (table.seats <= 2) {
+          tableWidth = tableWidths.small
+        } else if (table.seats <= 4) {
+          tableWidth = tableWidths.medium
+        } else {
+          tableWidth = tableWidths.large
+        }
+
+        // Calculate chair distribution
+        const totalChairs = table.seats
+        let topChairs, rightChairs, bottomChairs, leftChairs
+
+        if (totalChairs <= 2) {
+          // For small tables, put chairs on top and bottom
+          topChairs = 1
+          bottomChairs = 1
+          rightChairs = 0
+          leftChairs = 0
+        } else if (totalChairs <= 4) {
+          // For medium tables, distribute chairs on all sides
+          topChairs = 2
+          bottomChairs = 2
+          rightChairs = 0
+          leftChairs = 0
+        } else {
+          // For large tables, distribute chairs on all sides
+          topChairs = Math.ceil(totalChairs / 2)
+          bottomChairs = Math.floor(totalChairs / 2)
+          rightChairs = 0
+          leftChairs = 0
+        }
+
+        // Extract customer name and time from reviews if available
+        let customer = ""
+        let time = ""
+
+        if (table.reviews && table.reviews.length > 0) {
+          // Use the most recent review for customer info
+          const latestReview = table.reviews[table.reviews.length - 1]
+          customer = latestReview.userName || ""
+
+          // Format the date if available
+          if (latestReview.date) {
+            try {
+              const reviewDate = new Date(latestReview.date)
+              time = reviewDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            } catch (e) {
+              console.error("Error formatting review date:", e)
+            }
+          }
+        }
+
+        // If no time from reviews, use reservation time
+        if (!time && reservationTime) {
+          time = formatTime(reservationTime)
+        }
+
+        // Create table position object
+        layout.push({
+          id: table.id,
+          name: table.name,
+          x: startX + col * columnWidth,
+          y: startY + row * rowHeight,
+          width: tableWidth,
+          height: 80,
+          shape: "rectangle",
+          status: table.status.toLowerCase(),
+          seats: table.seats,
+          customer: customer,
+          time: time,
+          chairs: {
+            top: topChairs,
+            right: rightChairs,
+            bottom: bottomChairs,
+            left: leftChairs,
+          },
+        })
+      })
+
+      return layout
     }
 
-    return layoutTable.status
+    setVisualizationTables(generateLayout())
+  }, [tables, reservationTime])
+
+  // Helper function to format time
+  function formatTime(time: string): string {
+    try {
+      const [hours, minutes] = time.split(":")
+      const hour = Number.parseInt(hours, 10)
+      const ampm = hour >= 12 ? "PM" : "AM"
+      const formattedHour = hour % 12 || 12
+      return `${formattedHour}:${minutes} ${ampm}`
+    } catch (e) {
+      return time
+    }
   }
 
   // Get status color
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "free":
+      case "available":
         return "bg-emerald-100 border-emerald-400"
       case "reserved":
         return "bg-amber-100 border-amber-400"
-      case "checked-in":
+      case "billed":
         return "bg-orange-400 border-orange-500"
       default:
         return "bg-gray-100 border-gray-300"
@@ -241,30 +196,44 @@ export default function TableVisualization({ tables, onTableSelect, selectedTabl
   // Get status text color
   const getStatusTextColor = (status: string) => {
     switch (status) {
-      case "free":
+      case "available":
         return "text-emerald-700"
       case "reserved":
         return "text-amber-700"
-      case "checked-in":
+      case "billed":
         return "text-white"
       default:
         return "text-gray-700"
     }
   }
 
+  // Get display status text
+  const getDisplayStatus = (status: string) => {
+    switch (status) {
+      case "available":
+        return "Free"
+      case "reserved":
+        return "Reserved"
+      case "billed":
+        return "Checked-in"
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1)
+    }
+  }
+
   // Get the count of tables by status
   const getStatusCounts = () => {
     const counts = {
-      free: 0,
+      available: 0,
       reserved: 0,
-      checkedIn: 0,
+      billed: 0,
     }
 
-    restaurantLayout.forEach((table) => {
-      const status = getTableStatus(table.id)
-      if (status === "free") counts.free++
+    tables.forEach((table) => {
+      const status = table.status.toLowerCase()
+      if (status === "available") counts.available++
       if (status === "reserved") counts.reserved++
-      if (status === "checked-in") counts.checkedIn++
+      if (status === "billed") counts.billed++
     })
 
     return counts
@@ -273,10 +242,10 @@ export default function TableVisualization({ tables, onTableSelect, selectedTabl
   const statusCounts = getStatusCounts()
 
   // Filter tables based on search term
-  const filteredTables = restaurantLayout.filter((table) => {
+  const filteredTables = visualizationTables.filter((table) => {
     if (!searchTerm) return true
     return (
-      table.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      table.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (table.customer && table.customer.toLowerCase().includes(searchTerm.toLowerCase()))
     )
   })
@@ -337,13 +306,26 @@ export default function TableVisualization({ tables, onTableSelect, selectedTabl
 
   // Render indoor tables
   const renderIndoorTables = () => {
+    if (visualizationTables.length === 0) {
+      return (
+        <div className="flex items-center justify-center h-[500px]">
+          <div className="text-center">
+            <p className="text-gray-500 mb-2">Loading table data...</p>
+          </div>
+        </div>
+      )
+    }
+
+    // Calculate the required height based on the number of rows
+    const rows = Math.ceil(visualizationTables.length / 3)
+    const minHeight = Math.max(600, rows * 200 + 100) // At least 600px or enough for all rows
+
     return (
-      <div className="relative w-full overflow-x-auto bg-white rounded-xl" style={{ minHeight: "600px" }}>
-        <div className="relative w-full h-[700px]">
+      <div className="relative w-full overflow-x-auto bg-white rounded-xl" style={{ minHeight: `${minHeight}px` }}>
+        <div className="relative w-full h-full">
           {/* Tables */}
           <TooltipProvider>
             {filteredTables.map((table) => {
-              const status = getTableStatus(table.id)
               const isSelected = selectedTableId === table.id
               const chairPositions = generateChairPositions(table)
 
@@ -370,7 +352,7 @@ export default function TableVisualization({ tables, onTableSelect, selectedTabl
                         onClick={() => onTableSelect(table.id)}
                         className={cn(
                           "absolute flex flex-col items-center justify-center border-2 transition-all duration-200 rounded-2xl",
-                          getStatusColor(status),
+                          getStatusColor(table.status),
                           isSelected ? "ring-2 ring-primary ring-offset-2" : "",
                         )}
                         style={{
@@ -381,15 +363,19 @@ export default function TableVisualization({ tables, onTableSelect, selectedTabl
                           transform: isSelected ? "scale(1.02)" : "scale(1)",
                         }}
                       >
-                        <span className={cn("font-bold text-lg", getStatusTextColor(status))}>{table.name}</span>
-                        {status === "free" && <span className={cn("text-sm", getStatusTextColor(status))}>Free</span>}
-                        {status === "checked-in" && (
-                          <span className={cn("text-sm", getStatusTextColor(status))}>Checked-in</span>
+                        <span className={cn("font-bold text-lg", getStatusTextColor(table.status))}>{table.name}</span>
+                        {table.status === "available" && (
+                          <span className={cn("text-sm", getStatusTextColor(table.status))}>Free</span>
                         )}
-                        {status === "reserved" && table.customer && (
+                        {table.status === "billed" && (
+                          <span className={cn("text-sm", getStatusTextColor(table.status))}>Checked-in</span>
+                        )}
+                        {table.status === "reserved" && table.customer && (
                           <>
-                            <span className={cn("text-sm", getStatusTextColor(status))}>{table.customer}</span>
-                            <span className={cn("text-xs", getStatusTextColor(status))}>{table.time}</span>
+                            <span className={cn("text-sm", getStatusTextColor(table.status))}>{table.customer}</span>
+                            {table.time && (
+                              <span className={cn("text-xs", getStatusTextColor(table.status))}>{table.time}</span>
+                            )}
                           </>
                         )}
                       </button>
@@ -397,7 +383,7 @@ export default function TableVisualization({ tables, onTableSelect, selectedTabl
                     <TooltipContent>
                       <div className="text-sm">
                         <p className="font-bold">{table.name}</p>
-                        <p>Status: {status.charAt(0).toUpperCase() + status.slice(1)}</p>
+                        <p>Status: {getDisplayStatus(table.status)}</p>
                         <p>Seats: {table.seats}</p>
                         {table.customer && <p>Customer: {table.customer}</p>}
                         {table.time && <p>Time: {table.time}</p>}
@@ -462,7 +448,7 @@ export default function TableVisualization({ tables, onTableSelect, selectedTabl
             Reserved ({statusCounts.reserved})
           </Badge>
           <Badge variant="outline" className="bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-200">
-            Checked-in ({statusCounts.checkedIn})
+            Checked-in ({statusCounts.billed})
           </Badge>
         </div>
 
@@ -481,7 +467,7 @@ export default function TableVisualization({ tables, onTableSelect, selectedTabl
           <div className="text-sm font-medium">Table</div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-emerald-400"></div>
-            <span className="text-sm">Free : {statusCounts.free}</span>
+            <span className="text-sm">Free : {statusCounts.available}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-amber-300"></div>
@@ -489,7 +475,7 @@ export default function TableVisualization({ tables, onTableSelect, selectedTabl
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-orange-500"></div>
-            <span className="text-sm">Checked-in : {statusCounts.checkedIn}</span>
+            <span className="text-sm">Checked-in : {statusCounts.billed}</span>
           </div>
 
           <div className="ml-auto">

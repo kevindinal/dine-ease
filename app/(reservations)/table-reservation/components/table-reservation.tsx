@@ -876,7 +876,12 @@ export default function TableReservation() {
       </motion.div>
 
       {/* 2D Table Visualization */}
-      <TableVisualization tables={tables} onTableSelect={handleTableSelect} selectedTableId={selectedTableId} />
+      <TableVisualization
+        tables={tables}
+        onTableSelect={handleTableSelect}
+        selectedTableId={selectedTableId}
+        reservationTime={reservationTime}
+      />
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
