@@ -56,14 +56,14 @@ export default function TableVisualization({
 
       // Define grid parameters
       const columns = 3
-      const rowHeight = 200
-      const columnWidth = 300
-      const startX = 200
-      const startY = 150
+      const rowHeight = 180
+      const columnWidth = 280
+      const startX = 180
+      const startY = 120
       const tableWidths = {
-        small: 120, // 1-2 seats
-        medium: 160, // 3-4 seats
-        large: 200, // 5+ seats
+        small: 120,
+        medium: 160,
+        large: 200,
       }
 
       // Sort tables by name to ensure consistent layout
@@ -255,7 +255,7 @@ export default function TableVisualization({
     const chairs = []
     const chairWidth = 40
     const chairHeight = 10
-    const spacing = 10 // Space between chairs
+    const spacing = 10
 
     // Top chairs
     const topChairStartX = table.x - (table.chairs.top * chairWidth + (table.chairs.top - 1) * spacing) / 2
@@ -308,7 +308,7 @@ export default function TableVisualization({
   const renderIndoorTables = () => {
     if (visualizationTables.length === 0) {
       return (
-        <div className="flex items-center justify-center h-[500px]">
+        <div className="flex items-center justify-center h-[300px]">
           <div className="text-center">
             <p className="text-gray-500 mb-2">Loading table data...</p>
           </div>
@@ -318,7 +318,7 @@ export default function TableVisualization({
 
     // Calculate the required height based on the number of rows
     const rows = Math.ceil(visualizationTables.length / 3)
-    const minHeight = Math.max(600, rows * 200 + 100) // At least 600px or enough for all rows
+    const minHeight = Math.max(350, rows * 140 + 30)
 
     return (
       <div className="relative w-full overflow-x-auto bg-white rounded-xl" style={{ minHeight: `${minHeight}px` }}>
@@ -363,18 +363,20 @@ export default function TableVisualization({
                           transform: isSelected ? "scale(1.02)" : "scale(1)",
                         }}
                       >
-                        <span className={cn("font-bold text-lg", getStatusTextColor(table.status))}>{table.name}</span>
+                        <span className={cn("font-bold text-base", getStatusTextColor(table.status))}>
+                          {table.name}
+                        </span>
                         {table.status === "available" && (
-                          <span className={cn("text-sm", getStatusTextColor(table.status))}>Free</span>
+                          <span className={cn("text-xs", getStatusTextColor(table.status))}>Free</span>
                         )}
                         {table.status === "billed" && (
-                          <span className={cn("text-sm", getStatusTextColor(table.status))}>Checked-in</span>
+                          <span className={cn("text-xs", getStatusTextColor(table.status))}>Checked-in</span>
                         )}
                         {table.status === "reserved" && table.customer && (
                           <>
-                            <span className={cn("text-sm", getStatusTextColor(table.status))}>{table.customer}</span>
+                            <span className={cn("text-xs", getStatusTextColor(table.status))}>{table.customer}</span>
                             {table.time && (
-                              <span className={cn("text-xs", getStatusTextColor(table.status))}>{table.time}</span>
+                              <span className={cn("text-[10px]", getStatusTextColor(table.status))}>{table.time}</span>
                             )}
                           </>
                         )}
@@ -402,7 +404,7 @@ export default function TableVisualization({
   // Render outdoor tables (empty state)
   const renderOutdoorTables = () => {
     return (
-      <div className="flex items-center justify-center h-[500px] border-2 border-dashed border-gray-200 rounded-xl">
+      <div className="flex items-center justify-center h-[300px] border-2 border-dashed border-gray-200 rounded-xl">
         <div className="text-center">
           <p className="text-gray-500 mb-2">Outdoor seating area not available</p>
           <Button variant="outline" onClick={() => setActiveTab("indoor")}>
@@ -414,11 +416,11 @@ export default function TableVisualization({
   }
 
   return (
-    <div className="w-full mb-8 overflow-hidden bg-white rounded-xl border shadow-sm">
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
+    <div className="w-full mb-4 overflow-hidden bg-white rounded-xl border shadow-sm">
+      <div className="p-3">
+        <div className="flex justify-between items-center mb-3">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">Choose Tables</h2>
+            <h2 className="text-xl font-bold text-gray-800">Choose Tables</h2>
           </div>
           <div className="flex items-center gap-3">
             <Tabs defaultValue="indoor" className="w-[240px]" onValueChange={setActiveTab}>
@@ -443,7 +445,7 @@ export default function TableVisualization({
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 mb-4">
+        <div className="flex justify-end gap-2 mb-2">
           <Badge variant="outline" className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-amber-200">
             Reserved ({statusCounts.reserved})
           </Badge>
@@ -463,26 +465,28 @@ export default function TableVisualization({
         </Tabs>
 
         {/* Legend */}
-        <div className="flex items-center gap-6 mt-6 pt-4 border-t">
-          <div className="text-sm font-medium">Table</div>
+        <div className="flex items-center gap-4 mt-3 pt-2 border-t text-sm">
+          <div className="font-medium">Table</div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-emerald-400"></div>
-            <span className="text-sm">Free : {statusCounts.available}</span>
+            <span>Free : {statusCounts.available}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-amber-300"></div>
-            <span className="text-sm">Reserved : {statusCounts.reserved}</span>
+            <span>Reserved : {statusCounts.reserved}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-orange-500"></div>
-            <span className="text-sm">Checked-in : {statusCounts.billed}</span>
+            <span>Checked-in : {statusCounts.billed}</span>
           </div>
 
           <div className="ml-auto">
-            <Button variant="outline" className="mr-2">
+            <Button variant="outline" size="sm" className="mr-2">
               Cancel
             </Button>
-            <Button className="bg-orange-500 hover:bg-orange-600">Check-in</Button>
+            <Button size="sm" className="bg-orange-500 hover:bg-orange-600">
+              Check-in
+            </Button>
           </div>
         </div>
       </div>
