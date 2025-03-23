@@ -4,12 +4,18 @@ import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Script from 'next/script';
 
-// Create a custom component that renders the model-viewer as a div with dangerouslySetInnerHTML
-// This avoids TypeScript JSX issues with custom elements
+
 const ModelViewerRaw = () => {
   // Hardcoded path to sample.glb in the public folder
   const arModelUrl = '/sample.glb';
   
+/**
+ * Generates an HTML string for embedding a 3D model viewer.
+ * - Uses `<model-viewer>` to render an interactive 3D model.
+ * - Supports AR features across various platforms (WebXR, Scene Viewer, Quick Look).
+ * - Provides user interaction via camera controls and auto-rotation.
+ * - Includes a styled AR button for entering AR mode.
+ */ 
   const modelViewerHtml = `
     <model-viewer
       src="${arModelUrl}"
@@ -42,15 +48,21 @@ const ModelViewerRaw = () => {
   );
 };
 
-// Dynamic import for Three.js (3D view on desktop)
 const ThreeViewerComponent = () => {
   const [ThreeViewer, setThreeViewer] = useState<any>(null);
   
-  // Hardcoded path to sample.glb in the public folder
   const arModelUrl = '/sample.glb';
-
+/**
+ * Effect to dynamically load and initialize the 3D model viewer component.
+ * - Imports `@react-three/fiber` and `@react-three/drei` libraries only when needed (on mount).
+ * - Defines `ThreeViewerImpl`, a React component that sets up a 3D scene using `Canvas`, `Stage`, and `OrbitControls`.
+ * - Loads and renders a GLTF model from the specified `arModelUrl`.
+ * - Uses `setThreeViewer` to update the component state with the viewer implementation.
+ * 
+ * Dependencies:
+ * - Empty dependency array `[]` ensures the effect runs once on mount.
+ */
   useEffect(() => {
-    // Dynamically import Three.js components
     import('@react-three/fiber').then(() => {
       import('@react-three/drei').then(() => {
         const ThreeViewerImpl = () => {
@@ -90,9 +102,18 @@ const ThreeViewerComponent = () => {
 
 const MealModelViewer: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
-  
+
+  /**
+ * Effect to detect mobile devices based on user agent string.
+ * - Checks if the user is on a mobile device by testing the user agent with a regex.
+ * - Sets the `isMobile` state accordingly.
+ * - Listens for window resize events to update the state if the device screen size changes.
+ * - Cleans up the resize event listener when the component unmounts to prevent memory leaks.
+ * 
+ * Dependencies:
+ * - Empty dependency array `[]` ensures this effect runs only once when the component mounts.
+ */
   useEffect(() => {
-    // Check if device is mobile
     const checkMobile = () => {
       const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
       const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
@@ -101,12 +122,10 @@ const MealModelViewer: React.FC = () => {
     
     checkMobile();
     
-    // Recheck on resize
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Lazy load the appropriate viewer component
   const ViewerComponent = dynamic(
     () => Promise.resolve(isMobile ? ModelViewerRaw : ThreeViewerComponent),
     { 
