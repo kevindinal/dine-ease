@@ -15,6 +15,9 @@ import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { TimePicker } from "@/app/(restaurants)/components/timePicker"
 
+// Define a type for menu items to help TypeScript understand the structure
+type MenuItem = string | { name: string; [key: string]: any }
+
 export default function AllRestaurants() {
   const [date, setDate] = useState<Date | undefined>(new Date("2025-02-02"))
   const [time, setTime] = useState("19:00")
@@ -54,12 +57,13 @@ export default function AllRestaurants() {
               // Check if restaurant has featuredMenu property and it's an array
               if (restaurant.featuredMenu && Array.isArray(restaurant.featuredMenu)) {
                 // Check if any menu item matches the search
-                return restaurant.featuredMenu.some((menuItem) => {
+                return restaurant.featuredMenu.some((menuItem: MenuItem) => {
                   // Handle both string menu items and object menu items with a name property
                   if (typeof menuItem === "string") {
                     return menuItem.toLowerCase().includes(searchLower)
-                  } else if (typeof menuItem === "object" && menuItem !== null && "name" in menuItem) {
-                    return menuItem.name.toLowerCase().includes(searchLower)
+                  } else if (typeof menuItem === "object" && menuItem !== null) {
+                    // Ensure name exists and is a string before using toLowerCase
+                    return typeof menuItem.name === "string" && menuItem.name.toLowerCase().includes(searchLower)
                   }
                   return false
                 })
@@ -208,7 +212,7 @@ export default function AllRestaurants() {
       {/* Restaurant Listing */}
       <div className="container mx-auto px-4 py-8">
         {/* Dedicated Search Bar */}
-        <div className="mb-2">
+        <div className="mb-10">
           <div className="relative max-w-2xl mx-auto">
             <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
               <Search className="h-5 w-5 text-red-500" />
@@ -231,7 +235,7 @@ export default function AllRestaurants() {
           </div>
 
           {/* Search Type Selector */}
-          <div className="flex justify-center mt-2 space-x-2">
+          <div className="flex justify-center mt-5 space-x-2">
             <button
               onClick={() => setSearchType("all")}
               className={`px-3 py-1 text-sm rounded-full transition-all ${
