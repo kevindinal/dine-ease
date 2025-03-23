@@ -563,8 +563,6 @@ export default function TableDetailsPage() {
 
     console.log("Reservation data received:", reservationData);
 
-    // Save reservation data to localStorage
-   
 
     // Show payment options
     setShowPaymentOptions(true);
