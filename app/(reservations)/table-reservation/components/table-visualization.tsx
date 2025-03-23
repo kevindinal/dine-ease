@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { Search } from "lucide-react"
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useMediaQuery } from "@/hooks/use-media-query"
 
 interface TablePosition {
   id: string
@@ -45,6 +46,10 @@ export default function TableVisualization({
   const [activeTab, setActiveTab] = useState("indoor")
   const [searchTerm, setSearchTerm] = useState("")
   const [visualizationTables, setVisualizationTables] = useState<TablePosition[]>([])
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const isMobile = useMediaQuery("(max-width: 768px)")
+  const isTablet = useMediaQuery("(max-width: 1024px)")
 
   // Generate a layout based on the actual table data
   useEffect(() => {
@@ -54,17 +59,26 @@ export default function TableVisualization({
     const generateLayout = () => {
       const layout: TablePosition[] = []
 
-      // Define grid parameters
-      const columns = 3
-      const rowHeight = 180
-      const columnWidth = 280
-      const startX = 180
-      const startY = 120
+      // Define responsive grid parameters
+      const columns = isMobile ? 2 : 3
       const tableWidths = {
-        small: 120,
-        medium: 160,
-        large: 200,
+        small: isMobile ? 80 : isTablet ? 100 : 120,
+        medium: isMobile ? 100 : isTablet ? 130 : 160,
+        large: isMobile ? 120 : isTablet ? 160 : 200,
       }
+
+      // Calculate container dimensions
+      const containerWidth = containerRef.current?.clientWidth || 800
+
+      // Calculate spacing
+      const padding = isMobile ? 20 : 40
+      const availableWidth = containerWidth - padding * 2
+      const columnWidth = availableWidth / columns
+      const rowHeight = isMobile ? 140 : 180
+
+      // Calculate starting position
+      const startX = columnWidth / 2 + padding
+      const startY = isMobile ? 80 : 120
 
       // Sort tables by name to ensure consistent layout
       const sortedTables = [...tables].sort((a, b) => {
@@ -145,7 +159,7 @@ export default function TableVisualization({
           x: startX + col * columnWidth,
           y: startY + row * rowHeight,
           width: tableWidth,
-          height: 80,
+          height: isMobile ? 60 : 80,
           shape: "rectangle",
           status: table.status.toLowerCase(),
           seats: table.seats,
@@ -163,8 +177,20 @@ export default function TableVisualization({
       return layout
     }
 
+    const handleResize = () => {
+      setVisualizationTables(generateLayout())
+    }
+
+    // Initial layout
     setVisualizationTables(generateLayout())
-  }, [tables, reservationTime])
+
+    // Add resize listener
+    window.addEventListener("resize", handleResize)
+
+    return () => {
+      window.removeEventListener("resize", handleResize)
+    }
+  }, [tables, reservationTime, isMobile, isTablet])
 
   // Helper function to format time
   function formatTime(time: string): string {
@@ -253,16 +279,16 @@ export default function TableVisualization({
   // Generate chair positions for a table
   const generateChairPositions = (table: TablePosition) => {
     const chairs = []
-    const chairWidth = 40
-    const chairHeight = 10
-    const spacing = 10
+    const chairWidth = isMobile ? 30 : 40
+    const chairHeight = isMobile ? 8 : 10
+    const spacing = isMobile ? 6 : 10
 
     // Top chairs
     const topChairStartX = table.x - (table.chairs.top * chairWidth + (table.chairs.top - 1) * spacing) / 2
     for (let i = 0; i < table.chairs.top; i++) {
       chairs.push({
         x: topChairStartX + i * (chairWidth + spacing),
-        y: table.y - table.height / 2 - chairHeight - 5,
+        y: table.y - table.height / 2 - chairHeight - (isMobile ? 3 : 5),
         width: chairWidth,
         height: chairHeight,
       })
@@ -273,7 +299,7 @@ export default function TableVisualization({
     for (let i = 0; i < table.chairs.bottom; i++) {
       chairs.push({
         x: bottomChairStartX + i * (chairWidth + spacing),
-        y: table.y + table.height / 2 + 5,
+        y: table.y + table.height / 2 + (isMobile ? 3 : 5),
         width: chairWidth,
         height: chairHeight,
       })
@@ -283,7 +309,7 @@ export default function TableVisualization({
     const leftChairStartY = table.y - (table.chairs.left * chairWidth + (table.chairs.left - 1) * spacing) / 2
     for (let i = 0; i < table.chairs.left; i++) {
       chairs.push({
-        x: table.x - table.width / 2 - chairHeight - 5,
+        x: table.x - table.width / 2 - chairHeight - (isMobile ? 3 : 5),
         y: leftChairStartY + i * (chairWidth + spacing),
         width: chairHeight,
         height: chairWidth,
@@ -294,7 +320,7 @@ export default function TableVisualization({
     const rightChairStartY = table.y - (table.chairs.right * chairWidth + (table.chairs.right - 1) * spacing) / 2
     for (let i = 0; i < table.chairs.right; i++) {
       chairs.push({
-        x: table.x + table.width / 2 + 5,
+        x: table.x + table.width / 2 + (isMobile ? 3 : 5),
         y: rightChairStartY + i * (chairWidth + spacing),
         width: chairHeight,
         height: chairWidth,
@@ -308,7 +334,7 @@ export default function TableVisualization({
   const renderIndoorTables = () => {
     if (visualizationTables.length === 0) {
       return (
-        <div className="flex items-center justify-center h-[300px]">
+        <div className="flex items-center justify-center h-[250px] md:h-[300px]">
           <div className="text-center">
             <p className="text-gray-500 mb-2">Loading table data...</p>
           </div>
@@ -317,11 +343,15 @@ export default function TableVisualization({
     }
 
     // Calculate the required height based on the number of rows
-    const rows = Math.ceil(visualizationTables.length / 3)
-    const minHeight = Math.max(350, rows * 140 + 30)
+    const rows = Math.ceil(filteredTables.length / (isMobile ? 2 : 3))
+    const minHeight = Math.max(isMobile ? 250 : 350, rows * (isMobile ? 120 : 140) + 30)
 
     return (
-      <div className="relative w-full overflow-x-auto bg-white rounded-xl" style={{ minHeight: `${minHeight}px` }}>
+      <div
+        ref={containerRef}
+        className="relative w-full overflow-x-auto bg-white rounded-xl table-visualization-container"
+        style={{ minHeight: `${minHeight}px` }}
+      >
         <div className="relative w-full h-full">
           {/* Tables */}
           <TooltipProvider>
@@ -404,7 +434,7 @@ export default function TableVisualization({
   // Render outdoor tables (empty state)
   const renderOutdoorTables = () => {
     return (
-      <div className="flex items-center justify-center h-[300px] border-2 border-dashed border-gray-200 rounded-xl">
+      <div className="flex items-center justify-center h-[250px] md:h-[300px] border-2 border-dashed border-gray-200 rounded-xl">
         <div className="text-center">
           <p className="text-gray-500 mb-2">Outdoor seating area not available</p>
           <Button variant="outline" onClick={() => setActiveTab("indoor")}>
@@ -418,12 +448,12 @@ export default function TableVisualization({
   return (
     <div className="w-full mb-4 overflow-hidden bg-white rounded-xl border shadow-sm">
       <div className="p-3">
-        <div className="flex justify-between items-center mb-3">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-3">
           <div>
             <h2 className="text-xl font-bold text-gray-800">Choose Tables</h2>
           </div>
-          <div className="flex items-center gap-3">
-            <Tabs defaultValue="indoor" className="w-[240px]" onValueChange={setActiveTab}>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
+            <Tabs defaultValue="indoor" className="w-full sm:w-[240px]" onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="indoor" className="text-sm">
                   Indoor
@@ -433,7 +463,7 @@ export default function TableVisualization({
                 </TabsTrigger>
               </TabsList>
             </Tabs>
-            <div className="relative w-[240px]">
+            <div className="relative w-full sm:w-[240px]">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
               <Input
                 placeholder="Search tables..."
@@ -465,22 +495,22 @@ export default function TableVisualization({
         </Tabs>
 
         {/* Legend */}
-        <div className="flex items-center gap-4 mt-3 pt-2 border-t text-sm">
+        <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-3 pt-2 border-t text-xs md:text-sm">
           <div className="font-medium">Table</div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-emerald-400"></div>
-            <span>Free : {statusCounts.available}</span>
+          <div className="flex items-center gap-1 md:gap-2">
+            <div className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-emerald-400"></div>
+            <span>Free: {statusCounts.available}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-amber-300"></div>
-            <span>Reserved : {statusCounts.reserved}</span>
+          <div className="flex items-center gap-1 md:gap-2">
+            <div className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-amber-300"></div>
+            <span>Reserved: {statusCounts.reserved}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-orange-500"></div>
-            <span>Checked-in : {statusCounts.billed}</span>
+          <div className="flex items-center gap-1 md:gap-2">
+            <div className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-orange-500"></div>
+            <span>Checked-in: {statusCounts.billed}</span>
           </div>
 
-          <div className="ml-auto">
+          <div className="w-full md:w-auto md:ml-auto mt-2 md:mt-0">
             <Button variant="outline" size="sm" className="mr-2">
               Cancel
             </Button>
