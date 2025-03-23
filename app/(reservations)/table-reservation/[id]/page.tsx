@@ -3,7 +3,19 @@
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 // Import addDoc for adding reviews to Firebase
-import { doc, getDoc, collection, getDocs, query, where, addDoc } from "firebase/firestore"
+import {
+  doc,
+  getDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+  addDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+  setDoc,
+} from "firebase/firestore"
 import { ref, getDownloadURL } from "firebase/storage"
 import { db, storage } from "@/lib/firebase/tables"
 import {
@@ -272,6 +284,32 @@ export default function TableDetailsPage() {
   }, [])
 
   useEffect(() => {
+    // Check if the current table is in user's favorites
+    const checkIfFavorite = async () => {
+      try {
+        const currentUser = auth.currentUser
+        if (currentUser && id) {
+          const userDocRef = doc(db, "users", currentUser.uid)
+          const userDoc = await getDoc(userDocRef)
+
+          if (userDoc.exists()) {
+            const userData = userDoc.data()
+            if (userData.favorites && Array.isArray(userData.favorites)) {
+              setIsFavorite(userData.favorites.includes(id))
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error checking favorites:", error)
+      }
+    }
+
+    if (id) {
+      checkIfFavorite()
+    }
+  }, [id])
+
+  useEffect(() => {
     const fetchTable = async () => {
       setLoading(true)
       try {
@@ -519,12 +557,53 @@ export default function TableDetailsPage() {
     }
   }
 
-  const handleToggleFavorite = () => {
-    setIsFavorite(!isFavorite)
-    // Show notification when adding to favorites
-    if (!isFavorite) {
+  const handleToggleFavorite = async () => {
+    try {
+      const currentUser = auth.currentUser
+
+      if (!currentUser) {
+        // If user is not logged in, prompt them to log in
+        alert("Please log in to save favorites")
+        return
+      }
+
+      if (!table?.id) {
+        console.error("Table ID is missing")
+        return
+      }
+
+      const userDocRef = doc(db, "users", currentUser.uid)
+      const userDoc = await getDoc(userDocRef)
+
+      // Toggle favorite status
+      const newFavoriteStatus = !isFavorite
+
+      if (userDoc.exists()) {
+        // Update existing user document
+        await updateDoc(userDocRef, {
+          favorites: newFavoriteStatus ? arrayUnion(table.id) : arrayRemove(table.id),
+        })
+      } else {
+        // Create new user document if it doesn't exist
+        await setDoc(userDocRef, {
+          favorites: newFavoriteStatus ? [table.id] : [],
+          email: currentUser.email,
+          name: currentUser.displayName || "User",
+          createdAt: new Date(),
+        })
+      }
+
+      // Update local state
+      setIsFavorite(newFavoriteStatus)
+
+      // Show notification
       setShowNotification(true)
       setTimeout(() => setShowNotification(false), 3000)
+
+      console.log(`Table ${newFavoriteStatus ? "added to" : "removed from"} favorites`)
+    } catch (error) {
+      console.error("Error updating favorites:", error)
+      alert("Failed to update favorites. Please try again.")
     }
   }
 
