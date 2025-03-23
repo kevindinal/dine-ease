@@ -372,7 +372,7 @@ const Navbar = () => {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer transition-colors duration-200 hover:bg-[#FA4032]/10 group">
                   <Settings className="mr-2 h-4 w-4 group-hover:rotate-90 transition-transform duration-300" />
-                  <span>Profile Settings</span>
+                  <span>My Profile</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer transition-colors duration-200 hover:bg-[#FA4032]/10 group"

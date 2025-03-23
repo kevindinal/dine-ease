@@ -9,4 +9,3 @@ export const metadata: Metadata = {
 export default function ProfilePage() {
   return <ProfileDashboard />
 }
-
