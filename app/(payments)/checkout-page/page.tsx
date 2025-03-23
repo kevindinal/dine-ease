@@ -4,10 +4,11 @@ import React, { useEffect, useState } from "react";
 import { useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js";
 import convertToSubcurrency from "@/lib/convertToSubcurrency";
 import { useRouter } from "next/navigation";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase"; // Make sure db is exported from firebase.ts
 import { useAuthState } from "react-firebase-hooks/auth";
 import { getUserData } from "@/lib/auth";
 import { UserProp } from "@/types";
+import { doc, updateDoc, increment, DocumentReference } from "firebase/firestore";
 
 const CheckoutPage = ({ amount }: { amount: number }) => {
   const stripe = useStripe();
@@ -102,6 +103,24 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
       setLoading(false);
     } else {
       setPaymentSuccess(true);
+      
+      // Add 10 points to the user's points in Firebase
+      if (user && user.uid) {
+        try {
+          // Reference to the user document
+          const userRef: DocumentReference = doc(db, "users", user.uid);
+          
+          // Update the points field, incrementing by 10
+          await updateDoc(userRef, {
+            points: increment(10)
+          });
+          
+          console.log("Successfully added 10 points to user account");
+        } catch (error) {
+          console.error("Error updating user points:", error);
+        }
+      }
+      
       setLoading(false);
     }
   };
@@ -160,6 +179,7 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
               <p className="font-medium">Order placed by:</p>
               <p>{userData.firstName} {userData.lastName}</p>
               <p className="text-sm text-gray-600">{userData.email}</p>
+              <p className="text-sm text-green-600 mt-1">+10 loyalty points added!</p>
             </div>
           )}
         </div>
