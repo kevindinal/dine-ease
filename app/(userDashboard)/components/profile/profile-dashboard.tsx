@@ -346,7 +346,6 @@ export default function ProfileDashboard() {
   }, [])
 
   const handleLogout = () => {
-    // Implement logout functionality
     router.push("/sign-in")
   }
 
@@ -354,11 +353,8 @@ export default function ProfileDashboard() {
     { id: "overview", label: "Overview", icon: <Home className="h-5 w-5" /> },
     { id: "orders", label: "My Orders", icon: <Package className="h-5 w-5" /> },
     { id: "reservations", label: "Reservations", icon: <Calendar className="h-5 w-5" /> },
-    { id: "favorites", label: "Favorites", icon: <Heart className="h-5 w-5" /> },
-    { id: "activity", label: "Activity", icon: <History className="h-5 w-5" /> },
     { id: "notifications", label: "Notifications", icon: <Bell className="h-5 w-5" /> },
     { id: "payment", label: "Payment Methods", icon: <CreditCard className="h-5 w-5" /> },
-    { id: "addresses", label: "Addresses", icon: <MapPin className="h-5 w-5" /> },
     { id: "settings", label: "Account Settings", icon: <Settings className="h-5 w-5" /> },
   ]
 
@@ -383,6 +379,7 @@ export default function ProfileDashboard() {
     }
   }
 
+<<<<<<< Updated upstream
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
       case "preparing":
@@ -404,6 +401,8 @@ export default function ProfileDashboard() {
     }
   }
 
+=======
+>>>>>>> Stashed changes
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mobile Header */}
@@ -763,6 +762,7 @@ export default function ProfileDashboard() {
                   )}
                 </div>
 
+<<<<<<< Updated upstream
                 {/* Favorite Restaurants */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
@@ -814,6 +814,8 @@ export default function ProfileDashboard() {
                   </div>
                 </div>
 
+=======
+>>>>>>> Stashed changes
                 {/* Recent Activity */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
@@ -1009,7 +1011,7 @@ export default function ProfileDashboard() {
                   </TabsList>
 
                   <TabsContent value="upcoming">
-                    {upcomingReservations.length > 0 ? (
+                    {/* {upcomingReservations.length > 0 ? (
                       <div className="space-y-4">
                         {upcomingReservations.map((reservation) => (
                           <Card key={reservation.id} className="overflow-hidden">
@@ -1068,7 +1070,7 @@ export default function ProfileDashboard() {
                           <Button>Make a Reservation</Button>
                         </CardContent>
                       </Card>
-                    )}
+                    )} */}
                   </TabsContent>
 
                   <TabsContent value="past">
@@ -1129,6 +1131,7 @@ export default function ProfileDashboard() {
               </div>
             )}
 
+<<<<<<< Updated upstream
             {/* Favorites Tab */}
             {activeTab === "favorites" && (
               <div className="space-y-6">
@@ -1203,6 +1206,8 @@ export default function ProfileDashboard() {
               </div>
             )}
 
+=======
+>>>>>>> Stashed changes
             {/* Notifications Tab */}
             {activeTab === "notifications" && (
               <div className="space-y-6">
@@ -1287,56 +1292,7 @@ export default function ProfileDashboard() {
               </div>
             )}
 
-            {/* Addresses Tab */}
-            {activeTab === "addresses" && (
-              <div className="space-y-6">
-                <h1 className="text-2xl font-bold">My Addresses</h1>
-
-                <div className="space-y-4">
-                  {addresses.map((address) => (
-                    <Card key={address.id}>
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center">
-                            <div className="rounded-full bg-primary/10 p-2 mr-3">
-                              <MapPin className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                              <div className="flex items-center">
-                                <p className="font-medium">{address.name}</p>
-                                {address.isDefault && (
-                                  <Badge className="ml-2 bg-primary/10 text-primary border-primary/20">Default</Badge>
-                                )}
-                              </div>
-                              <p className="text-sm text-muted-foreground">{address.street}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {address.city}, {address.state} {address.zip}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button variant="ghost" size="sm">
-                              Edit
-                            </Button>
-                            {!address.isDefault && (
-                              <Button variant="ghost" size="sm">
-                                Set Default
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-
-                <Button className="mt-4">
-                  <MapPin className="mr-2 h-4 w-4" />
-                  Add New Address
-                </Button>
-              </div>
-            )}
-
+            
             {/* Settings Tab */}
             {activeTab === "settings" && (
               <div className="space-y-6">
