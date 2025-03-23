@@ -4,16 +4,38 @@ import React, { useEffect, useState } from "react";
 import { useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js";
 import convertToSubcurrency from "@/lib/convertToSubcurrency";
 import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { getUserData } from "@/lib/auth";
+import { UserProp } from "@/types";
 
 const CheckoutPage = ({ amount }: { amount: number }) => {
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
+  const [user] = useAuthState(auth);
+  const [userData, setUserData] = useState<UserProp | null>(null);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState("");
   const [loading, setLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  // Fetch user data
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (user) {
+        try {
+          const data = await getUserData();
+          setUserData(data);
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      }
+    };
+
+    fetchUserData();
+  }, [user]);
 
   // Fetch clientSecret from backend
   useEffect(() => {
@@ -84,6 +106,16 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
     }
   };
 
+  // Handle profile navigation
+  const handleProfileNavigation = () => {
+    // Redirect to profile page with user data
+    if (userData?.uid) {
+      router.push(`/my-profile/${userData.uid}`);
+    } else {
+      router.push("/profile");
+    }
+  };
+
   // Display loading indicator if clientSecret is missing
   if (!clientSecret) {
     return (
@@ -113,12 +145,23 @@ const CheckoutPage = ({ amount }: { amount: number }) => {
           <h2 className="text-green-600 text-lg font-semibold mt-4">
             Payment Successful 🎉
           </h2>
+          
+          {/* Modified button that redirects to profile page */}
           <button
             className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
-            onClick={() => router.push("/order-status")}
+            onClick={handleProfileNavigation}
           >
             View Order Status
           </button>
+          
+          {/* Display user data preview if available */}
+          {userData && (
+            <div className="mt-4 p-3 bg-gray-50 rounded-md text-left">
+              <p className="font-medium">Order placed by:</p>
+              <p>{userData.firstName} {userData.lastName}</p>
+              <p className="text-sm text-gray-600">{userData.email}</p>
+            </div>
+          )}
         </div>
       )}
     </div>
