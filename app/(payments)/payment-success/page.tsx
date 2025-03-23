@@ -17,6 +17,11 @@ const PaymentSuccessPage = () => {
   const [processingOrder, setProcessingOrder] = useState(true);
   const [orderProcessed, setOrderProcessed] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [orderState, setOrderState] = useState({
+    isTableReady: false,
+    isMealReady: false,
+    isReservationReady: false,
+  });
   
   // Use a ref to track if the order has been processed
   const hasProcessedOrder = useRef(false);
