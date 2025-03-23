@@ -15,6 +15,9 @@ import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { TimePicker } from "@/app/(restaurants)/components/timePicker"
 
+// Define a type for menu items to help TypeScript understand the structure
+type MenuItem = string | { name: string; [key: string]: any }
+
 export default function AllRestaurants() {
   const [date, setDate] = useState<Date | undefined>(new Date("2025-02-02"))
   const [time, setTime] = useState("19:00")
@@ -22,6 +25,7 @@ export default function AllRestaurants() {
   const [search, setSearch] = useState("")
   const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>([])
   const [activeCategory, setActiveCategory] = useState("All")
+  const [searchType, setSearchType] = useState<"all" | "restaurant" | "food">("all")
 
   const router = useRouter()
   const { restaurants, loading, error } = useAllRestaurants()
@@ -29,13 +33,46 @@ export default function AllRestaurants() {
   // Filter restaurants based on search input
   useEffect(() => {
     if (restaurants) {
-      let filtered = restaurants.filter(
-        (restaurant) =>
-          restaurant.name.toLowerCase().includes(search.toLowerCase()) ||
-          restaurant.category.toLowerCase().includes(search.toLowerCase()) ||
-          restaurant.cuisine.some((item) => item.toLowerCase().includes(search.toLowerCase())) ||
-          restaurant.location.toLowerCase().includes(search.toLowerCase()),
-      )
+      let filtered = restaurants
+
+      if (search) {
+        const searchLower = search.toLowerCase()
+
+        if (searchType === "all" || searchType === "restaurant") {
+          // Filter by restaurant properties
+          filtered = filtered.filter(
+            (restaurant) =>
+              restaurant.name.toLowerCase().includes(searchLower) ||
+              restaurant.category.toLowerCase().includes(searchLower) ||
+              restaurant.cuisine.some((item) => item.toLowerCase().includes(searchLower)) ||
+              restaurant.location.toLowerCase().includes(searchLower),
+          )
+        }
+
+        if (searchType === "all" || searchType === "food") {
+          // If we're only searching for food or if no restaurants matched the above criteria
+          if (searchType === "food" || (searchType === "all" && filtered.length === 0)) {
+            // Filter by featured menu items
+            filtered = restaurants.filter((restaurant) => {
+              // Check if restaurant has featuredMenu property and it's an array
+              if (restaurant.featuredMenu && Array.isArray(restaurant.featuredMenu)) {
+                // Check if any menu item matches the search
+                return restaurant.featuredMenu.some((menuItem: MenuItem) => {
+                  // Handle both string menu items and object menu items with a name property
+                  if (typeof menuItem === "string") {
+                    return menuItem.toLowerCase().includes(searchLower)
+                  } else if (typeof menuItem === "object" && menuItem !== null) {
+                    // Ensure name exists and is a string before using toLowerCase
+                    return typeof menuItem.name === "string" && menuItem.name.toLowerCase().includes(searchLower)
+                  }
+                  return false
+                })
+              }
+              return false
+            })
+          }
+        }
+      }
 
       // Apply category filter if not "All"
       if (activeCategory !== "All") {
@@ -46,7 +83,7 @@ export default function AllRestaurants() {
 
       setFilteredRestaurants(filtered)
     }
-  }, [search, restaurants, activeCategory])
+  }, [search, restaurants, activeCategory, searchType])
 
   // Extract unique categories from restaurants
   const categories = restaurants ? ["All", ...new Set(restaurants.flatMap((r) => [r.category, ...r.cuisine]))] : ["All"]
@@ -175,14 +212,14 @@ export default function AllRestaurants() {
       {/* Restaurant Listing */}
       <div className="container mx-auto px-4 py-8">
         {/* Dedicated Search Bar */}
-        <div className="mb-10 mt-0">
+        <div className="mb-10">
           <div className="relative max-w-2xl mx-auto">
             <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
               <Search className="h-5 w-5 text-red-500" />
             </div>
             <input
               type="text"
-              placeholder="Search restaurants, cuisine, or location..."
+              placeholder="Search restaurants, cuisine, or food..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10 pr-4 py-3 w-full bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 shadow-sm"
@@ -195,6 +232,34 @@ export default function AllRestaurants() {
                 <ChevronDown className="h-5 w-5 rotate-45" />
               </button>
             )}
+          </div>
+
+          {/* Search Type Selector */}
+          <div className="flex justify-center mt-5 space-x-2">
+            <button
+              onClick={() => setSearchType("all")}
+              className={`px-3 py-1 text-sm rounded-full transition-all ${
+                searchType === "all" ? "bg-red-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setSearchType("restaurant")}
+              className={`px-3 py-1 text-sm rounded-full transition-all ${
+                searchType === "restaurant" ? "bg-red-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              Restaurants
+            </button>
+            <button
+              onClick={() => setSearchType("food")}
+              className={`px-3 py-1 text-sm rounded-full transition-all ${
+                searchType === "food" ? "bg-red-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              Food Items
+            </button>
           </div>
         </div>
 
@@ -251,6 +316,7 @@ export default function AllRestaurants() {
               onClick={() => {
                 setSearch("")
                 setActiveCategory("All")
+                setSearchType("all")
               }}
               className="mt-4 px-6 py-2.5 bg-red-500 rounded-lg hover:bg-red-600 transition-all text-white"
             >
