@@ -12,7 +12,11 @@ interface PreOrderModalProps {
 const PreOrderModal: FC<PreOrderModalProps> = ({ isOpen, onClose, preOrders, removeItem }) => {
   if (!isOpen) return null;
 
-  // Helper function to generate a consistent customization key if needed for display
+  /**
+ * Function to generate a unique key for an item based on its customizations.
+ * - Combines ingredients, portion size, spice level, drink pairing, and add-ons into a single string.
+ * - Handles both string and array formats for add-ons.
+ */
   const getItemCustomizationKey = (item: PreOrder) => {
     const addOnsString = Array.isArray(item.addOns) 
       ? item.addOns.join(",") 
@@ -56,12 +60,10 @@ const PreOrderModal: FC<PreOrderModalProps> = ({ isOpen, onClose, preOrders, rem
               const customizationKey = getItemCustomizationKey(item);
               const hasCustomizations = customizationKey.replace(/-/g, '').length > 0;
               
-              // Use uniqueId as the primary identifier for removing items
               const itemIdentifier = item.uniqueId || item.id;
               
               return (
                 <div 
-                  // Use the uniqueId for the key if available, ensuring uniqueness in the list
                   key={itemIdentifier} 
                   className="flex items-start justify-between border-b pb-4"
                 >
@@ -96,7 +98,6 @@ const PreOrderModal: FC<PreOrderModalProps> = ({ isOpen, onClose, preOrders, rem
                   <div className="flex flex-col items-end">
                     <span className="font-semibold">Rs. {(item.price * item.quantity).toFixed(2)}</span>
                     <button 
-                      // Just pass the uniqueId (or id as fallback) to removeItem function
                       onClick={() => removeItem(itemIdentifier)}
                       className="text-red-500 hover:text-red-700 mt-2 flex items-center text-sm"
                       aria-label="Remove item"
