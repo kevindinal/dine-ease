@@ -91,7 +91,7 @@ export function AuthForm({ type }: AuthFormProps) {
 
         // Navigate to home with user data
         router.push(
-          `/home-main?uid=${user.uid}&name=${userData?.firstName || user.displayName || "User"}&email=${user.email}`,
+          `/home-main`,
         )
         return // Early return to prevent the default redirect
       }
@@ -280,6 +280,12 @@ export function AuthForm({ type }: AuthFormProps) {
           {isLoading ? "Processing..." : "Login with Google"}
         </Button>
       </CardContent>
+      <div className="text-center text-sm pb-8">
+        {type === 'sign-in' ? "Don't have an account? " : 'Already have an account? '}
+        <a href={type === 'sign-in' ? '/sign-up' : 'sign-in'} className="underline underline-offset-4">
+          {type === 'sign-in' ? 'Create an account' : 'Sign in'}
+        </a>
+      </div>
     </Card>
   )
 }
