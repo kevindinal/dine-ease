@@ -87,7 +87,7 @@ const Navbar = () => {
   const handleProfileClick = () => {
     const userData = auth.currentUser
     if (userData?.uid) {
-      router.push(`/my-profile/${userData.uid}`)
+      router.push(`/my-profile`)
     } else {
       router.push("/my-profile")
     }
