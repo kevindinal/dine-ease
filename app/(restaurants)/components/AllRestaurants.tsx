@@ -1,5 +1,7 @@
 "use client"
+
 import type React from "react"
+
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
@@ -12,8 +14,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { TimePicker } from "@/app/(restaurants)/components/timePicker"
-import dummyData from "@/scripts/dummyData.json" // Import dummy data
-import joblib from "joblib" // Import joblib to load the ML model
 
 // Define a type for menu items to help TypeScript understand the structure
 type MenuItem = string | { name: string; [key: string]: any }
@@ -29,20 +29,6 @@ export default function AllRestaurants() {
 
   const router = useRouter()
   const { restaurants, loading, error } = useAllRestaurants()
-
-  // Load the ML model
-  const [model, setModel] = useState<any>(null)
-  useEffect(() => {
-    const loadModel = async () => {
-      try {
-        const loadedModel = joblib.load("models/svd_model.pkl")
-        setModel(loadedModel)
-      } catch (error) {
-        console.error("Error loading ML model:", error)
-      }
-    }
-    loadModel()
-  }, [])
 
   // Filter restaurants based on search input
   useEffect(() => {
@@ -102,42 +88,9 @@ export default function AllRestaurants() {
   // Extract unique categories from restaurants
   const categories = restaurants ? ["All", ...new Set(restaurants.flatMap((r) => [r.category, ...r.cuisine]))] : ["All"]
 
-  // Function to get recommendations from the ML model
-  const getRecommendations = (mealQuery: string) => {
-    if (!model) return []
-
-    // Filter restaurants serving the meal from dummy data
-    const restaurants = dummyData.filter((restaurant) =>
-      restaurant.featuredMenu.some((menuItem: MenuItem) => {
-        if (typeof menuItem === "string") {
-          return menuItem.toLowerCase().includes(mealQuery.toLowerCase())
-        } else if (typeof menuItem === "object" && menuItem !== null) {
-          return typeof menuItem.name === "string" && menuItem.name.toLowerCase().includes(mealQuery.toLowerCase())
-        }
-        return false
-      }),
-    )
-
-    // Use the ML model to rank restaurants (example logic)
-    const recommendations = model.predict(restaurants) // Replace with actual model logic
-
-    return recommendations
-  }
-
-  // Handle meal search
-  const handleMealSearch = async (mealQuery: string) => {
-    if (!mealQuery.trim()) return
-
-    // Get user-reviewed restaurants from Firebase (if applicable)
-    const userReviewedRestaurants = [] // Replace with Firebase logic if needed
-
-    // Get recommended restaurants from the ML model
-    const recommendedRestaurants = getRecommendations(mealQuery)
-
-    // Combine results
-    const results = [...userReviewedRestaurants, ...recommendedRestaurants]
-
-    setFilteredRestaurants(results)
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    // You can add additional search logic here if needed
   }
 
   return (
@@ -178,7 +131,7 @@ export default function AllRestaurants() {
             transition={{ delay: 0.6, duration: 0.8 }}
             className="bg-white p-4 sm:p-6 rounded-xl shadow-2xl max-w-4xl mx-auto"
           >
-            <form onSubmit={(e) => { e.preventDefault(); handleMealSearch(search); }} className="w-full">
+            <form onSubmit={handleSearch} className="w-full">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Date Picker */}
                 <div className="w-full">
@@ -439,3 +392,4 @@ export default function AllRestaurants() {
     </div>
   )
 }
+
