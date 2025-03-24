@@ -327,14 +327,7 @@ const CuisineDetailContainer: React.FC<CuisineDetailContainerProps> = ({ handleA
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{meal.name}</h1>
-                <div className="flex items-center mt-2">
-                  <div className="flex items-center text-yellow-500 mr-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={16} fill={i < 4 ? "currentColor" : "none"} />
-                    ))}
-                  </div>
-                  <span className="text-sm text-gray-500">4.0 (24 reviews)</span>
-                </div>
+                
               </div>
               <div className="text-2xl font-bold text-red-500">Rs. {formatPrice(meal.price)}</div>
             </div>
