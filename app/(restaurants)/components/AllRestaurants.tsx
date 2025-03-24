@@ -1,3 +1,32 @@
+
+
+// 'use client';
+// import { useState } from "react";
+
+// const AllRestaurants = () => {
+//     const [prediction, setPrediction] = useState(null);
+
+//     const handlePredict = async () => {
+//         const response = await fetch("http://127.0.0.1:8000/predict", {
+//             method: "POST",
+//             headers: { "Content-Type": "application/json" },
+//             body: JSON.stringify("../../../scripts/dummyData.json"),
+//         });
+//         const data = await response.json();
+//         setPrediction(data.prediction);
+//     };
+
+//     return (
+//         <div>
+//             <button onClick={handlePredict}>Get Prediction</button>
+//             {prediction && <p>Prediction: {prediction}</p>}
+//         </div>
+//     );
+// };
+
+// export default AllRestaurants;
+
+
 "use client"
 
 import type React from "react"
@@ -392,4 +421,5 @@ export default function AllRestaurants() {
     </div>
   )
 }
+
 
