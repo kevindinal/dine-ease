@@ -87,7 +87,7 @@ const Navbar = () => {
   const handleProfileClick = () => {
     const userData = auth.currentUser
     if (userData?.uid) {
-      router.push(`/my-profile/${userData.uid}`)
+      router.push(`/my-profile`)
     } else {
       router.push("/my-profile")
     }
@@ -330,75 +330,109 @@ const Navbar = () => {
 
               {/* User Profile Dropdown */}
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+                {user ? (
+                  // If the user is signed in, show the profile dropdown
+                  <>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="relative rounded-full bg-white/10 hover:bg-white/20 p-1 transition-all duration-300 hover:scale-105 group"
+                      >
+                        <motion.div
+                          className="flex items-center gap-2 px-2"
+                          whileHover={{ x: 3 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        >
+                          <div className="relative">
+                            <Avatar className="h-8 w-8 border-2 border-white transition-transform duration-300 group-hover:border-primary">
+                              <AvatarFallback className="bg-primary text-white">
+                                {userData?.firstName?.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+
+                            {/* Animated ring */}
+                            <motion.div
+                              className="absolute -inset-1 rounded-full border border-white/30"
+                              initial={{ scale: 0, opacity: 0 }}
+                              whileHover={{ scale: 1.2, opacity: 1, rotate: 360 }}
+                              transition={{ duration: 0.8 }}
+                            />
+                          </div>
+                          <span className="text-white font-medium hidden sm:inline">{userData?.firstName}</span>
+
+                          {/* Animated sparkle */}
+                          <motion.div
+                            animate={{
+                              rotate: [0, 15, -15, 0],
+                              scale: [1, 1.2, 0.8, 1],
+                            }}
+                            transition={{
+                              duration: 2,
+                              repeat: Number.POSITIVE_INFINITY,
+                              repeatType: "reverse",
+                            }}
+                            className="absolute -top-1 -right-1 text-yellow-300"
+                          >
+                            <Sparkles size={12} />
+                          </motion.div>
+                        </motion.div>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="end" forceMount>
+                      <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium leading-none">{userData?.firstName}</p>
+                          <p className="text-xs leading-none text-muted-foreground">{userData?.email}</p>
+                        </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="cursor-pointer transition-colors duration-200 hover:bg-[#FA4032]/10 group"
+                        onClick={handleProfileClick}
+                      >
+                        <Settings className="mr-2 h-4 w-4 group-hover:rotate-90 transition-transform duration-300" />
+                        <span>My Profile</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="cursor-pointer transition-colors duration-200 hover:bg-[#FA4032]/10 group"
+                        onClick={handleLogout}
+                      >
+                        <LogOut className="mr-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                        <span>Log out</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </>
+                ) : (
+                  // If the user is not signed in, show the "Sign In" button
                   <Button
                     variant="ghost"
                     className="relative rounded-full bg-white/10 hover:bg-white/20 p-1 transition-all duration-300 hover:scale-105 group"
+                    onClick={() => router.push("/sign-in")}
                   >
                     <motion.div
                       className="flex items-center gap-2 px-2"
                       whileHover={{ x: 3 }}
                       transition={{ type: "spring", stiffness: 400, damping: 10 }}
                     >
-                      <div className="relative">
-                        <Avatar className="h-8 w-8 border-2 border-white transition-transform duration-300 group-hover:border-primary">
-                          {/* <AvatarImage src={userData.image} alt={userData?.firstName} /> */}
-                          <AvatarFallback className="bg-primary text-white">
-                            {userData?.firstName?.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-
-                        {/* Animated ring */}
-                        <motion.div
-                          className="absolute -inset-1 rounded-full border border-white/30"
-                          initial={{ scale: 0, opacity: 0 }}
-                          whileHover={{ scale: 1.2, opacity: 1, rotate: 360 }}
-                          transition={{ duration: 0.8 }}
-                        />
-                      </div>
-                      <span className="text-white font-medium hidden sm:inline">{userData?.firstName}</span>
-
-                      {/* Animated sparkle */}
-                      <motion.div
-                        animate={{
-                          rotate: [0, 15, -15, 0],
-                          scale: [1, 1.2, 0.8, 1],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Number.POSITIVE_INFINITY,
-                          repeatType: "reverse",
-                        }}
-                        className="absolute -top-1 -right-1 text-yellow-300"
-                      >
-                        <Sparkles size={12} />
-                      </motion.div>
+                      <span className="text-white font-medium">Sign In</span>
                     </motion.div>
+                    {/* Animated sparkle */}
+                    <motion.div
+                                    animate={{
+                                      rotate: [0, 15, -15, 0],
+                                      scale: [1, 1.2, 0.8, 1],
+                                    }}
+                                    transition={{
+                                      duration: 2,
+                                      repeat: Number.POSITIVE_INFINITY,
+                                      repeatType: "reverse",
+                                    }}
+                                    className="absolute -top-1 -right-1 text-yellow-300"
+                                  >
+                                    <Sparkles size={12} />
+                                </motion.div>
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{userData?.firstName}</p>
-                      <p className="text-xs leading-none text-muted-foreground">{userData?.email}</p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="cursor-pointer transition-colors duration-200 hover:bg-[#FA4032]/10 group"
-                    onClick={handleProfileClick}
-                  >
-                    <Settings className="mr-2 h-4 w-4 group-hover:rotate-90 transition-transform duration-300" />
-                    <span>My Profile</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="cursor-pointer transition-colors duration-200 hover:bg-[#FA4032]/10 group"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="mr-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
+                )}
               </DropdownMenu>
 
               {/* Order Status Button */}

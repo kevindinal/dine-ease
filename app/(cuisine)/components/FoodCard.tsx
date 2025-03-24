@@ -88,16 +88,21 @@ const FoodCard: FC<FoodCardProps> = ({
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
+  // Ensure we have a valid alt text for the image
+  const imageAltText = name || "Food item";
+
   return (
     <div className="flex items-center justify-center px-2">
       <div
         className="cursor-pointer w-full sm:w-[400px] h-auto bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 transition-all hover:shadow-lg relative group"
         onClick={handleCardClick}
+        role="button"
+        aria-label={`View details for ${name}`}
       >
         <div className="relative w-full h-48 sm:h-56 overflow-hidden">
           <Image
             src={image}
-            alt={name}
+            alt={imageAltText}
             layout="fill"
             objectFit="cover"
             className="group-hover:scale-105 transition-transform duration-500"
@@ -133,6 +138,7 @@ const FoodCard: FC<FoodCardProps> = ({
               <button
                 onClick={handleAddToPreOrder}
                 className="flex items-center justify-center px-3 py-2 text-white text-sm font-medium bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
+                aria-label={`Add ${name} to order`}
               >
                 <ShoppingBag size={16} className="mr-1" />
                 <span>Add</span>
@@ -147,6 +153,7 @@ const FoodCard: FC<FoodCardProps> = ({
                 const fullUrl = categoryId ? `${url}&categoryId=${categoryId}` : url;
                 router.push(fullUrl);
               }}
+              aria-label={`View details for ${name}`}
             >
               <span>Details</span>
               <ChevronRight size={16} className="ml-1" />

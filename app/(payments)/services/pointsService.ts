@@ -12,7 +12,7 @@ import {
   import { db } from '@/lib/firebase';
   import { UserPoints, AddPointsParams } from '../types/points';
   
-  const POINTS_COLLECTION = 'points';
+  const POINTS_COLLECTION = 'users';
   
   // Get user points from Firebase
   export const getUserPoints = async (userId: string): Promise<number> => {

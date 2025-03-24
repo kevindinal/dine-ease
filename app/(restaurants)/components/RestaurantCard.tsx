@@ -49,10 +49,6 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
           className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
         />
 
-        {/* {restaurant.isPromoted && (
-          <div className="absolute top-3 left-3 bg-red-500 text-white text-xs px-3 py-1.5 rounded-full">Featured</div>
-        )} */}
-
         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-gray-800 text-xs px-3 py-1.5 rounded-full flex items-center shadow-md">
           <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400 mr-1" />
           <span>{restaurant.rating || "4.5"}</span>

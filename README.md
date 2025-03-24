@@ -1,36 +1,125 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DineEase
 
-## Getting Started
+DineEase is a modern restaurant booking and meal pre-ordering web application designed to streamline the dining experience. Built with **Next.js**, **Firebase Firestore**, and **ShadCN**, it enables users to reserve tables, pre-order meals, and receive real-time updates on their orders via **Firebase Cloud Messaging (FCM)**.
 
-First, run the development server:
+## Table of Contents
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 
-```bash
+## Features
+
+- **Restaurant Table Reservations** – Seamless table booking for users.
+- **Meal Pre-Ordering** – Users can place orders before arriving at the restaurant.
+- **Real-Time Order Status Tracking** – Live order updates using Firebase Firestore and FCM.
+- **User Authentication & Authorization** – Secure login and user roles with Firebase Authentication.
+- **Admin Dashboard** – Manage restaurant reservations and meal orders efficiently.
+- **Push Notifications** – Stay updated with real-time notifications via Firebase Cloud Messaging.
+
+## Tech Stack
+
+### Frontend
+- **Next.js** – Server-side rendering and static site generation.
+- **ShadCN** – Modern UI components for an intuitive user experience.
+
+### Backend & Database
+- **Firebase Firestore** – Real-time NoSQL database.
+- **Firebase Authentication** – Secure user authentication.
+
+### Additional Services
+- **Firebase Cloud Messaging (FCM)** – Real-time push notifications.
+- **Vercel** – Deployment and hosting.
+
+## Installation
+
+### Prerequisites
+Ensure you have the following installed:
+- **Node.js** (>=16.x)
+- **npm** or **yarn**
+- **Firebase CLI** (for deployment)
+
+### Setup
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/kevindinal/dine-ease.git
+   ```
+2. Navigate to the project directory:
+   ```sh
+   cd dine-ease
+   ```
+3. Install dependencies:
+   ```sh
+   npm install
+   ```
+
+## Configuration
+
+### Firebase Setup
+1. Create a **Firebase Project** at [Firebase Console](https://console.firebase.google.com/).
+2. Enable **Firestore Database**, **Authentication**, and **Cloud Messaging**.
+3. Retrieve your Firebase configuration and add it to a `.env.local` file:
+   ```ini
+   NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+   NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+   ```
+
+### Running the Application
+Start the development server:
+```sh
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+Then open `http://localhost:3000` in your browser.
+
+## Deployment
+
+### Deploying to Vercel
+```sh
+vercel deploy
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Deploying to Firebase Hosting
+```sh
+firebase deploy
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Contributing
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Contributions are welcome! Follow these steps:
+1. Fork the repository.
+2. Create a new feature branch:
+   ```sh
+   git checkout -b feature-branch
+   ```
+3. Implement your changes and commit:
+   ```sh
+   git commit -m "Add new feature"
+   ```
+4. Push the branch:
+   ```sh
+   git push origin feature-branch
+   ```
+5. Create a Pull Request (PR) for review.
 
-## Learn More
+## License
 
-To learn more about Next.js, take a look at the following resources:
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Contact
+For any inquiries or collaboration opportunities, connect with:
+- [@kevindinal](https://github.com/kevindinal)
+- [@Manazir](https://github.com/mnzralee)
+- [@Pesa-Rasho](https://github.com/Pesa-Rasho)
+- [@Yasandu](https://github.com/yasandu0505)
+- [@Sudhir Fernan](https://github.com/sudhirfernan)
+- [@Imsarie](https://github.com/imsarie02)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

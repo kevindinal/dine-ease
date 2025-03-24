@@ -4,9 +4,10 @@ import React, { useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useOrder } from "../hooks/useOrder";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { Loader2, CheckCircle, AlertCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { doc, getDoc, updateDoc, increment } from "firebase/firestore";
 
 const PaymentSuccessPage = () => {
   const router = useRouter();
@@ -22,6 +23,8 @@ const PaymentSuccessPage = () => {
     isMealReady: false,
     isReservationReady: false
   });
+  const [pointsAdded, setPointsAdded] = useState(false);
+  const [pointsApplied, setPointsApplied] = useState(false);
   
   // Use a ref to track if the order has been processed
   const hasProcessedOrder = useRef(false);
@@ -29,6 +32,82 @@ const PaymentSuccessPage = () => {
   // Get parameters from URL
   const amount = searchParams.get("amount") ? parseInt(searchParams.get("amount")!) : 0;
   const paymentIntentId = searchParams.get("payment_intent");
+  // Get applied points from URL or localStorage
+  const appliedPoints = searchParams.get("applied_points") 
+    ? parseInt(searchParams.get("applied_points")!) 
+    : parseInt(localStorage.getItem("applied_points") || "0");
+
+  // Function to apply points (reduce from user account)
+  const applyUserPoints = async (userId: string, pointsToApply: number) => {
+    try {
+      if (!userId || pointsToApply <= 0) {
+        console.log("No points to apply or missing user ID");
+        return false;
+      }
+
+      // Reference to the user document
+      const userRef = doc(db, "users", userId);
+      
+      // Check if user document exists and has enough points
+      const userDoc = await getDoc(userRef);
+      if (!userDoc.exists()) {
+        console.error("User document not found");
+        return false;
+      }
+
+      const userData = userDoc.data();
+      const currentPoints = userData.points || 0;
+
+      if (currentPoints < pointsToApply) {
+        console.error("Not enough points to apply");
+        return false;
+      }
+
+      // Reduce points by the amount applied
+      await updateDoc(userRef, {
+        points: increment(-pointsToApply)
+      });
+
+      console.log(`Successfully applied ${pointsToApply} points to the order`);
+      setPointsApplied(true);
+      return true;
+    } catch (err) {
+      console.error("Error applying user points:", err);
+      return false;
+    }
+  };
+
+  // Function to add reward points after successful payment
+  const addRewardPoints = async (userId: string) => {
+    try {
+      if (!userId) {
+        console.error("Cannot update points: User ID is missing");
+        return false;
+      }
+
+      // Reference to the user document
+      const userRef = doc(db, "users", userId);
+      
+      // Check if user document exists
+      const userDoc = await getDoc(userRef);
+      if (!userDoc.exists()) {
+        console.error("User document not found");
+        return false;
+      }
+
+      // Add 10 reward points
+      await updateDoc(userRef, {
+        points: increment(10)
+      });
+
+      console.log("Successfully added 10 reward points to user's account");
+      setPointsAdded(true);
+      return true;
+    } catch (err) {
+      console.error("Error adding reward points:", err);
+      return false;
+    }
+  };
 
   useEffect(() => {
     // Only process the order if we have the necessary information
@@ -56,6 +135,11 @@ const PaymentSuccessPage = () => {
         
         console.log("Processing order...");
         
+        // First, apply any points the user wanted to use
+        if (appliedPoints > 0 && user.uid) {
+          await applyUserPoints(user.uid, appliedPoints);
+        }
+        
         // Process the order using preOrders from the hook
         const newOrderId = await processOrder(
           amount,
@@ -66,7 +150,6 @@ const PaymentSuccessPage = () => {
         if (newOrderId) {
           setOrderId(newOrderId);
           setOrderProcessed(true);
-
           
           // Initialize order status states (all false by default)
           setOrderState({
@@ -75,9 +158,17 @@ const PaymentSuccessPage = () => {
             isReservationReady: false
           });
           
+          // Add reward points after successful order
+          if (user && user.uid) {
+            await addRewardPoints(user.uid);
+          }
 
           // Save the order ID to localStorage
           localStorage.setItem('currentOrderId', newOrderId);
+          
+          // Clear applied points from localStorage
+          localStorage.removeItem('applied_points');
+          
           console.log("Order processed successfully with ID:", newOrderId);
         }
       } catch (err) {
@@ -98,7 +189,7 @@ const PaymentSuccessPage = () => {
     return () => {
       // No cleanup needed, but having this function ensures the effect behaves properly
     };
-  }, [user?.uid, paymentIntentId]); // Minimal dependencies to prevent re-runs
+  }, [user?.uid, paymentIntentId, appliedPoints]); // Added appliedPoints to dependencies
 
   // While authentication is still loading
   if (!user && !error) {
@@ -175,6 +266,20 @@ const PaymentSuccessPage = () => {
           </div>
           <h1 className="mt-6 text-2xl font-bold text-gray-800">Payment Successful!</h1>
           <p className="mt-2 text-gray-500">Thank you for your order.</p>
+          
+          {/* Point transaction notifications */}
+          <div className="mt-3 flex flex-col items-center gap-2">
+            {pointsApplied && appliedPoints > 0 && (
+              <div className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                {appliedPoints} Points Applied to Order
+              </div>
+            )}
+            {pointsAdded && (
+              <div className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
+                +10 Reward Points Added!
+              </div>
+            )}
+          </div>
         </div>
         
         <div className="space-y-4">
@@ -200,7 +305,7 @@ const PaymentSuccessPage = () => {
         
         <div className="mt-8 flex flex-col gap-4">
           <Link 
-            href="/order-status" 
+            href="/home-main" 
             className="w-full px-6 py-3 bg-[#FA4032] text-white rounded-lg hover:bg-opacity-90 transition-colors font-medium text-center flex items-center justify-center"
           >
             View Order Status <ArrowRight className="ml-2 h-4 w-4" />
@@ -218,3 +323,4 @@ const PaymentSuccessPage = () => {
 };
 
 export default PaymentSuccessPage;
+
