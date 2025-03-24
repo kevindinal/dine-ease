@@ -1,0 +1,310 @@
+[
+    {
+      "name": "Ministry of Crabs",
+      "category": "Seafood",
+      "location": "Colombo, Sri Lanka",
+      "featuredMenu": [
+        {
+          "id": "crab",
+          "name": "Crab",
+          "price": 24.99,
+          "food review": [
+            {
+              "userId": "user_1",
+              "userName": "John Doe",
+              "rating": 4.5,
+              "comment": "Amazing crab! The garlic butter sauce was perfect.",
+              "createdAt": "2023-10-01T12:00:00Z"
+            },
+            {
+              "userId": "user_2",
+              "userName": "Jane Smith",
+              "rating": 4.0,
+              "comment": "Delicious, but a bit pricey.",
+              "createdAt": "2023-10-02T14:00:00Z"
+            },
+            {
+              "userId": "user_3",
+              "userName": "Alice Johnson",
+              "rating": 5.0,
+              "comment": "Best crab I've ever had!",
+              "createdAt": "2023-10-03T16:00:00Z"
+            }
+          ]
+        },
+        {
+          "id": "pasta",
+          "name": "Pasta",
+          "price": 18.99,
+          "food review": [
+            {
+              "userId": "user_1",
+              "userName": "John Doe",
+              "rating": 4.0,
+              "comment": "Creamy and delicious!",
+              "createdAt": "2023-10-06T12:00:00Z"
+            },
+            {
+              "userId": "user_2",
+              "userName": "Jane Smith",
+              "rating": 3.8,
+              "comment": "Good, but not the best I've had.",
+              "createdAt": "2023-10-07T14:00:00Z"
+            }
+          ]
+        },
+        {
+          "id": "burger",
+          "name": "Burger",
+          "price": 12.99,
+          "food review": [
+            {
+              "userId": "user_1",
+              "userName": "John Doe",
+              "rating": 4.2,
+              "comment": "Juicy and flavorful!",
+              "createdAt": "2023-10-12T12:00:00Z"
+            },
+            {
+              "userId": "user_2",
+              "userName": "Jane Smith",
+              "rating": 3.9,
+              "comment": "Good, but the bun was a bit dry.",
+              "createdAt": "2023-10-13T14:00:00Z"
+            },
+            {
+              "userId": "user_3",
+              "userName": "Alice Johnson",
+              "rating": 4.6,
+              "comment": "One of the best burgers I've had!",
+              "createdAt": "2023-10-14T16:00:00Z"
+            },
+            {
+              "userId": "user_4",
+              "userName": "Bob Brown",
+              "rating": 4.0,
+              "comment": "Solid burger, but nothing special.",
+              "createdAt": "2023-10-15T18:00:00Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pasta Palace",
+      "category": "Italian",
+      "location": "New York, USA",
+      "featuredMenu": [
+        {
+          "id": "crab",
+          "name": "Crab",
+          "price": 26.99,
+          "food review": [
+            {
+              "userId": "user_6",
+              "userName": "Eva Green",
+              "rating": 4.7,
+              "comment": "The crab was divine!",
+              "createdAt": "2023-10-17T12:00:00Z"
+            },
+            {
+              "userId": "user_7",
+              "userName": "Frank White",
+              "rating": 4.3,
+              "comment": "Excellent dish, but a bit overpriced.",
+              "createdAt": "2023-10-18T14:00:00Z"
+            },
+            {
+              "userId": "user_8",
+              "userName": "Grace Lee",
+              "rating": 4.8,
+              "comment": "Perfectly cooked crab with a rich sauce.",
+              "createdAt": "2023-10-19T16:00:00Z"
+            },
+            {
+              "userId": "user_9",
+              "userName": "Henry Brown",
+              "rating": 4.1,
+              "comment": "Good, but the portion size was small.",
+              "createdAt": "2023-10-20T18:00:00Z"
+            },
+            {
+              "userId": "user_10",
+              "userName": "Ivy Davis",
+              "rating": 4.5,
+              "comment": "Loved the flavors, will come back!",
+              "createdAt": "2023-10-21T20:00:00Z"
+            }
+          ]
+        },
+        {
+          "id": "pasta",
+          "name": "Pasta",
+          "price": 19.99,
+          "food review": [
+            {
+              "userId": "user_6",
+              "userName": "Eva Green",
+              "rating": 4.6,
+              "comment": "Creamy and delicious pasta!",
+              "createdAt": "2023-10-22T12:00:00Z"
+            },
+            {
+              "userId": "user_7",
+              "userName": "Frank White",
+              "rating": 4.0,
+              "comment": "Good, but not the best I've had.",
+              "createdAt": "2023-10-23T14:00:00Z"
+            },
+            {
+              "userId": "user_8",
+              "userName": "Grace Lee",
+              "rating": 4.7,
+              "comment": "Perfectly cooked pasta with a rich sauce.",
+              "createdAt": "2023-10-24T16:00:00Z"
+            },
+            {
+              "userId": "user_9",
+              "userName": "Henry Brown",
+              "rating": 4.2,
+              "comment": "Great dish, but a bit too salty.",
+              "createdAt": "2023-10-25T18:00:00Z"
+            },
+            {
+              "userId": "user_10",
+              "userName": "Ivy Davis",
+              "rating": 4.4,
+              "comment": "Fantastic pasta, will come back!",
+              "createdAt": "2023-10-26T20:00:00Z"
+            },
+            {
+              "userId": "user_11",
+              "userName": "Jack Wilson",
+              "rating": 4.3,
+              "comment": "Loved the flavors, great service!",
+              "createdAt": "2023-10-27T22:00:00Z"
+            }
+          ]
+        },
+        {
+          "id": "burger",
+          "name": "Burger",
+          "price": 13.99,
+          "food review": [
+            {
+              "userId": "user_6",
+              "userName": "Eva Green",
+              "rating": 4.5,
+              "comment": "Juicy and flavorful burger!",
+              "createdAt": "2023-10-28T12:00:00Z"
+            },
+            {
+              "userId": "user_7",
+              "userName": "Frank White",
+              "rating": 4.1,
+              "comment": "Good, but the bun was a bit dry.",
+              "createdAt": "2023-10-29T14:00:00Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Burger Barn",
+      "category": "American",
+      "location": "Los Angeles, USA",
+      "featuredMenu": [
+        {
+          "id": "crab",
+          "name": "Crab",
+          "price": 22.99,
+          "food review": [
+            {
+              "userId": "user_11",
+              "userName": "Jack Wilson",
+              "rating": 4.4,
+              "comment": "The crab was delicious!",
+              "createdAt": "2023-11-02T12:00:00Z"
+            },
+            {
+              "userId": "user_12",
+              "userName": "Karen White",
+              "rating": 4.2,
+              "comment": "Great flavors, but a bit overpriced.",
+              "createdAt": "2023-11-03T14:00:00Z"
+            }
+          ]
+        },
+        {
+          "id": "pasta",
+          "name": "Pasta",
+          "price": 17.99,
+          "food review": [
+            {
+              "userId": "user_11",
+              "userName": "Jack Wilson",
+              "rating": 4.5,
+              "comment": "Creamy and delicious pasta!",
+              "createdAt": "2023-11-07T12:00:00Z"
+            },
+            {
+              "userId": "user_12",
+              "userName": "Karen White",
+              "rating": 4.1,
+              "comment": "Good, but not the best I've had.",
+              "createdAt": "2023-11-08T14:00:00Z"
+            },
+            {
+              "userId": "user_13",
+              "userName": "Liam Brown",
+              "rating": 4.7,
+              "comment": "Perfectly cooked pasta with a rich sauce.",
+              "createdAt": "2023-11-09T16:00:00Z"
+            }
+          ]
+        },
+        {
+          "id": "burger",
+          "name": "Burger",
+          "price": 14.99,
+          "food review": [
+            {
+              "userId": "user_11",
+              "userName": "Jack Wilson",
+              "rating": 4.6,
+              "comment": "Juicy and flavorful burger!",
+              "createdAt": "2023-11-13T12:00:00Z"
+            },
+            {
+              "userId": "user_12",
+              "userName": "Karen White",
+              "rating": 4.0,
+              "comment": "Good, but the bun was a bit dry.",
+              "createdAt": "2023-11-14T14:00:00Z"
+            },
+            {
+              "userId": "user_13",
+              "userName": "Liam Brown",
+              "rating": 4.8,
+              "comment": "One of the best burgers I've had!",
+              "createdAt": "2023-11-15T16:00:00Z"
+            },
+            {
+              "userId": "user_14",
+              "userName": "Mia Davis",
+              "rating": 4.1,
+              "comment": "Solid burger, but nothing special.",
+              "createdAt": "2023-11-16T18:00:00Z"
+            },
+            {
+              "userId": "user_15",
+              "userName": "Noah Wilson",
+              "rating": 4.5,
+              "comment": "Great value for the price!",
+              "createdAt": "2023-11-17T20:00:00Z"
+            }
+          ]
+        }
+      ]
+    }
+]
