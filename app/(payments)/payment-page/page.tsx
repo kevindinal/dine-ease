@@ -488,11 +488,6 @@ useEffect(() => {
                   label="Guests"
                   value={reservation.guests}
                 />
-                <DetailCard
-                  icon={<MapPin className="h-5 w-5 text-[#FA4032]" />}
-                  label="Table"
-                  value={reservation.table}
-                />
               </div>
             ) : (
               <div className="flex items-center justify-center h-32 bg-gray-50 rounded-lg">
