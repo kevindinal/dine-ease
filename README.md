@@ -115,5 +115,11 @@ Contributions are welcome! Follow these steps:
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
 ## Contact
-For any inquiries or collaboration opportunities, connect with [@kevindinal](https://github.com/kevindinal).
+For any inquiries or collaboration opportunities, connect with:
+- [@kevindinal](https://github.com/kevindinal)
+- [@Manazir](https://github.com/mnzralee)
+- [@Pesa-Rasho](https://github.com/Pesa-Rasho)
+- [@Yasandu](https://github.com/yasandu0505)
+- [@Sudhir Fernan](https://github.com/sudhirfernan)
+- [@Imsarie](https://github.com/imsarie02)
 
