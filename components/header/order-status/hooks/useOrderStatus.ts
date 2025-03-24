@@ -23,7 +23,7 @@ This effect runs once when the component mounts.
     const orderId = localStorage.getItem('currentOrderId');
 
     if (!userId || !orderId) {
-      setError('User ID or Order ID not found in localStorage');
+      setError('No orders found');
       setLoading(false);
       return;
     }
