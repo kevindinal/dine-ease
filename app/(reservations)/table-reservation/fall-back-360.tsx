@@ -8,8 +8,7 @@ interface Fallback360ViewerProps {
   imageUrl: string
 }
 
-// This is a simple fallback viewer that doesn't use the Panolens library
-// It's not a true 360° viewer but provides a basic image viewing experience
+
 const Fallback360Viewer = ({ imageUrl }: Fallback360ViewerProps) => {
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
