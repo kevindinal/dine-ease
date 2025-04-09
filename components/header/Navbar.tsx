@@ -48,13 +48,6 @@ const Navbar = () => {
   const navShadow = useTransform(scrollY, [0, 100], ["0 0 0 rgba(0,0,0,0)", "0 10px 30px rgba(0,0,0,0.1)"])
   const [isOrderStatusOpen, setIsOrderStatusOpen] = useState(false)
 
-  // const [user, setUser] = useState({
-  //   uid: "",
-  //   name: "Guest",
-  //   email: "guest@example.com",
-  //   image: "/placeholder.svg?height=32&width=32",
-  // })
-
   const [user, loading] = useAuthState(auth)
   const [userData, setUserData] = useState<UserProp>()
 
